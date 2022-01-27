@@ -5,10 +5,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SalesAPI.Mapper;
+using SalesAPI.Persistence;
 using SalesAPI.Persistence.Data;
-using SalesAPI.Repositories;
+using SalesAPI.Persistence.Repositories;
 using SalesAPI.Services;
 using System;
+using System.Threading.Tasks;
 
 namespace SalesAPI
 {
@@ -33,8 +35,9 @@ namespace SalesAPI
                     .UseSqlServer(connectionString)
                     .LogTo(Console.WriteLine)
                     .EnableSensitiveDataLogging();
-            }
-            );
+            });
+
+            services.AddSwaggerGen();
 
             services.AddScoped<StockRepository, StockRepository>();
 
@@ -43,18 +46,33 @@ namespace SalesAPI
             services.AddScoped<IProductRepository, ProductRepository>();
 
             services.AddScoped<IProductMapper, ProductMapper>();
+            services.AddScoped<IStockMapper, StockMapper>();
+
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            services.AddScoped<ProductSeed>();
+            services.AddScoped<StockSeed>();
 
             services.AddMvc();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ProductSeed pSeed)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                Task.Run(async () => await pSeed.Seed()).Wait();
+                                
             }
+
+            app.UseSwagger();
+
+            app.UseSwaggerUI(opt =>
+            {
+                opt.SwaggerEndpoint("/swagger/v1/swagger.json", "School Manager API");
+            }
+            );
 
             app.UseHttpsRedirection();
 
@@ -66,6 +84,7 @@ namespace SalesAPI
             {
                 endpoints.MapControllers();
             });
+
         }
     }
 }

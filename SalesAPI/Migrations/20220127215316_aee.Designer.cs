@@ -4,13 +4,13 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using SalesAPI.Persistence.Data;
+using SalesAPI.Persistence;
 
 namespace SalesAPI.Migrations
 {
     [DbContext(typeof(SalesDbContext))]
-    [Migration("20220126012559_new")]
-    partial class @new
+    [Migration("20220127215316_aee")]
+    partial class aee
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -33,6 +33,9 @@ namespace SalesAPI.Migrations
                     b.Property<double>("Price")
                         .HasColumnType("float");
 
+                    b.Property<int>("ProductStockId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.ToTable("Products");
@@ -53,7 +56,8 @@ namespace SalesAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductId");
+                    b.HasIndex("ProductId")
+                        .IsUnique();
 
                     b.ToTable("ProductStocks");
                 });
@@ -61,12 +65,17 @@ namespace SalesAPI.Migrations
             modelBuilder.Entity("SalesAPI.Models.ProductStock", b =>
                 {
                     b.HasOne("SalesAPI.Models.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
+                        .WithOne("ProductStock")
+                        .HasForeignKey("SalesAPI.Models.ProductStock", "ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("SalesAPI.Models.Product", b =>
+                {
+                    b.Navigation("ProductStock");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,16 +1,12 @@
-﻿using SalesAPI.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using SalesAPI.Dtos;
 
 namespace SalesAPI.Models
 {
-    public class ProductStock 
+    public class ProductStock
     {
         public int Id { get; set; }
-        public Product Product { get; set; }
         public int ProductId { get; set; }
+        public Product Product { get; set; }
         public int Count { get; set; }
 
         public ProductStock()
@@ -20,6 +16,12 @@ namespace SalesAPI.Models
         public ProductStock(Product product, int count)
         {
             Product = product;
+            Count = count;
+        }
+
+        public ProductStock(int productId, int count)
+        {
+            ProductId = productId;
             Count = count;
         }
 

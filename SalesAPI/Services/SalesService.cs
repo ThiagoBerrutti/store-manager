@@ -1,8 +1,4 @@
 ﻿using SalesAPI.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SalesAPI.Services
 {
@@ -10,7 +6,6 @@ namespace SalesAPI.Services
     {
         public void Sell(Seller seller, Product product)
         {
-
         }
     }
 }

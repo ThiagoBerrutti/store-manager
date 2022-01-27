@@ -2,7 +2,7 @@
 
 namespace SalesAPI.Migrations
 {
-    public partial class @new : Migration
+    public partial class aee : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -13,7 +13,8 @@ namespace SalesAPI.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Price = table.Column<double>(type: "float", nullable: false)
+                    Price = table.Column<double>(type: "float", nullable: false),
+                    ProductStockId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -43,7 +44,8 @@ namespace SalesAPI.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_ProductStocks_ProductId",
                 table: "ProductStocks",
-                column: "ProductId");
+                column: "ProductId",
+                unique: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

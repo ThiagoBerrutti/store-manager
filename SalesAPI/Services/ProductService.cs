@@ -1,64 +1,92 @@
-﻿using SalesAPI.Mapper;
+﻿using SalesAPI.Exceptions;
+using SalesAPI.Mapper;
 using SalesAPI.Models;
-using SalesAPI.Repositories;
-using SalesAPI.ViewModels;
-using System;
+using SalesAPI.Persistence.Repositories;
+using SalesAPI.Dtos;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace SalesAPI.Services
 {
     public class ProductService : IProductService
     {
-        private IProductRepository _productRepository;
-        private IProductMapper _productMapper;
-        public IUnitOfWork _unitOfWork;
+        private readonly IProductRepository _productRepository;
+        private readonly IStockService _stockService;
+        private readonly IProductMapper _productMapper;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public ProductService(IProductRepository productRepository, IProductMapper productMapper, IUnitOfWork unitOfWork)
+        public ProductService(
+            IProductRepository productRepository,
+            IStockService stockService,
+            IProductMapper productMapper,
+            IUnitOfWork unitOfWork)
         {
             _productRepository = productRepository;
+            _stockService = stockService;
             _productMapper = productMapper;
             _unitOfWork = unitOfWork;
         }
 
-        public async Task CreateProductAsync(ProductWriteDto productDto)
+        public async Task CreateAsync(ProductWriteDto productDto)
         {
-            var product = _productMapper.DtoToEntity(productDto);
-
+            var product = _productMapper.MapDtoToEntity(productDto);
             _productRepository.Add(product);
             await _unitOfWork.CompleteAsync();
+
+            await _stockService.CreateProductStock(product.Id, 0);
         }
 
-        public async Task<IEnumerable<Product>> GetAllAsync()
+        public async Task<IEnumerable<ProductReadDto>> GetAllAsync()
         {
-            
+            var products = await _productRepository.GetAllAsync();
+            var productsDto = _productMapper.MapEntityToDtoList(products);
 
-            var a = await _productRepository.GetAll();
-            return a;
+            return productsDto;
         }
 
-        public async Task<Product> GetAsync(Product product)
+        public async Task<ProductReadDto> GetByIdAsync(int id)
         {
-            return await GetByIdAsync(product.Id);
+            var product = await _productRepository.GetByIdAsync(id);
+            var dto = _productMapper.MapEntityToDto(product);
+
+            return dto;
         }
 
-        public async Task<Product> GetByIdAsync(int id)
+        public async Task UpdateAsync(int id, ProductWriteDto productDto)
         {
-            return await _productRepository.GetByIdAsync(id);
-        }
+            var productOnRepo = await _productRepository.GetByIdAsync(id);
+            if (productOnRepo == null)
+            {
+                throw new StockException($"Product id [{id}] not found.");
+            }
 
-        public async Task UpdateAsync(ProductWriteDto productDto)
-        {
-            var product = _productMapper.DtoToEntity(productDto);
-            _productRepository.Update(product);
+            _productMapper.MapDtoToEntity(productDto, productOnRepo);
+            _productRepository.Update(productOnRepo);
 
             await _unitOfWork.CompleteAsync();
         }
 
-        public async Task DeleteAsync(Product product)
+        public async Task DeleteAsync(int id)
         {
+            var product = await _productRepository.GetByIdAsync(id);
+            if (product == null)
+            {
+                throw new StockException($"Product id {id} not found");
+            }
+
             _productRepository.Delete(product);
+
+            await _unitOfWork.CompleteAsync();
+        }
+
+        public async Task Clear()
+        {
+            var products = await _productRepository.GetAllAsync();
+
+            foreach (Product p in products)
+            {
+                _productRepository.Delete(p);
+            }
 
             await _unitOfWork.CompleteAsync();
         }

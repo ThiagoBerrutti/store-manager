@@ -1,12 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SalesAPI.Models;
-using SalesAPI.Persistence.Data;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
-namespace SalesAPI.Repositories
+namespace SalesAPI.Persistence.Repositories
 {
     public class ProductRepository : IProductRepository
     {
@@ -17,16 +14,18 @@ namespace SalesAPI.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<Product>> GetAll()
-        {  
-           var a = await _context.Products.ToListAsync();
-            //if (a == null) return new List<Product>();
-            return a;
+        public async Task<IEnumerable<Product>> GetAllAsync()
+        {
+            return await _context.Products
+                                .Include(p => p.ProductStock)
+                                .ToListAsync();
         }
 
         public async Task<Product> GetByIdAsync(int id)
         {
-            return await _context.Products.FirstOrDefaultAsync(p => p.Id == id);
+            return await _context.Products
+                                .Include(p => p.ProductStock)
+                                .FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public void Add(Product product)
