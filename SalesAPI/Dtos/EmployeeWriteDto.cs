@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SalesAPI.Models
+namespace SalesAPI.Dtos
 {
-    public class Seller
+    public class EmployeeWriteDto
     {
-        public int Id { get; set; }
         public string Name { get; set; }
+        public int PositionId { get; set; }
+
         public decimal BaseSalary { get; set; }
     }
 }

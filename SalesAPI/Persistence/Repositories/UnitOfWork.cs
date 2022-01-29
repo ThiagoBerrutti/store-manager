@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using SalesAPI.Exceptions;
+using System;
+using System.Threading.Tasks;
 
 namespace SalesAPI.Persistence.Repositories
 {
@@ -13,7 +15,15 @@ namespace SalesAPI.Persistence.Repositories
 
         public async Task<int> CompleteAsync()
         {
-            return await _context.SaveChangesAsync();
+            try
+            {
+                var result = await _context.SaveChangesAsync();
+                return result;
+            }
+            catch (Exception e)
+            {
+                throw;
+            }
         }
     }
 }

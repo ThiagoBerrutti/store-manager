@@ -12,12 +12,10 @@ namespace SalesAPI.Controllers
     public class ProductController : Controller
     {
         private IProductService _productService;
-        private readonly ProductSeed _seed;
 
-        public ProductController(IProductService productService, ProductSeed seed)
+        public ProductController(IProductService productService)
         {
             _productService = productService;
-            _seed = seed;
         }
 
         [HttpGet]
@@ -33,7 +31,7 @@ namespace SalesAPI.Controllers
             var result = await _productService.GetByIdAsync(id);
             return Ok(result);
         }
-
+        
         [HttpPost]
         public async Task<IActionResult> CreateProduct(ProductWriteDto product)
         {
@@ -60,13 +58,6 @@ namespace SalesAPI.Controllers
         {
             await _productService.Clear();
             return Ok();
-        }
-
-        [HttpPost("seed")]
-        public IActionResult Seed()
-        {
-            _seed.Seed();
-            return Ok("Product seeded");
         }
     }
 }

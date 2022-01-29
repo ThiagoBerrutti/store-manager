@@ -5,6 +5,7 @@ using SalesAPI.Persistence.Repositories;
 using SalesAPI.Dtos;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using SalesAPI.Persistence;
 
 namespace SalesAPI.Services
 {
@@ -31,9 +32,10 @@ namespace SalesAPI.Services
         {
             var product = _productMapper.MapDtoToEntity(productDto);
             _productRepository.Add(product);
-            await _unitOfWork.CompleteAsync();
 
-            await _stockService.CreateProductStock(product.Id, 0);
+            _stockService.CreateProductStock(product, 0);
+
+            await _unitOfWork.CompleteAsync();
         }
 
         public async Task<IEnumerable<ProductReadDto>> GetAllAsync()
@@ -57,7 +59,7 @@ namespace SalesAPI.Services
             var productOnRepo = await _productRepository.GetByIdAsync(id);
             if (productOnRepo == null)
             {
-                throw new StockException($"Product id [{id}] not found.");
+                throw new EntityNotFoundException($"Product id [{id}] not found.");
             }
 
             _productMapper.MapDtoToEntity(productDto, productOnRepo);
@@ -71,7 +73,7 @@ namespace SalesAPI.Services
             var product = await _productRepository.GetByIdAsync(id);
             if (product == null)
             {
-                throw new StockException($"Product id {id} not found");
+                throw new EntityNotFoundException($"Product id {id} not found");
             }
 
             _productRepository.Delete(product);

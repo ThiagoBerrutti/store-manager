@@ -34,21 +34,29 @@ namespace SalesAPI.Controllers
             var productStock = await _stockService.GetByProductId(productId);
             return Ok(productStock);
         }
-
-        [HttpPost]
-        public async Task<IActionResult> CreateProductStock([FromQuery] int productId, [FromQuery] int quantity)
-        {
-            await _stockService.CreateProductStock(productId, quantity);
-            return Ok();
-        }
-
+        
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateStock([FromRoute] int id, [FromBody] StockWriteDto stockUpdate)
+        public async Task<IActionResult> UpdateStock(int id, [FromBody] StockWriteDto stockUpdate)
         {
             await _stockService.Update(id, stockUpdate);
 
             return Ok();
         }
+
+        [HttpPut("{id:int}/add")]
+        public async Task<IActionResult> AddToStock(int id, int amount)
+        {
+            await _stockService.AddProductAmount(id, amount);
+            return Ok();
+        }
+
+        [HttpPut("{id:int}/remove")]
+        public async Task<IActionResult> RemoveFromStock(int id, int amount)
+        {
+            await _stockService.RemoveProductAmount(id, amount);
+            return Ok();
+        }
+
 
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
@@ -56,14 +64,7 @@ namespace SalesAPI.Controllers
             await _stockService.Delete(id);
             return Ok();
         }
-
-        [HttpDelete]
-        public async Task<IActionResult> Clear()
-        {
-            await _stockService.Clear();
-            return Ok();
-        }
-
+        
         [HttpPost("seed")]
         public IActionResult Seed()
         {

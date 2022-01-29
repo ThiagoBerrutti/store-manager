@@ -56,5 +56,7 @@ namespace SalesAPI.Persistence.Repositories
         {
             _context.ProductStocks.Remove(productStock);
         }
+
+        
     }
 }

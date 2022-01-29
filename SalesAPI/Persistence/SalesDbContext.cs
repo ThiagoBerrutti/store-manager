@@ -15,6 +15,8 @@ namespace SalesAPI.Persistence
         {
         }
 
+        public DbSet<Employee> Employees { get; set; }
+        public DbSet<EmployeePosition> EmployeePositions { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<ProductStock> ProductStocks { get; set; }
 

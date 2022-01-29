@@ -4,13 +4,13 @@ using SalesAPI.Models;
 
 namespace SalesAPI.Persistence.FluentApi
 {
-    public class ProductEntityTypeConfiguration : IEntityTypeConfiguration<Product>
+    public class EmployeeEntityTypeConfiguration : IEntityTypeConfiguration<Employee>
     {
-        public void Configure(EntityTypeBuilder<Product> builder)
+        public void Configure(EntityTypeBuilder<Employee> builder)
         {
             builder
-                .HasOne(p => p.ProductStock)
-                .WithOne(ps => ps.Product)
+                .HasOne(e => e.Position)
+                .WithMany(p => p.Employees)
                 .OnDelete(DeleteBehavior.SetNull);
         }
     }
