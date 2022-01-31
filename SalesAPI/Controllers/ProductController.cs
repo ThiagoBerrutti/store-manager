@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SalesAPI.Dtos;
-using SalesAPI.Persistence.Data;
 using SalesAPI.Services;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -11,7 +10,7 @@ namespace SalesAPI.Controllers
     [Route("api/v1/products")]
     public class ProductController : Controller
     {
-        private IProductService _productService;
+        private readonly IProductService _productService;
 
         public ProductController(IProductService productService)
         {
@@ -31,7 +30,7 @@ namespace SalesAPI.Controllers
             var result = await _productService.GetByIdAsync(id);
             return Ok(result);
         }
-        
+
         [HttpPost]
         public async Task<IActionResult> CreateProduct(ProductWriteDto product)
         {

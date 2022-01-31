@@ -8,7 +8,7 @@ namespace SalesAPI.Persistence.Data
 {
     public class ProductSeed
     {
-        private SalesDbContext _context;
+        private readonly SalesDbContext _context;
         private readonly IProductService _productService;
 
 
@@ -30,32 +30,32 @@ namespace SalesAPI.Persistence.Data
                 await _productService.CreateAsync(new ProductWriteDto { Name = "Espaguete", Price = 4.00 });//).Wait();
             }
 
-            if (!_context.EmployeePositions.Any())
-            {
-                _context.EmployeePositions.AddRange(
-                    new EmployeePosition { Name = "Manager" },
-                    new EmployeePosition { Name = "Seller" },
-                    new EmployeePosition { Name = "Trainee" },
-                    new EmployeePosition { Name = "Slave" }
-                    );
+            //if (!_context.EmployeeRoles.Any())
+            //{
+            //    _context.EmployeeRoles.AddRange(
+            //        new Role { Name = "Manager" },
+            //        new Role { Name = "Seller" },
+            //        new Role { Name = "Trainee" },
+            //        new Role { Name = "Slave" }
+            //        );
 
-                await _context.SaveChangesAsync();
-            }
+            //    await _context.SaveChangesAsync();
+            //}
 
             if (!_context.Employees.Any())
             {
                 _context.Employees.AddRange(
-                    new Employee { PositionId = 1, BaseSalary = 20000, Name = "Alex Almeida" },
-                    new Employee { PositionId = 2, BaseSalary = 2000, Name = "Bruno Bertoli" },
-                    new Employee { PositionId = 2, BaseSalary = 2000, Name = "Carlos Costa" },
-                    new Employee { PositionId = 2, BaseSalary = 2000, Name = "Diego Dias" },
-                    new Employee { PositionId = 3, BaseSalary = 500, Name = "Ester E." },
-                    new Employee { PositionId = 3, BaseSalary = 500, Name = "Fernando Franco" },
-                    new Employee { PositionId = 3, BaseSalary = 500, Name = "Gustavo Gusmão" },
-                    new Employee { PositionId = 4, BaseSalary = 0, Name = "Escravo 1" },
-                    new Employee { PositionId = 4, BaseSalary = 0, Name = "Escravo 2" },
-                    new Employee { PositionId = 4, BaseSalary = 0, Name = "Escravo 3" },
-                    new Employee { PositionId = 4, BaseSalary = 0, Name = "Escravo 4" }
+                    new Employee { BaseSalary = 20000, Name = "Alex Almeida" },
+                    new Employee { BaseSalary = 2000, Name = "Bruno Bertoli" },
+                    new Employee { BaseSalary = 2000, Name = "Carlos Costa" },
+                    new Employee { BaseSalary = 2000, Name = "Diego Dias" },
+                    new Employee { BaseSalary = 500, Name = "Ester E." },
+                    new Employee { BaseSalary = 500, Name = "Fernando Franco" },
+                    new Employee { BaseSalary = 500, Name = "Gustavo Gusmão" },
+                    new Employee { BaseSalary = 0, Name = "Escravo 1" },
+                    new Employee { BaseSalary = 0, Name = "Escravo 2" },
+                    new Employee { BaseSalary = 0, Name = "Escravo 3" },
+                    new Employee { BaseSalary = 0, Name = "Escravo 4" }
                 );
 
                 await _context.SaveChangesAsync();

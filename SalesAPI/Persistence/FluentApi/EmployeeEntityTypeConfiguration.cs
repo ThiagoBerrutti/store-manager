@@ -8,10 +8,10 @@ namespace SalesAPI.Persistence.FluentApi
     {
         public void Configure(EntityTypeBuilder<Employee> builder)
         {
-            builder
-                .HasOne(e => e.Position)
-                .WithMany(p => p.Employees)
-                .OnDelete(DeleteBehavior.SetNull);
+            //builder
+            //    .HasOne(e => e.Role)
+            //    .WithMany(p => p.Employees)
+            //    .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

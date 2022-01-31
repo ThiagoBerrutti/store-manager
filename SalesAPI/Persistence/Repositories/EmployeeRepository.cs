@@ -25,14 +25,13 @@ namespace SalesAPI.Persistence.Repositories
         public async Task<IEnumerable<Employee>> GetAllAsync()
         {
             return await _context.Employees
-                .Include(e => e.Position)
                 .ToListAsync();
         }
 
         public async Task<IEnumerable<Employee>> GetAllWhereAsync(Expression<Func<Employee, bool>> predicate)
         {
             return await _context.Employees
-                .Include(e => e.Position)
+                //.Include(e => e.Role)
                 .Where(predicate)
                 .ToListAsync();
         }
@@ -40,7 +39,7 @@ namespace SalesAPI.Persistence.Repositories
         public async Task<Employee> GetByIdAsync(int id)
         {
             return await _context.Employees
-                .Include(e => e.Position)
+                //.Include(e => e.Role)
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
 

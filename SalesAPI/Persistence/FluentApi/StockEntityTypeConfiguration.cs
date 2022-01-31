@@ -8,11 +8,11 @@ namespace SalesAPI.Persistence.FluentApi
     {
         public void Configure(EntityTypeBuilder<ProductStock> builder)
         {
-            builder
-                .HasOne(s => s.Product)
-                .WithOne(p => p.ProductStock)
-                .HasForeignKey<ProductStock>(p => p.ProductId)
-                .OnDelete(DeleteBehavior.Cascade);
+            //builder
+            //    .HasOne(s => s.Product)
+            //    .WithOne(p => p.ProductStock)
+            //    .HasForeignKey<ProductStock>(p => p.ProductId)
+            //    .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

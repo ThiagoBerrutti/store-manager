@@ -1,8 +1,7 @@
 ﻿namespace SalesAPI.Dtos
 {
-    public class EmployeePositionReadDto
+    public class RoleWriteDto
     {
-        public int Id { get; set; }
         public string Name { get; set; }
     }
 }

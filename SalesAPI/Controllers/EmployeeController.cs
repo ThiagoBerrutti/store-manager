@@ -40,9 +40,9 @@ namespace SalesAPI.Controllers
         }
 
         [HttpGet("search")]
-        public async Task<ActionResult<IEnumerable<EmployeeReadDto>>> Search(int positionId = 0, string name = "")
+        public async Task<ActionResult<IEnumerable<EmployeeReadDto>>> Search(string name = "")
         {
-            var employees = await _employeeService.SearchAsync(name, positionId);
+            var employees = await _employeeService.SearchAsync(name);
             return Ok(employees);
         }
         

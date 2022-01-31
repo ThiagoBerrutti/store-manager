@@ -1,12 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using SalesAPI.Models;
 
 namespace SalesAPI.Persistence
 {
-    public class SalesDbContext : DbContext
+    public class SalesDbContext : IdentityDbContext<User, Role,int,IdentityUserClaim<int>, 
+                                    UserRole, IdentityUserLogin<int>, IdentityRoleClaim<int>, 
+                                    IdentityUserToken<int>>
     {
-        //    private StockSeed stockSeed = new StockSeed();
-        //private ProductSeed productSeed = new ProductSeed();
         public SalesDbContext()
         {
         }
@@ -16,7 +18,7 @@ namespace SalesAPI.Persistence
         }
 
         public DbSet<Employee> Employees { get; set; }
-        public DbSet<EmployeePosition> EmployeePositions { get; set; }
+        //public DbSet<Role> EmployeeRoles { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<ProductStock> ProductStocks { get; set; }
 
@@ -24,7 +26,46 @@ namespace SalesAPI.Persistence
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.ApplyConfigurationsFromAssembly(typeof(SalesDbContext).Assembly);
+            modelBuilder.Entity<UserRole>(userRole =>
+            {
+                userRole.HasKey(ur => new { ur.UserId, ur.RoleId });
+
+                userRole
+                    .HasOne(ur => ur.User)
+                    .WithMany(u => u.UserRoles)
+                    .HasForeignKey(ur => ur.UserId)
+                    .IsRequired();
+
+                userRole
+                    .HasOne(ur => ur.Role)
+                    .WithMany(r => r.UserRoles)
+                    .HasForeignKey(ur => ur.RoleId)
+                    .IsRequired();
+            });
+
+            //modelBuilder.Entity<User>(user =>
+            //{
+            //    user.HasMany(u => u.Roles)
+                
+            //})
+
+            modelBuilder.Entity<ProductStock>(stock =>
+            {
+                stock
+                    .HasOne(s => s.Product)                    
+                    .WithOne(p => p.ProductStock)                    
+                    .HasForeignKey<ProductStock>(p => p.ProductId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<Product>(product =>
+            {
+                product
+                    .HasOne(p => p.ProductStock)
+                    .WithOne(ps => ps.Product);
+            });
+
+            //modelBuilder.ApplyConfigurationsFromAssembly(typeof(SalesDbContext).Assembly);
         }
     }
 }

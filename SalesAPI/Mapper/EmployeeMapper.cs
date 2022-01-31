@@ -12,7 +12,6 @@ namespace SalesAPI.Mapper
             {
                 Name = dto.Name,
                 BaseSalary = dto.BaseSalary,
-                PositionId = dto.PositionId
             };
         }
 
@@ -20,13 +19,12 @@ namespace SalesAPI.Mapper
         {
             mapInto.Name = dto.Name;
             mapInto.BaseSalary = dto.BaseSalary;
-            mapInto.PositionId = dto.PositionId;
 
             return new Employee
             {
                 Name = dto.Name,
                 BaseSalary = dto.BaseSalary,
-                PositionId = dto.PositionId
+                
             };
         }
 
@@ -50,9 +48,7 @@ namespace SalesAPI.Mapper
             {
                 Id = employee.Id,
                 Name = employee.Name,
-                BaseSalary = employee.BaseSalary,
-                PositionId = employee.PositionId,
-                Position = employee.Position?.Name
+                BaseSalary = employee.BaseSalary
             };
         }
     }

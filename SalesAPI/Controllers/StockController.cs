@@ -12,13 +12,11 @@ namespace SalesAPI.Controllers
     [Route("api/v1/stock")]
     public class ProductStockController : Controller
     {
-        private IStockService _stockService;
-        private readonly StockSeed _seed;
+        private readonly IStockService _stockService;
 
-        public ProductStockController(IStockService stockService, StockSeed seed)
+        public ProductStockController(IStockService stockService)
         {
             _stockService = stockService;
-            _seed = seed;
         }
 
         [HttpGet]
@@ -63,13 +61,6 @@ namespace SalesAPI.Controllers
         {
             await _stockService.Delete(id);
             return Ok();
-        }
-        
-        [HttpPost("seed")]
-        public IActionResult Seed()
-        {
-            _seed.Seed();
-            return Ok("Stock Seeded");
         }
     }
 }

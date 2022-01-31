@@ -6,7 +6,7 @@ namespace SalesAPI.Persistence.Repositories
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private SalesDbContext _context;
+        private readonly SalesDbContext _context;
 
         public UnitOfWork(SalesDbContext context)
         {
@@ -20,7 +20,7 @@ namespace SalesAPI.Persistence.Repositories
                 var result = await _context.SaveChangesAsync();
                 return result;
             }
-            catch (Exception e)
+            catch 
             {
                 throw;
             }

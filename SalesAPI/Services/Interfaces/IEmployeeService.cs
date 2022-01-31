@@ -14,13 +14,13 @@ namespace SalesAPI.Services
 
         public Task<IEnumerable<EmployeeReadDto>> GetByNameAsync(string name);
 
-        public Task<IEnumerable<EmployeeReadDto>> GetByPositionId(int employeePositionId);
+        //public Task<IEnumerable<EmployeeReadDto>> GetByRoleId(int roleId);
 
         public Task UpdateAsync(int id, EmployeeWriteDto employeeUpdate);
 
         public Task DeleteAsync(int id);
 
-        public Task<IEnumerable<EmployeeReadDto>> SearchAsync(string name = "", int employeePositionId = 0);
+        public Task<IEnumerable<EmployeeReadDto>> SearchAsync(string name = "");
 
     }
 }

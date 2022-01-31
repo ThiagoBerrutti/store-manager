@@ -13,7 +13,7 @@ namespace SalesAPI.Filters
         {
 
             var exception = context.Exception;
-            var tName = exception.GetType().Name;
+            var tName = exception.GetType().Name + " :\n";
 
 
             switch (exception)
@@ -47,7 +47,7 @@ namespace SalesAPI.Filters
 
                 case EntityNotFoundException entityNotFoundException:
                     {
-                        string json = tName + " : " + JsonConvert.SerializeObject(entityNotFoundException.Message);
+                        string json = tName + JsonConvert.SerializeObject(entityNotFoundException.Message);
 
                         context.Result = new NotFoundObjectResult(json);
                         context.HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
@@ -56,7 +56,7 @@ namespace SalesAPI.Filters
 
                 case InfrastructureException infraException:
                     {
-                        string json = tName + " : " + JsonConvert.SerializeObject(infraException.Message);
+                        string json = tName + JsonConvert.SerializeObject(infraException.Message);
 
                         context.Result = new BadRequestObjectResult(json);
                         context.HttpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
@@ -65,7 +65,9 @@ namespace SalesAPI.Filters
 
                 default:
                     {
-                        string json = tName + JsonConvert.SerializeObject(exception.Message);
+                        string json = tName + JsonConvert.SerializeObject(exception.Message) + 
+                            "\nInner Exception : \n" + exception.InnerException?.Message +
+                            "\nStack Trace : \n"+exception.StackTrace;
 
                         context.Result = new BadRequestObjectResult(json);
                         context.HttpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;

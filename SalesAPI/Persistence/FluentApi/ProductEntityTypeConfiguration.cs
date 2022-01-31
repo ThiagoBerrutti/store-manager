@@ -8,10 +8,10 @@ namespace SalesAPI.Persistence.FluentApi
     {
         public void Configure(EntityTypeBuilder<Product> builder)
         {
-            builder
-                .HasOne(p => p.ProductStock)
-                .WithOne(ps => ps.Product)
-                .OnDelete(DeleteBehavior.SetNull);
+            //builder
+            //    .HasOne(p => p.ProductStock)
+            //    .WithOne(ps => ps.Product)
+            //    .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

@@ -1,23 +1,23 @@
-﻿using SalesAPI.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
+﻿//using SalesAPI.Models;
+//using System;
+//using System.Collections.Generic;
+//using System.Linq.Expressions;
+//using System.Threading.Tasks;
 
-namespace SalesAPI.Persistence.Repositories
-{
-    public interface IEmployeePositionRepository
-    {
-        public Task<IEnumerable<EmployeePosition>> GetAllAsync();
+//namespace SalesAPI.Persistence.Repositories
+//{
+//    public interface IRoleRepository
+//    {
+//        public Task<IEnumerable<Role>> GetAllAsync();
 
-        public Task<EmployeePosition> GetByIdAsync(int id);
+//        public Task<Role> GetByIdAsync(int id);
 
-        public Task<IEnumerable<EmployeePosition>> GetAllWhereAsync(Expression<Func<EmployeePosition, bool>> predicate);
+//        public Task<IEnumerable<Role>> GetAllWhereAsync(Expression<Func<Role, bool>> predicate);
 
-        public void Add(EmployeePosition employeePosition);
+//        public void Add(Role role);
 
-        public void UpdateAsync(EmployeePosition employeePosition);
+//        public void UpdateAsync(Role role);
 
-        public void Delete(EmployeePosition employeePosition);
-    }
-}
+//        public void Delete(Role role);
+//    }
+//}

@@ -4,31 +4,31 @@ using System.Collections.Generic;
 
 namespace SalesAPI.Mapper
 {
-    public class EmployeePositionMapper
+    public class RoleMapper
     {
-        public EmployeePosition MapDtoToEntity(EmployeePositionWriteDto dto)
+        public Role MapDtoToEntity(RoleWriteDto dto)
         {
-            return new EmployeePosition
+            return new Role
             {
                 Name = dto.Name,
             };
         }
 
-        public EmployeePosition MapDtoToEntity(EmployeePositionWriteDto dto, EmployeePosition mapInto)
+        public Role MapDtoToEntity(RoleWriteDto dto, Role mapInto)
         {
             mapInto.Name = dto.Name;           
 
-            return new EmployeePosition
+            return new Role
             {
                 Name = dto.Name
             };
         }
 
-        public IEnumerable<EmployeePositionReadDto> MapEntityToDtoList(IEnumerable<EmployeePosition> employeeList)
+        public IEnumerable<RoleReadDto> MapEntityToDtoList(IEnumerable<Role> employeeList)
         {
-            var result = new List<EmployeePositionReadDto>();
+            var result = new List<RoleReadDto>();
 
-            foreach (EmployeePosition e in employeeList)
+            foreach (Role e in employeeList)
             {
                 var dto = MapEntityToDto(e);
                 result.Add(dto);
@@ -37,9 +37,9 @@ namespace SalesAPI.Mapper
             return result;
         }
 
-        public EmployeePositionReadDto MapEntityToDto(EmployeePosition employee)
+        public RoleReadDto MapEntityToDto(Role employee)
         {
-            return new EmployeePositionReadDto
+            return new RoleReadDto
             {
                 Id = employee.Id,
                 Name = employee.Name
