@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Newtonsoft.Json;
 using SalesAPI.Exceptions;
+using SalesAPI.Exceptions.Domain;
 //using System;
 using System.Net;
 
@@ -63,11 +65,35 @@ namespace SalesAPI.Filters
                         break;
                     }
 
+                case DomainNotFoundException domainNotFoundException:
+                    {
+                        string json = tName + JsonConvert.SerializeObject(domainNotFoundException.Message);
+
+                        context.Result = new BadRequestObjectResult(json);
+                        context.HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                        break;
+                    }
+
+                case IdentityException identityException:
+                    {
+                        string errors = "";
+                        foreach (IdentityError e in identityException.Errors)
+                        {
+                            errors += e.ToString()+"\n";
+                        }
+                        string json = tName + JsonConvert.SerializeObject(identityException.Message) + "\n" +
+                            JsonConvert.SerializeObject(identityException.Errors);
+
+                        context.Result = new BadRequestObjectResult(json);
+                        context.HttpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                        break;
+                    }
+
                 default:
                     {
-                        string json = tName + JsonConvert.SerializeObject(exception.Message) + 
+                        string json = tName + JsonConvert.SerializeObject(exception.Message) +
                             "\nInner Exception : \n" + exception.InnerException?.Message +
-                            "\nStack Trace : \n"+exception.StackTrace;
+                            "\nStack Trace : \n" + exception.StackTrace;
 
                         context.Result = new BadRequestObjectResult(json);
                         context.HttpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;

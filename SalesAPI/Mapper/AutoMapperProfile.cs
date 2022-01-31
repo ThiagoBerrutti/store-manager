@@ -10,7 +10,9 @@ namespace SalesAPI.Mapper
         {
             CreateMap<UserLoginDto, User>().ReverseMap();
             CreateMap<UserRegisterDto, User>().ReverseMap();
-            CreateMap<UserViewModel, User>().ReverseMap();
+            CreateMap<User, UserViewModel>()
+                .ForMember(dto => dto.Roles, o => o.MapFrom(src => src.Roles));
+                
 
             CreateMap<Employee, EmployeeReadDto>().ReverseMap();
             CreateMap<Employee, EmployeeWriteDto>().ReverseMap();

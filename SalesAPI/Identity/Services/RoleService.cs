@@ -26,8 +26,8 @@ namespace SalesAPI.Services
             var role = _mapper.Map<Role>(dto);
             var result = await _roleManager.CreateAsync(role);
             if (!result.Succeeded)
-            {
-                throw new RoleException("Role couldn't be created", result.Errors);
+            {                
+                throw new IdentityException("Role couldn't be created", result.Errors);
             }
 
             var appRole = await _roleManager.FindByNameAsync(dto.Name);
@@ -39,17 +39,21 @@ namespace SalesAPI.Services
         public async Task DeleteAsync(int id)
         {
             var role = await _roleManager.FindByIdAsync(id.ToString());
+            if (role == null)
+            {
+                throw new DomainNotFoundException($"Role [Id = {id}] not found.");
+            }
 
             var result = await _roleManager.DeleteAsync(role);
             if (!result.Succeeded)
             {
-                throw new RoleException("Role couldn't be deleted", result.Errors);
+                throw new IdentityException("Role couldn't be deleted", result.Errors);
             }
         }
 
         public async Task<IEnumerable<RoleReadDto>> GetAllAsync()
         {
-            var roles = await _roleManager.Roles.Include(r => r.UserRoles).ToListAsync();
+            var roles = await _roleManager.Roles.ToListAsync();
 
             var rolesDto = _mapper.Map<IEnumerable<RoleReadDto>>(roles);
 

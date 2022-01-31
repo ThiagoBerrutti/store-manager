@@ -65,7 +65,8 @@ namespace SalesAPI
                 .AddRoleManager<RoleManager<Role>>()
                 .AddSignInManager<SignInManager<User>>();
 
-            services.AddMvc(options =>
+            services.AddMvc(
+            options =>
             {
                 var policy = new AuthorizationPolicyBuilder()
                     .RequireAuthenticatedUser()
@@ -80,7 +81,8 @@ namespace SalesAPI
             var key = Encoding.ASCII.GetBytes(appSettings.Secret);
 
             services.AddAuthentication(options =>
-            {
+            {                
+                
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
@@ -158,6 +160,7 @@ namespace SalesAPI
                 options.Filters.Add(typeof(ExceptionFilter));
             });
 
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -169,6 +172,7 @@ namespace SalesAPI
                 IdentityModelEventSource.ShowPII = true;
                 Task.Run(async () => await pSeed.Seed()).Wait();
             }
+            app.UseAuthentication();
 
             app.UseSwagger();
 
@@ -185,7 +189,6 @@ namespace SalesAPI
             app.UseRouting();
 
             app.UseAuthorization();
-            app.UseAuthentication();
 
             app.UseEndpoints(endpoints =>
             {

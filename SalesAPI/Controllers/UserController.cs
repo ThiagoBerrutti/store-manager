@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace SalesAPI.Controllers
 {
     [ApiController]
-    [Route("api/v1/")]
+    [Route("api/v1/[controller]")]
     [AllowAnonymous]
     public class UserController : ControllerBase
     {
@@ -54,12 +54,29 @@ namespace SalesAPI.Controllers
             return Ok(new { User = result.User, Token = result.Token });
         }
 
-        [HttpGet(Name = "GetUserByUserName")]
+        [HttpGet("{userName}", Name = "GetUserByUserName")]
         public async Task<IActionResult> GetUserByUserName(string userName)
         {
             var result = await _userService.GetUserByUserName(userName);
 
             return Ok(result);
         }
+
+        [HttpPost("addToRole")]
+        public async Task<IActionResult> AddToRole(string userName, string role)
+        {
+            var user = await _userService.AddToRole(userName, role);
+
+            return Ok();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var result = await _userService.GetAllAsync();
+            return Ok(result);
+        }
+
+
     }
 }

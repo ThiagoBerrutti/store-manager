@@ -5,8 +5,8 @@ using SalesAPI.Models;
 
 namespace SalesAPI.Persistence
 {
-    public class SalesDbContext : IdentityDbContext<User, Role,int,IdentityUserClaim<int>, 
-                                    UserRole, IdentityUserLogin<int>, IdentityRoleClaim<int>, 
+    public class SalesDbContext : IdentityDbContext<User, Role, int, IdentityUserClaim<int>,
+                                    UserRole, IdentityUserLogin<int>, IdentityRoleClaim<int>,
                                     IdentityUserToken<int>>
     {
         public SalesDbContext()
@@ -43,17 +43,55 @@ namespace SalesAPI.Persistence
                     .IsRequired();
             });
 
-            //modelBuilder.Entity<User>(user =>
-            //{
-            //    user.HasMany(u => u.Roles)
-                
-            //})
+            modelBuilder.Entity<User>(user =>
+            {
+                user
+                    .HasMany(u => u.Roles)
+                    .WithMany(r => r.Users)
+                    .UsingEntity<UserRole>(
+                        userRole => userRole
+                                .HasOne(ur => ur.Role)
+                                .WithMany(r => r.UserRoles)
+                                .HasForeignKey(ur => ur.RoleId)
+                                .IsRequired(),
+
+                        userRole => userRole
+                                .HasOne(ur => ur.User)
+                                .WithMany(u => u.UserRoles)
+                                .HasForeignKey(ur => ur.UserId)
+                                .IsRequired(),
+
+                        userRole => userRole.HasKey(ur => new { ur.UserId, ur.RoleId })
+                    );
+                });
+
+            modelBuilder.Entity<Role>(role =>
+            {
+                role
+                    .HasMany(r => r.Users)
+                    .WithMany(u => u.Roles)
+                    .UsingEntity<UserRole>(
+                            userRole => userRole
+                                    .HasOne(ur => ur.User)
+                                    .WithMany(u => u.UserRoles)
+                                    .HasForeignKey(ur => ur.UserId)
+                                    .IsRequired(),
+
+                            userRole => userRole
+                                    .HasOne(ur => ur.Role)
+                                    .WithMany(r => r.UserRoles)
+                                    .HasForeignKey(ur => ur.RoleId)
+                                    .IsRequired(),
+
+                            userRole => userRole.HasKey(ur => new { ur.UserId, ur.RoleId })
+                        );
+            });
 
             modelBuilder.Entity<ProductStock>(stock =>
             {
                 stock
-                    .HasOne(s => s.Product)                    
-                    .WithOne(p => p.ProductStock)                    
+                    .HasOne(s => s.Product)
+                    .WithOne(p => p.ProductStock)
                     .HasForeignKey<ProductStock>(p => p.ProductId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
