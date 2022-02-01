@@ -1,11 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using SalesAPI.Dtos;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace SalesAPI.Models
+namespace SalesAPI.Identity
 {
     public class AuthResponse<T> where T : class
     {
@@ -30,7 +26,6 @@ namespace SalesAPI.Models
                 return false;
             }
         }
-        
 
         public AuthResponse()
         {
@@ -49,7 +44,5 @@ namespace SalesAPI.Models
             Token = token;
             Result = result;
         }
-
-        
     }
 }

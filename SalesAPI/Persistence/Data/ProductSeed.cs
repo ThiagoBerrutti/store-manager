@@ -22,26 +22,13 @@ namespace SalesAPI.Persistence.Data
         {
             if (!_context.Products.Any())
             {
-
                 await _productService.CreateAsync(new ProductWriteDto { Name = "Abacate", Price = 9.99 });//).Wait();
                 await _productService.CreateAsync(new ProductWriteDto { Name = "Berinjela", Price = 3.00 });//).Wait();
                 await _productService.CreateAsync(new ProductWriteDto { Name = "Coco", Price = 5.50 });//).Wait();
                 await _productService.CreateAsync(new ProductWriteDto { Name = "Danoninho", Price = 6.00 });//).Wait();
                 await _productService.CreateAsync(new ProductWriteDto { Name = "Espaguete", Price = 4.00 });//).Wait();
             }
-
-            //if (!_context.EmployeeRoles.Any())
-            //{
-            //    _context.EmployeeRoles.AddRange(
-            //        new Role { Name = "Manager" },
-            //        new Role { Name = "Seller" },
-            //        new Role { Name = "Trainee" },
-            //        new Role { Name = "Slave" }
-            //        );
-
-            //    await _context.SaveChangesAsync();
-            //}
-
+            
             if (!_context.Employees.Any())
             {
                 _context.Employees.AddRange(

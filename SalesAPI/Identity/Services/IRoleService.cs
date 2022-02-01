@@ -1,9 +1,8 @@
 ﻿using SalesAPI.Dtos;
-using SalesAPI.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace SalesAPI.Services
+namespace SalesAPI.Identity.Services
 {
     public interface IRoleService
     {
@@ -16,6 +15,5 @@ namespace SalesAPI.Services
         public Task<RoleReadDto> GetByIdAsync(int id);
 
         public Task<RoleReadDto> GetByName(string name);
-       
     }
 }

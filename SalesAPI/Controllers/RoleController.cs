@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SalesAPI.Dtos;
+using SalesAPI.Identity;
+using SalesAPI.Identity.Services;
 using SalesAPI.Models;
 using SalesAPI.Services;
 using System.Collections.Generic;
@@ -18,6 +21,7 @@ namespace SalesAPI.Controllers
             _roleService = roleService;
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPost]
         public async Task<ActionResult> CreateAsync(RoleWriteDto roleDto)
         {
@@ -26,6 +30,7 @@ namespace SalesAPI.Controllers
             return CreatedAtRoute(nameof(GetByIdAsync), new { roleOnRepo.Id }, roleOnRepo);
         }
 
+        [Authorize(Roles = "admin,manager")]
         [HttpGet("{id:int}", Name = "GetByIdAsync")]
         public async Task<ActionResult<Role>> GetByIdAsync(int id)
         {
@@ -33,6 +38,7 @@ namespace SalesAPI.Controllers
             return Ok(employee);
         }
 
+        [Authorize(Roles = "admin,manager")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<RoleReadDto>>> GetAll()
         {
@@ -40,6 +46,7 @@ namespace SalesAPI.Controllers
             return Ok(roles);
         }
 
+        [Authorize(Roles = "admin,manager")]
         [HttpGet("search")]
         public async Task<ActionResult<IEnumerable<RoleReadDto>>> Search(string name)
         {
@@ -47,6 +54,7 @@ namespace SalesAPI.Controllers
             return Ok(employees);
         }
 
+        [Authorize(Roles = "admin")]
         [HttpDelete]
         public async Task<IActionResult> Delete(int ide)
         {

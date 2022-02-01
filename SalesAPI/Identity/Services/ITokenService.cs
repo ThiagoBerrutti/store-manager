@@ -1,7 +1,6 @@
-﻿using SalesAPI.Models;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
-namespace SalesAPI.Services
+namespace SalesAPI.Identity.Services
 {
     public interface ITokenService
     {

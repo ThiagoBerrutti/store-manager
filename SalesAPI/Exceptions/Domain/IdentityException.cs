@@ -6,7 +6,7 @@ namespace SalesAPI.Exceptions.Domain
 {
     public class IdentityException : Exception
     {
-        public IEnumerable<IdentityError> Errors { get; set; }
+        public IEnumerable<IdentityError> Errors { get; set; } = new List<IdentityError>();
 
         public IdentityException(string message) : base(message)
         {

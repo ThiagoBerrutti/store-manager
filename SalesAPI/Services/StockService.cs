@@ -1,4 +1,5 @@
-﻿using SalesAPI.Dtos;
+﻿using AutoMapper;
+using SalesAPI.Dtos;
 using SalesAPI.Exceptions;
 using SalesAPI.Mapper;
 using SalesAPI.Models;
@@ -10,15 +11,15 @@ namespace SalesAPI.Services
 {
     public class StockService : IStockService
     {
-        private readonly StockRepository _productStockRepository;
-        private readonly IStockMapper _stockMapper;
+        private readonly ProductStockRepository _productStockRepository;
+        private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
 
-        public StockService(StockRepository productStockRepository,
-                            IStockMapper stockMapper, IUnitOfWork unitOfWork)
+        public StockService(ProductStockRepository productStockRepository, IMapper mapper,
+                            IUnitOfWork unitOfWork)
         {
             _productStockRepository = productStockRepository;
-            _stockMapper = stockMapper;
+            _mapper = mapper;
             _unitOfWork = unitOfWork;
         }
 
@@ -87,7 +88,7 @@ namespace SalesAPI.Services
         public async Task Update(int productId, StockWriteDto dto)
         { 
             var psOnRepo = await _productStockRepository.GetByProductIdAsync(productId);
-            _stockMapper.MapDtoToEntity(dto, psOnRepo);
+            _mapper.Map(dto, psOnRepo);
 
             _productStockRepository.Update(psOnRepo);
 
@@ -103,7 +104,7 @@ namespace SalesAPI.Services
                 throw new EntityNotFoundException($"No stock found for [productId = {productId}]");
             }
 
-            var dto = _stockMapper.MapEntityToDto(productStock);
+            var dto = _mapper.Map<StockReadDto>(productStock);
 
             return dto;
         }
@@ -111,7 +112,7 @@ namespace SalesAPI.Services
         public async Task<IEnumerable<StockReadDto>> GetAllAsync()
         {
             var stockList = await _productStockRepository.GetAll();
-            var dtoList = _stockMapper.MapEntityToDtoList(stockList);
+            var dtoList = _mapper.Map<IEnumerable<ProductStock>, IEnumerable<StockReadDto>>(stockList);
 
             return dtoList;
         }
@@ -128,20 +129,5 @@ namespace SalesAPI.Services
 
             await _unitOfWork.CompleteAsync();
         }
-
-        //public async Task Delete(int id) 
-        //{
-        //    var stockOnRepo = await _productStockRepository.GetByIdAsync(id);
-        //    if (stockOnRepo == null)
-        //    {
-        //        throw new EntityNotFoundException($"No stock [Id = {id}] found.");
-        //    }
-
-        //    _productStockRepository.Delete(stockOnRepo);
-
-        //    await _unitOfWork.CompleteAsync();
-        //}
-
-        
     }
 }

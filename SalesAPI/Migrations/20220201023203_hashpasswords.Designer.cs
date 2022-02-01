@@ -10,8 +10,8 @@ using SalesAPI.Persistence;
 namespace SalesAPI.Migrations
 {
     [DbContext(typeof(SalesDbContext))]
-    [Migration("20220131101020_afafa")]
-    partial class afafa
+    [Migration("20220201023203_hashpasswords")]
+    partial class hashpasswords
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -107,64 +107,7 @@ namespace SalesAPI.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
-            modelBuilder.Entity("SalesAPI.Models.Employee", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<decimal>("BaseSalary")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Employees");
-                });
-
-            modelBuilder.Entity("SalesAPI.Models.Product", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<double>("Price")
-                        .HasColumnType("float");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Products");
-                });
-
-            modelBuilder.Entity("SalesAPI.Models.ProductStock", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("Count")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId")
-                        .IsUnique();
-
-                    b.ToTable("ProductStocks");
-                });
-
-            modelBuilder.Entity("SalesAPI.Models.Role", b =>
+            modelBuilder.Entity("SalesAPI.Identity.Role", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -191,9 +134,39 @@ namespace SalesAPI.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            ConcurrencyStamp = "9a68f348-e32f-4fcc-9b98-a1df147c3d8e",
+                            Name = "Administrator",
+                            NormalizedName = "ADMINISTRATOR"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            ConcurrencyStamp = "cca80eea-3483-44d6-adb3-bb069f048f42",
+                            Name = "Manager",
+                            NormalizedName = "MANAGER"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            ConcurrencyStamp = "555aa4aa-ac09-420c-a4ef-0fd2ab0bdf76",
+                            Name = "Stock",
+                            NormalizedName = "STOCK"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            ConcurrencyStamp = "cd6a95aa-5dc1-4fe3-9701-7da29c47e2f2",
+                            Name = "Seller",
+                            NormalizedName = "SELLER"
+                        });
                 });
 
-            modelBuilder.Entity("SalesAPI.Models.User", b =>
+            modelBuilder.Entity("SalesAPI.Identity.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -258,9 +231,63 @@ namespace SalesAPI.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "14d2569d-5f24-428b-bf39-f25cbfb3628e",
+                            EmailConfirmed = false,
+                            LockoutEnabled = false,
+                            NormalizedUserName = "ADMIN",
+                            PasswordHash = "AQAAAAEAACcQAAAAEKaqlFrEzt69TKeaa6WZunb/lSL8Q+gVRTiWhR+z5LpZq8lg0jHA6+DqKXkDm2hX2w==",
+                            PhoneNumberConfirmed = false,
+                            TwoFactorEnabled = false,
+                            UserName = "admin"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "addace34-7952-479f-b730-2ae03ab82edb",
+                            EmailConfirmed = false,
+                            LockoutEnabled = false,
+                            NormalizedUserName = "MANAGER",
+                            PasswordHash = "AQAAAAEAACcQAAAAEBkqVWhOW2VSfUR+DWdXiR+ICEO4Ts/niSQ1STRQxqf4Q9TPyy5vvM822py01OKjIw==",
+                            PhoneNumberConfirmed = false,
+                            TwoFactorEnabled = false,
+                            UserName = "manager"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "961e0065-1c45-487a-8db1-a32a6a809772",
+                            EmailConfirmed = false,
+                            LockoutEnabled = false,
+                            NormalizedUserName = "STOCK",
+                            PasswordHash = "AQAAAAEAACcQAAAAEB7lTMcav5N1nSzo1n9UMCYWlO+UUI5Y1H2YwPoHiAQR9qXAZf29i2uJ65dXlD8wDQ==",
+                            PhoneNumberConfirmed = false,
+                            TwoFactorEnabled = false,
+                            UserName = "stock"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "fe8fa611-8dc6-45d1-917b-1815228e4e6b",
+                            EmailConfirmed = false,
+                            LockoutEnabled = false,
+                            NormalizedUserName = "SELLER",
+                            PasswordHash = "AQAAAAEAACcQAAAAEFrSqO9OpsKM8NRoK6FOmmLgdMod1FcBO+2chWr6LqGoYQzgIed8ByWxwyBokRWXdQ==",
+                            PhoneNumberConfirmed = false,
+                            TwoFactorEnabled = false,
+                            UserName = "seller"
+                        });
                 });
 
-            modelBuilder.Entity("SalesAPI.Models.UserRole", b =>
+            modelBuilder.Entity("SalesAPI.Identity.UserRole", b =>
                 {
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -273,11 +300,90 @@ namespace SalesAPI.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetUserRoles");
+
+                    b.HasData(
+                        new
+                        {
+                            UserId = 1,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            UserId = 2,
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            UserId = 3,
+                            RoleId = 3
+                        },
+                        new
+                        {
+                            UserId = 4,
+                            RoleId = 4
+                        });
+                });
+
+            modelBuilder.Entity("SalesAPI.Models.Employee", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<decimal>("BaseSalary")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Employees");
+                });
+
+            modelBuilder.Entity("SalesAPI.Models.Product", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("Price")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("SalesAPI.Models.ProductStock", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("Count")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId")
+                        .IsUnique();
+
+                    b.ToTable("ProductStocks");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
-                    b.HasOne("SalesAPI.Models.Role", null)
+                    b.HasOne("SalesAPI.Identity.Role", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -286,7 +392,7 @@ namespace SalesAPI.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
                 {
-                    b.HasOne("SalesAPI.Models.User", null)
+                    b.HasOne("SalesAPI.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -295,7 +401,7 @@ namespace SalesAPI.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
                 {
-                    b.HasOne("SalesAPI.Models.User", null)
+                    b.HasOne("SalesAPI.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -304,11 +410,30 @@ namespace SalesAPI.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
                 {
-                    b.HasOne("SalesAPI.Models.User", null)
+                    b.HasOne("SalesAPI.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("SalesAPI.Identity.UserRole", b =>
+                {
+                    b.HasOne("SalesAPI.Identity.Role", "Role")
+                        .WithMany("UserRoles")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SalesAPI.Identity.User", "User")
+                        .WithMany("UserRoles")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Role");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SalesAPI.Models.ProductStock", b =>
@@ -322,38 +447,19 @@ namespace SalesAPI.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("SalesAPI.Models.UserRole", b =>
+            modelBuilder.Entity("SalesAPI.Identity.Role", b =>
                 {
-                    b.HasOne("SalesAPI.Models.Role", "Role")
-                        .WithMany("UserRoles")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("UserRoles");
+                });
 
-                    b.HasOne("SalesAPI.Models.User", "User")
-                        .WithMany("UserRoles")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Role");
-
-                    b.Navigation("User");
+            modelBuilder.Entity("SalesAPI.Identity.User", b =>
+                {
+                    b.Navigation("UserRoles");
                 });
 
             modelBuilder.Entity("SalesAPI.Models.Product", b =>
                 {
                     b.Navigation("ProductStock");
-                });
-
-            modelBuilder.Entity("SalesAPI.Models.Role", b =>
-                {
-                    b.Navigation("UserRoles");
-                });
-
-            modelBuilder.Entity("SalesAPI.Models.User", b =>
-                {
-                    b.Navigation("UserRoles");
                 });
 #pragma warning restore 612, 618
         }

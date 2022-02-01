@@ -10,7 +10,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SalesAPI.Services
+namespace SalesAPI.Identity.Services
 {
     public class TokenService : ITokenService
     {

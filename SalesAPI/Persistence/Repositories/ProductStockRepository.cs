@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 
 namespace SalesAPI.Persistence.Repositories
 {
-    public class StockRepository : IStockRepository
+    public class ProductStockRepository : IProductStockRepository
     {
         private readonly SalesDbContext _context;
 
-        public StockRepository(SalesDbContext context)
+        public ProductStockRepository(SalesDbContext context)
         {
             _context = context;
         }

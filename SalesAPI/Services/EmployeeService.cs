@@ -1,4 +1,5 @@
-﻿using SalesAPI.Dtos;
+﻿using AutoMapper;
+using SalesAPI.Dtos;
 using SalesAPI.Exceptions;
 using SalesAPI.Mapper;
 using SalesAPI.Models;
@@ -14,17 +15,17 @@ namespace SalesAPI.Services
     public class EmployeeService : IEmployeeService
     {
         private readonly IEmployeeRepository _employeeRepository;
-        private readonly IEmployeeMapper _employeeMapper;
+        private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
 
         public EmployeeService(
             IEmployeeRepository employeeRepository,
-            IEmployeeMapper employeeMapper,
+            IMapper mapper,
             IUnitOfWork unitOfWork
             )
         {
             _employeeRepository = employeeRepository;
-            _employeeMapper = employeeMapper;
+            _mapper = mapper;
             _unitOfWork = unitOfWork;
         }
 
@@ -43,7 +44,7 @@ namespace SalesAPI.Services
         {
             //var roleOnRepo = await _roleService.GetByIdAsync(dto.RoleId); // throw if doesnt exist
 
-            var employee = _employeeMapper.MapDtoToEntity(dto);
+            var employee = _mapper.Map<Employee>(dto);
             _employeeRepository.CreateAsync(employee);
 
             await _unitOfWork.CompleteAsync();
@@ -52,7 +53,7 @@ namespace SalesAPI.Services
         public async Task<IEnumerable<EmployeeReadDto>> GetAllAsync()
         {
             var employeesOnRepo = await _employeeRepository.GetAllAsync();
-            var result = _employeeMapper.MapEntityToDtoList(employeesOnRepo);
+            var result = _mapper.Map<IEnumerable<Employee>, IEnumerable<EmployeeReadDto>>(employeesOnRepo);
 
             return result;
         }
@@ -70,7 +71,7 @@ namespace SalesAPI.Services
             //    employeesOnRepo = employeesOnRepo.Where(e => e.RoleId == roleId);
             //}
 
-            var result = _employeeMapper.MapEntityToDtoList(employeesOnRepo);
+            var result = _mapper.Map<IEnumerable<Employee>,IEnumerable<EmployeeReadDto>>(employeesOnRepo);
 
             return result;
         }
@@ -79,39 +80,24 @@ namespace SalesAPI.Services
         {
             var employeeOnRepo = await GetEntityByIdAsync(id);
 
-            var dto = _employeeMapper.MapEntityToDto(employeeOnRepo);
+            var dto = _mapper.Map<EmployeeReadDto>(employeeOnRepo);
             return dto;
         }
 
         public async Task<IEnumerable<EmployeeReadDto>> GetByNameAsync(string name)
         {
             var employees = await _employeeRepository.GetAllWhereAsync(e => e.Name.Contains(name));
-            var dtos = _employeeMapper.MapEntityToDtoList(employees);
+            var dtos = _mapper.Map<IEnumerable<EmployeeReadDto>>(employees);
 
             return dtos;
         }
-
-        //public async Task<IEnumerable<EmployeeReadDto>> GetByRoleId(int roleId)
-        //{
-        //    var employees = await _employeeRepository.GetAllWhereAsync(e => e.RoleId == roleId);
-        //    var dtos = _employeeMapper.MapEntityToDtoList(employees);
-
-        //    return dtos;
-        //}
-
-        //public async Task<IEnumerable<EmployeeReadDto>> GetAllWhere(int roleId)
-        //{
-        //    var employees = await _employeeRepository.GetAllWhereAsync(e => e.RoleId == roleId);
-        //    var dtos = _employeeMapper.MapEntityToDtoList(employees);
-
-        //    return dtos;
-        //}
+        
 
         public async Task UpdateAsync(int id, EmployeeWriteDto employeeUpdate)
         {
             var employeeOnRepo = await GetEntityByIdAsync(id);
 
-            _employeeMapper.MapDtoToEntity(employeeUpdate, employeeOnRepo);
+            _mapper.Map(employeeUpdate, employeeOnRepo);
             _employeeRepository.UpdateAsync(employeeOnRepo);
 
             await _unitOfWork.CompleteAsync();

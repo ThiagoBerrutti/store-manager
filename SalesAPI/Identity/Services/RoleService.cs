@@ -8,7 +8,7 @@ using SalesAPI.Persistence.Repositories;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace SalesAPI.Services
+namespace SalesAPI.Identity.Services
 {
     public class RoleService : IRoleService
     {

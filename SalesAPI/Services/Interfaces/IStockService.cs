@@ -7,8 +7,6 @@ namespace SalesAPI.Services
 {
     public interface IStockService
     {
-        //public Task CreateProductStock(int productId, int quantity);
-
         public ProductStock CreateProductStock(Product product, int startingAmount = 0);
 
         public Task<StockReadDto> GetByProductId(int productId);

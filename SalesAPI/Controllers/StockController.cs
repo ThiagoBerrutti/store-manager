@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SalesAPI.Dtos;
 using SalesAPI.Models;
 using SalesAPI.Persistence.Data;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace SalesAPI.Controllers
 {
+    [Authorize(Roles = "Administrator,Manager,Stock,Sales")]
     [ApiController]
     [Route("api/v1/stock")]
     public class ProductStockController : Controller
@@ -18,7 +20,7 @@ namespace SalesAPI.Controllers
         {
             _stockService = stockService;
         }
-
+        
         [HttpGet]
         public async Task<ActionResult<IEnumerable<StockReadDto>>> GetAll()
         {
@@ -32,7 +34,8 @@ namespace SalesAPI.Controllers
             var productStock = await _stockService.GetByProductId(productId);
             return Ok(productStock);
         }
-        
+
+        [Authorize(Roles = "Administrator,Manager")]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateStock(int id, [FromBody] StockWriteDto stockUpdate)
         {
@@ -41,6 +44,7 @@ namespace SalesAPI.Controllers
             return Ok();
         }
 
+        [Authorize(Roles = "Administrator,Manager,Stock")]
         [HttpPut("{id:int}/add")]
         public async Task<IActionResult> AddToStock(int id, int amount)
         {
@@ -48,18 +52,11 @@ namespace SalesAPI.Controllers
             return Ok();
         }
 
+
         [HttpPut("{id:int}/remove")]
         public async Task<IActionResult> RemoveFromStock(int id, int amount)
         {
             await _stockService.RemoveProductAmount(id, amount);
-            return Ok();
-        }
-
-
-        [HttpDelete("{id:int}")]
-        public async Task<IActionResult> Delete([FromRoute] int id)
-        {
-            await _stockService.Delete(id);
             return Ok();
         }
     }

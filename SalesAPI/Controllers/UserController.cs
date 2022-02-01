@@ -2,15 +2,14 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SalesAPI.Dtos;
-using SalesAPI.Models;
-using SalesAPI.Services;
+using SalesAPI.Identity;
+using SalesAPI.Identity.Services;
 using System.Threading.Tasks;
 
 namespace SalesAPI.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
-    [AllowAnonymous]
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -24,6 +23,21 @@ namespace SalesAPI.Controllers
             _signInManager = signInManager;
             _userManager = userManager;
             _tokenService = tokenService;
+        }
+
+        [Authorize(Roles = "Administrator,Manager")]
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var result = await _userService.GetAllAsync();
+            return Ok(result);
+        }
+
+        [HttpGet("CurrentUser")]
+        public async Task<IActionResult> GetCurrentUser()
+        {
+            var result = await _userService.GetCurrentUser();
+            return Ok(result);
         }
 
         [HttpPost("register")]
@@ -54,6 +68,7 @@ namespace SalesAPI.Controllers
             return Ok(new { User = result.User, Token = result.Token });
         }
 
+        [Authorize(Roles = "Administrator,Manager")]
         [HttpGet("{userName}", Name = "GetUserByUserName")]
         public async Task<IActionResult> GetUserByUserName(string userName)
         {
@@ -62,21 +77,13 @@ namespace SalesAPI.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "Administrator,Manager")]
         [HttpPost("addToRole")]
         public async Task<IActionResult> AddToRole(string userName, string role)
         {
             var user = await _userService.AddToRole(userName, role);
 
-            return Ok();
+            return Ok(user);
         }
-
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
-            var result = await _userService.GetAllAsync();
-            return Ok(result);
-        }
-
-
     }
 }

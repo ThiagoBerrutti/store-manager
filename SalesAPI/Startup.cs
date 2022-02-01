@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -13,8 +12,8 @@ using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using SalesAPI.Filters;
-using SalesAPI.Mapper;
-using SalesAPI.Models;
+using SalesAPI.Identity;
+using SalesAPI.Identity.Services;
 using SalesAPI.Persistence;
 using SalesAPI.Persistence.Data;
 using SalesAPI.Persistence.Repositories;
@@ -37,7 +36,6 @@ namespace SalesAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            
             services.AddControllers();
 
             var connectionString = Configuration["ConnectionStrings:SalesDbSQLServer"];
@@ -61,18 +59,18 @@ namespace SalesAPI
                 .AddRoles<Role>()
                 .AddEntityFrameworkStores<SalesDbContext>()
                 .AddDefaultTokenProviders()
-                .AddRoleValidator<RoleValidator<Role>>()                
+                .AddRoleValidator<RoleValidator<Role>>()
                 .AddRoleManager<RoleManager<Role>>()
                 .AddSignInManager<SignInManager<User>>();
 
-            services.AddMvc(
-            options =>
-            {
-                var policy = new AuthorizationPolicyBuilder()
-                    .RequireAuthenticatedUser()
-                    .Build();
-                //options.Filters.Add(new AuthorizeFilter(policy));
-            }).SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0);
+            //services.AddMvc(
+            //options =>
+            //{
+            //    var policy = new AuthorizationPolicyBuilder()
+            //        .RequireAuthenticatedUser()
+            //        .Build();
+            //    //options.Filters.Add(new AuthorizeFilter(policy));
+            //}).SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0);
 
             var appSettingsSection = Configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingsSection);
@@ -81,8 +79,7 @@ namespace SalesAPI
             var key = Encoding.ASCII.GetBytes(appSettings.Secret);
 
             services.AddAuthentication(options =>
-            {                
-                
+            {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
@@ -128,12 +125,11 @@ namespace SalesAPI
                          new string[] {}
                     }
                 });
-
             });
 
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-            services.AddScoped<StockRepository, StockRepository>();
+            services.AddScoped<ProductStockRepository, ProductStockRepository>();
 
             services.AddScoped<IStockService, StockService>();
             services.AddScoped<IProductService, ProductService>();
@@ -144,23 +140,22 @@ namespace SalesAPI
 
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IEmployeeRepository, EmployeeRepository>();
-            //services.AddScoped<IRoleRepository, RoleRepository>();
-
-            services.AddScoped<IProductMapper, ProductMapper>();
-            services.AddScoped<IStockMapper, StockMapper>();
-            services.AddScoped<IEmployeeMapper, EmployeeMapper>();
-
+            services.AddScoped<IUserRepository, UserRepository>();
+           
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             services.AddScoped<ProductSeed>();
             services.AddScoped<StockSeed>();
 
-            services.AddMvcCore(options =>
+            services.AddHttpContextAccessor();
+            services.AddMvc(options =>
             {
+                var policy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+                options.Filters.Add(new AuthorizeFilter(policy));
                 options.Filters.Add(typeof(ExceptionFilter));
-            });
-
-
+            }).SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -183,8 +178,6 @@ namespace SalesAPI
             );
 
             app.UseHttpsRedirection();
-
-
 
             app.UseRouting();
 

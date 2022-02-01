@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace SalesAPI.Persistence.Repositories
 {
-    public interface IStockRepository
+    public interface IProductStockRepository
     {
         public Task<IEnumerable<ProductStock>> GetAll();
 

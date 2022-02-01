@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using SalesAPI.Models;
 using System.Collections.Generic;
 
-namespace SalesAPI.Models
+namespace SalesAPI.Identity
 {
     public class User : IdentityUser<int>
     {

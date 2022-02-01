@@ -1,28 +1,32 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SalesAPI.Dtos;
 using SalesAPI.Exceptions.Domain;
-using SalesAPI.Models;
-using System;
+using SalesAPI.Persistence.Repositories;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace SalesAPI.Services
+namespace SalesAPI.Identity.Services
 {
     public class UserService : IUserService
     {
         private readonly SignInManager<User> _signInManager;
         private readonly RoleManager<Role> _roleManager;
         private readonly UserManager<User> _userManager;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IUserRepository _userRepository;
         private readonly ITokenService _tokenService;
         private readonly IMapper _mapper;
 
-        public UserService(SignInManager<User> signInManager, RoleManager<Role> roleManager, UserManager<User> userManager, ITokenService tokenService, IMapper mapper)
+        public UserService(SignInManager<User> signInManager, RoleManager<Role> roleManager, UserManager<User> userManager, IHttpContextAccessor httpContextAccessor, IUserRepository userRepository, ITokenService tokenService, IMapper mapper)
         {
             _signInManager = signInManager;
             _roleManager = roleManager;
             _userManager = userManager;
+            _httpContextAccessor = httpContextAccessor;
+            _userRepository = userRepository;
             _tokenService = tokenService;
             _mapper = mapper;
         }
@@ -31,7 +35,7 @@ namespace SalesAPI.Services
         {
             var user = _mapper.Map<User>(userDto);
 
-            var result = await _userManager.CreateAsync(user,userDto.Password);
+            var result = await _userManager.CreateAsync(user, userDto.Password);
 
             if (!result.Succeeded)
             {
@@ -47,8 +51,6 @@ namespace SalesAPI.Services
 
             return new AuthResponse<IdentityResult>(userModel, loginResult.Token, result);
         }
-
-
 
         public async Task<AuthResponse<SignInResult>> Login(UserLoginDto userLogin)
         {
@@ -67,11 +69,9 @@ namespace SalesAPI.Services
 
             var token = await _tokenService.GenerateJWTAsync(appUser);
             var userToReturn = _mapper.Map<UserViewModel>(appUser);
-            
-            return new AuthResponse<SignInResult>(userToReturn, token,signInResult);
-        }
 
-        
+            return new AuthResponse<SignInResult>(userToReturn, token, signInResult);
+        }
 
         public async Task<UserRegisterDto> GetUserByUserName(string userName)
         {
@@ -84,13 +84,13 @@ namespace SalesAPI.Services
         public async Task<UserViewModel> AddToRole(string userName, string roleName)
         {
             var user = await _userManager.FindByNameAsync(userName);
-            if(user == null)
+            if (user == null)
             {
                 throw new DomainNotFoundException($"User [Name = '{userName}'] not found.");
             }
-            
+
             var role = await _roleManager.FindByNameAsync(roleName);
-            if(role == null)
+            if (role == null)
             {
                 throw new DomainNotFoundException($"Role [Name = '{roleName}'] not found.");
             }
@@ -107,14 +107,27 @@ namespace SalesAPI.Services
 
         public async Task<IEnumerable<UserViewModel>> GetAllAsync()
         {
-            var users = await _userManager.Users.Include(u => u.Roles).ToListAsync();
-            
+            var users = await _userManager.Users
+                .Include(u => u.Roles)
+                .ToListAsync();
+
             var usersModel = _mapper.Map<IEnumerable<UserViewModel>>(users);
 
             return usersModel;
         }
 
+        public async Task<UserViewModel> GetCurrentUser()
+        {
+            if (!_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+            {
+                throw new IdentityException("User not logged in");
+            }
 
+            var user = await _userRepository.GetCurrentUser();
 
+            var userViewModel = _mapper.Map<UserViewModel>(user);
+
+            return userViewModel;
+        }
     }
 }

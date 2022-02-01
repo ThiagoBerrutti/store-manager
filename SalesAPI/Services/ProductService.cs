@@ -6,6 +6,7 @@ using SalesAPI.Dtos;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using SalesAPI.Persistence;
+using AutoMapper;
 
 namespace SalesAPI.Services
 {
@@ -13,24 +14,24 @@ namespace SalesAPI.Services
     {
         private readonly IProductRepository _productRepository;
         private readonly IStockService _stockService;
-        private readonly IProductMapper _productMapper;
+        private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
 
         public ProductService(
             IProductRepository productRepository,
             IStockService stockService,
-            IProductMapper productMapper,
+            IMapper mapper,
             IUnitOfWork unitOfWork)
         {
             _productRepository = productRepository;
             _stockService = stockService;
-            _productMapper = productMapper;
+            _mapper = mapper;
             _unitOfWork = unitOfWork;
         }
 
         public async Task CreateAsync(ProductWriteDto productDto)
         {
-            var product = _productMapper.MapDtoToEntity(productDto);
+            var product = _mapper.Map<Product>(productDto);
             _productRepository.Add(product);
 
             _stockService.CreateProductStock(product, 0);
@@ -41,7 +42,7 @@ namespace SalesAPI.Services
         public async Task<IEnumerable<ProductReadDto>> GetAllAsync()
         {
             var products = await _productRepository.GetAllAsync();
-            var productsDto = _productMapper.MapEntityToDtoList(products);
+            var productsDto = _mapper.Map<IEnumerable<Product>,IEnumerable<ProductReadDto>>(products);
 
             return productsDto;
         }
@@ -49,7 +50,7 @@ namespace SalesAPI.Services
         public async Task<ProductReadDto> GetByIdAsync(int id)
         {
             var product = await _productRepository.GetByIdAsync(id);
-            var dto = _productMapper.MapEntityToDto(product);
+            var dto = _mapper.Map<ProductReadDto>(product);
 
             return dto;
         }
@@ -62,7 +63,7 @@ namespace SalesAPI.Services
                 throw new EntityNotFoundException($"Product id [{id}] not found.");
             }
 
-            _productMapper.MapDtoToEntity(productDto, productOnRepo);
+            _mapper.Map(productDto, productOnRepo);
             _productRepository.Update(productOnRepo);
 
             await _unitOfWork.CompleteAsync();

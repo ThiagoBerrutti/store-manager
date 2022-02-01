@@ -1,11 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SalesAPI.Dtos;
 using SalesAPI.Services;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SalesAPI.Controllers
-{
+{    
     [ApiController]
     [Route("api/v1/products")]
     public class ProductController : Controller
@@ -31,6 +32,7 @@ namespace SalesAPI.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "Administrator,Manager")]
         [HttpPost]
         public async Task<IActionResult> CreateProduct(ProductWriteDto product)
         {
@@ -38,6 +40,7 @@ namespace SalesAPI.Controllers
             return Ok();
         }
 
+        [Authorize(Roles = "Administrator,Manager")]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
@@ -45,17 +48,11 @@ namespace SalesAPI.Controllers
             return Ok();
         }
 
+        [Authorize(Roles = "Administrator,Manager")]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] ProductWriteDto productUpdate)
         {
             await _productService.UpdateAsync(id, productUpdate);
-            return Ok();
-        }
-
-        [HttpDelete]
-        public async Task<IActionResult> Clear()
-        {
-            await _productService.Clear();
             return Ok();
         }
     }

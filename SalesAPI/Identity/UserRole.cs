@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using SalesAPI.Models;
 
-namespace SalesAPI.Models
+namespace SalesAPI.Identity
 {
     public class UserRole : IdentityUserRole<int>
     {
