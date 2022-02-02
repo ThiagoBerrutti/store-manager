@@ -20,6 +20,7 @@ using SalesAPI.Persistence.Repositories;
 using SalesAPI.Services;
 using System;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace SalesAPI
@@ -99,7 +100,7 @@ namespace SalesAPI
                 });
 
             services.AddSwaggerGen(options =>
-            {
+            {                
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
                 {
                     Name = "Authorization",
@@ -129,8 +130,6 @@ namespace SalesAPI
 
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-            services.AddScoped<ProductStockRepository, ProductStockRepository>();
-
             services.AddScoped<IStockService, StockService>();
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IEmployeeService, EmployeeService>();
@@ -139,8 +138,10 @@ namespace SalesAPI
             services.AddScoped<IUserService, UserService>();
 
             services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IProductStockRepository, ProductStockRepository>();
             services.AddScoped<IEmployeeRepository, EmployeeRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IRoleRepository, RoleRepository>();
            
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
@@ -153,8 +154,10 @@ namespace SalesAPI
                 var policy = new AuthorizationPolicyBuilder()
                     .RequireAuthenticatedUser()
                     .Build();
-                options.Filters.Add(new AuthorizeFilter(policy));
+                //options.Filters.Add(new AuthorizeFilter(policy));
                 options.Filters.Add(typeof(ExceptionFilter));
+                
+                
             }).SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0);
         }
 

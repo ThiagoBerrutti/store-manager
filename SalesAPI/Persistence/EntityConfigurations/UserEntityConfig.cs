@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SalesAPI.Identity;
+using System;
 using System.Collections.Generic;
 
 namespace SalesAPI.Persistence.EntityConfigurations
@@ -37,7 +38,8 @@ namespace SalesAPI.Persistence.EntityConfigurations
                     Id = 1,
                     UserName = "admin",
                     NormalizedUserName = "ADMIN",
-                    PasswordHash = hasher.HashPassword(null,"string")
+                    PasswordHash = hasher.HashPassword(null,"string"),
+                    SecurityStamp = Guid.NewGuid().ToString()
                 },
 
                 new User
@@ -45,7 +47,8 @@ namespace SalesAPI.Persistence.EntityConfigurations
                     Id = 2,
                     UserName = "manager",
                     NormalizedUserName = "MANAGER",
-                    PasswordHash = hasher.HashPassword(null,"string")
+                    PasswordHash = hasher.HashPassword(null,"string"),
+                    SecurityStamp = Guid.NewGuid().ToString()
 
                 },
 
@@ -54,7 +57,8 @@ namespace SalesAPI.Persistence.EntityConfigurations
                     Id = 3,
                     UserName = "stock",
                     NormalizedUserName = "STOCK",
-                    PasswordHash = hasher.HashPassword(null,"string")
+                    PasswordHash = hasher.HashPassword(null,"string"),
+                    SecurityStamp = Guid.NewGuid().ToString()
                 },
 
                 new User
@@ -62,7 +66,8 @@ namespace SalesAPI.Persistence.EntityConfigurations
                     Id = 4,
                     UserName = "seller",
                     NormalizedUserName = "SELLER",
-                    PasswordHash = hasher.HashPassword(null,"string")
+                    PasswordHash = hasher.HashPassword(null,"string"),
+                    SecurityStamp = Guid.NewGuid().ToString(),
                 }
             });
         }

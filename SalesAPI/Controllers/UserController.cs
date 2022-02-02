@@ -8,20 +8,24 @@ using System.Threading.Tasks;
 
 namespace SalesAPI.Controllers
 {
+    [Produces("text/json")]
+    
     [ApiController]
     [Route("api/v1/[controller]")]
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
-        private readonly SignInManager<User> _signInManager;
-        private readonly UserManager<User> _userManager;
+        //private readonly SignInManager<User> _signInManager;
+        //private readonly UserManager<User> _userManager;
         private readonly ITokenService _tokenService;
 
-        public UserController(IUserService userService, SignInManager<User> signInManager, UserManager<User> userManager, ITokenService tokenService)
+        public UserController(SignInManager<User> signInManager, 
+                                UserManager<User> userManager,
+                                IUserService userService, ITokenService tokenService)
         {
             _userService = userService;
-            _signInManager = signInManager;
-            _userManager = userManager;
+            //_signInManager = signInManager;
+            //_userManager = userManager;
             _tokenService = tokenService;
         }
 
@@ -29,59 +33,102 @@ namespace SalesAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var result = await _userService.GetAllAsync();
+            var result = await _userService.GetAllDtoAsync();
+
             return Ok(result);
         }
 
-        [HttpGet("CurrentUser")]
-        public async Task<IActionResult> GetCurrentUser()
+
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetUserById(int id)
         {
-            var result = await _userService.GetCurrentUser();
+            var result = await _userService.GetDtoByIdAsync(id);
+
             return Ok(result);
         }
+
+        
+        [HttpGet("currentUser")]
+        public async Task<IActionResult> GetCurrentUser()
+        {
+            var result = await _userService.GetDtoCurrentUserAsync();
+
+            return Ok(result);
+        }
+
+
+        [Authorize(Roles = "Administrator,Manager")]        
+        [HttpGet("name", Name = "GetUserByUserName")]
+        public async Task<IActionResult> GetUserByUserName(string userName)
+        {
+            var result = await _userService.GetDtoByUserNameAsync(userName);
+
+            return Ok(result);
+        }
+
 
         [HttpPost("register")]
         [AllowAnonymous]
         public async Task<IActionResult> Register(UserRegisterDto userDto)
         {
-            var registerResult = await _userService.Register(userDto);
-            if (!registerResult.Succeeded)
-            {
-                return BadRequest(registerResult.Result.Errors);
-            }
+            var registerResponse = await _userService.RegisterAsync(userDto);
+            var authenticateResponse = await _userService.AuthenticateAsync(userDto);
 
-            //var loginResult = await _userService.Login(userDto);
-
-            return Created(nameof(GetUserByUserName), new { User = registerResult.User, Token = registerResult.Token });
+            return Created(nameof(GetUserByUserName), registerResponse);
         }
+
 
         [HttpPost("login")]
         [AllowAnonymous]
         public async Task<IActionResult> Login(UserLoginDto userLogin)
         {
-            var result = await _userService.Login(userLogin);
-            if (!result.Succeeded)
-            {
-                return BadRequest("Invalid username or password");
-            }
+            var authResponse = await _userService.AuthenticateAsync(userLogin);
 
-            return Ok(new { User = result.User, Token = result.Token });
+            return Ok(authResponse);
+        }
+        
+
+        [Authorize(Roles = "Administrator")]
+        [HttpPut("name/changePassword")]
+        public async Task<IActionResult> ChangePassword(string userName, [FromBody] ChangePasswordsDto passwords)
+        {
+            await _userService.ChangePasswordAsync(userName, passwords.CurrentPassword, passwords.NewPassword);
+
+            return Ok();
+        }
+
+        [HttpPut("current/changePassword")]
+        public async Task<IActionResult> ChangeCurrentUserPassword([FromBody] ChangePasswordsDto passwords)
+        {
+            await _userService.ChangeCurrentUserPasswordAsync(passwords.CurrentPassword, passwords.NewPassword);
+
+            return Ok();
+        }
+
+        [Authorize(Roles = "Administrator")]
+        [HttpPut("name/ResetPassword")]
+        public async Task<IActionResult> ResetPassword(string userName)
+        {
+            var newPassword = userName;
+            await _userService.ResetPasswordAsync(userName, newPassword);
+
+            return Ok();
         }
 
         [Authorize(Roles = "Administrator,Manager")]
-        [HttpGet("{userName}", Name = "GetUserByUserName")]
-        public async Task<IActionResult> GetUserByUserName(string userName)
+        [HttpPut("{id:int}/roles")]
+        public async Task<IActionResult> AddUserToRole(int id, int roleId)
         {
-            var result = await _userService.GetUserByUserName(userName);
+            var user = await _userService.AddToRoleAsync(id,roleId);
 
-            return Ok(result);
+            return Ok(user);
         }
 
         [Authorize(Roles = "Administrator,Manager")]
-        [HttpPost("addToRole")]
-        public async Task<IActionResult> AddToRole(string userName, string role)
+        [HttpDelete("{id:int}/roles")]
+        public async Task<IActionResult> RemoveFromRole(int id, int roleId)
         {
-            var user = await _userService.AddToRole(userName, role);
+            var user = await _userService.RemoveFromRoleAsync(id, roleId);
 
             return Ok(user);
         }

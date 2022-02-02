@@ -1,12 +1,10 @@
-﻿using SalesAPI.Exceptions;
-using SalesAPI.Mapper;
+﻿using AutoMapper;
+using SalesAPI.Dtos;
+using SalesAPI.Exceptions;
 using SalesAPI.Models;
 using SalesAPI.Persistence.Repositories;
-using SalesAPI.Dtos;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using SalesAPI.Persistence;
-using AutoMapper;
 
 namespace SalesAPI.Services
 {
@@ -39,15 +37,15 @@ namespace SalesAPI.Services
             await _unitOfWork.CompleteAsync();
         }
 
-        public async Task<IEnumerable<ProductReadDto>> GetAllAsync()
+        public async Task<IEnumerable<ProductReadDto>> GetAllDtoAsync()
         {
             var products = await _productRepository.GetAllAsync();
-            var productsDto = _mapper.Map<IEnumerable<Product>,IEnumerable<ProductReadDto>>(products);
+            var productsDto = _mapper.Map<IEnumerable<Product>, IEnumerable<ProductReadDto>>(products);
 
             return productsDto;
         }
 
-        public async Task<ProductReadDto> GetByIdAsync(int id)
+        public async Task<ProductReadDto> GetDtoByIdAsync(int id)
         {
             var product = await _productRepository.GetByIdAsync(id);
             var dto = _mapper.Map<ProductReadDto>(product);
@@ -55,7 +53,7 @@ namespace SalesAPI.Services
             return dto;
         }
 
-        public async Task UpdateAsync(int id, ProductWriteDto productDto)
+        public async Task<ProductReadDto> UpdateAsync(int id, ProductWriteDto productDto)
         {
             var productOnRepo = await _productRepository.GetByIdAsync(id);
             if (productOnRepo == null)
@@ -67,6 +65,9 @@ namespace SalesAPI.Services
             _productRepository.Update(productOnRepo);
 
             await _unitOfWork.CompleteAsync();
+
+            var productReadDto = _mapper.Map<ProductReadDto>(productOnRepo);
+            return productReadDto;
         }
 
         public async Task DeleteAsync(int id)
@@ -78,18 +79,6 @@ namespace SalesAPI.Services
             }
 
             _productRepository.Delete(product);
-
-            await _unitOfWork.CompleteAsync();
-        }
-
-        public async Task Clear()
-        {
-            var products = await _productRepository.GetAllAsync();
-
-            foreach (Product p in products)
-            {
-                _productRepository.Delete(p);
-            }
 
             await _unitOfWork.CompleteAsync();
         }

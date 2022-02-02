@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using SalesAPI.Models;
 
 namespace SalesAPI.Identity
 {

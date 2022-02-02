@@ -21,14 +21,14 @@ namespace SalesAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ProductReadDto>>> GetAll()
         {
-            var a = await _productService.GetAllAsync();
+            var a = await _productService.GetAllDtoAsync();
             return Ok(a);
         }
 
         [HttpGet("{id:int}")]
         public async Task<ActionResult<ProductReadDto>> GetById([FromRoute] int id)
         {
-            var result = await _productService.GetByIdAsync(id);
+            var result = await _productService.GetDtoByIdAsync(id);
             return Ok(result);
         }
 

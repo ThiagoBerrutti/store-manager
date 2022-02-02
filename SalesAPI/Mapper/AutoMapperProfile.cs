@@ -17,6 +17,7 @@ namespace SalesAPI.Mapper
 
             CreateMap<UserLoginDto, User>().ReverseMap();
             CreateMap<UserRegisterDto, User>().ReverseMap();
+            CreateMap<UserRegisterDto, UserLoginDto>().ReverseMap();
             CreateMap<User, UserViewModel>();
                 
             CreateMap<Employee, EmployeeReadDto>().ReverseMap();

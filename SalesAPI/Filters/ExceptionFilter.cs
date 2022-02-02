@@ -4,7 +4,10 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Newtonsoft.Json;
 using SalesAPI.Exceptions;
 using SalesAPI.Exceptions.Domain;
-//using System;
+using SalesAPI.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 
 namespace SalesAPI.Filters
@@ -20,25 +23,7 @@ namespace SalesAPI.Filters
 
             switch (exception)
             {
-                case StockException stockException:
-                    {
-                        string json = tName + JsonConvert.SerializeObject(stockException.Message);
-
-                        context.Result = new BadRequestObjectResult(json);
-                        context.HttpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                        break;
-                    }
-
-                case DomainException domainException:
-                    {
-                        string json = tName + JsonConvert.SerializeObject(domainException.Message);
-
-                        context.Result = new BadRequestObjectResult(json);
-                        context.HttpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                        break;
-                    }
-
-                case ApplicationException applicationException:
+                case Exceptions.ApplicationException applicationException:
                     {
                         string json = tName + JsonConvert.SerializeObject(applicationException.Message);
 
@@ -47,21 +32,13 @@ namespace SalesAPI.Filters
                         break;
                     }
 
-                case EntityNotFoundException entityNotFoundException:
-                    {
-                        string json = tName + JsonConvert.SerializeObject(entityNotFoundException.Message);
 
-                        context.Result = new NotFoundObjectResult(json);
-                        context.HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                        break;
-                    }
-
-                case InfrastructureException infraException:
+                case DomainException domainException:
                     {
-                        string json = tName + JsonConvert.SerializeObject(infraException.Message);
+                        string json = tName + JsonConvert.SerializeObject(domainException.Message);
 
                         context.Result = new BadRequestObjectResult(json);
-                        context.HttpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                        context.HttpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                         break;
                     }
 
@@ -74,15 +51,42 @@ namespace SalesAPI.Filters
                         break;
                     }
 
+                case EntityNotFoundException entityNotFoundException:
+                    {
+                        string json = tName + JsonConvert.SerializeObject(entityNotFoundException.Message);
+
+                        context.Result = new NotFoundObjectResult(json);
+                        context.HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                        break;
+                    }
+
                 case IdentityException identityException:
                     {
-                        string errors = "";
-                        foreach (IdentityError e in identityException.Errors)
-                        {
-                            errors += e.ToString()+"\n";
-                        }
-                        string json = tName + JsonConvert.SerializeObject(identityException.Message) + "\n" +
-                            JsonConvert.SerializeObject(identityException.Errors);
+                        IEnumerable<string> errors = identityException.Errors.Select(e => e.Description );
+                       
+                        var error = GenerateJsonWithInnerAndStackTrace(identityException,errors);
+                        var json = JsonConvert.SerializeObject(error);
+                        //string json = tName + JsonConvert.SerializeObject(identityException.Message) + "\n" +
+                        //    JsonConvert.SerializeObject(identityException.Errors);
+
+
+                        context.Result = new BadRequestObjectResult(error);
+                        context.HttpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                        break;
+                    }
+
+                case InfrastructureException infraException:
+                    {
+                        string json = tName + JsonConvert.SerializeObject(infraException.Message);
+
+                        context.Result = new BadRequestObjectResult(json);
+                        context.HttpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                        break;
+                    }
+
+                case StockException stockException:
+                    {
+                        string json = tName + JsonConvert.SerializeObject(stockException.Message);
 
                         context.Result = new BadRequestObjectResult(json);
                         context.HttpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
@@ -101,5 +105,28 @@ namespace SalesAPI.Filters
                     }
             }
         }
+
+        private ErrorModel GenerateJsonWithInnerAndStackTrace(Exception e, IEnumerable<string> errors)
+        {
+           
+
+            var error = new ErrorModel(e, errors);
+                
+            //var json = $"Error : {e.GetType().Name}\n";
+            //json += $"Message : {e.Message}";
+            //json += ((errors != null && errors.Count() > 0) ?
+            //   $"Errors : {errors.Select(e => e.ToString()).Aggregate((sums, y) => y + "\n")}" : "");
+            //json += ((e.InnerException != null) ?
+            //   $"InnerException : {e.InnerException?.Message}" : "");
+            //json += $"StackTrace : {e.StackTrace}";
+
+            return error;
+        }
+
+        private ErrorModel GenerateJsonWithInnerAndStackTrace(Exception e)
+        {
+            return GenerateJsonWithInnerAndStackTrace(e, null);
+        }
+
     }
 }

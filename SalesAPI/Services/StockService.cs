@@ -11,11 +11,11 @@ namespace SalesAPI.Services
 {
     public class StockService : IStockService
     {
-        private readonly ProductStockRepository _productStockRepository;
+        private readonly IProductStockRepository _productStockRepository;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
 
-        public StockService(ProductStockRepository productStockRepository, IMapper mapper,
+        public StockService(IProductStockRepository productStockRepository, IMapper mapper,
                             IUnitOfWork unitOfWork)
         {
             _productStockRepository = productStockRepository;

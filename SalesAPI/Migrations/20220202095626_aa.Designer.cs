@@ -10,8 +10,8 @@ using SalesAPI.Persistence;
 namespace SalesAPI.Migrations
 {
     [DbContext(typeof(SalesDbContext))]
-    [Migration("20220201023203_hashpasswords")]
-    partial class hashpasswords
+    [Migration("20220202095626_aa")]
+    partial class aa
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -139,28 +139,28 @@ namespace SalesAPI.Migrations
                         new
                         {
                             Id = 1,
-                            ConcurrencyStamp = "9a68f348-e32f-4fcc-9b98-a1df147c3d8e",
+                            ConcurrencyStamp = "f39e7f8d-772c-416d-9093-bc0466e8b7a4",
                             Name = "Administrator",
                             NormalizedName = "ADMINISTRATOR"
                         },
                         new
                         {
                             Id = 2,
-                            ConcurrencyStamp = "cca80eea-3483-44d6-adb3-bb069f048f42",
+                            ConcurrencyStamp = "02e7b475-71ab-44f8-9821-80f4dd2737b5",
                             Name = "Manager",
                             NormalizedName = "MANAGER"
                         },
                         new
                         {
                             Id = 3,
-                            ConcurrencyStamp = "555aa4aa-ac09-420c-a4ef-0fd2ab0bdf76",
+                            ConcurrencyStamp = "b34e8ad9-4fbd-4a97-8a43-38b7848b6a78",
                             Name = "Stock",
                             NormalizedName = "STOCK"
                         },
                         new
                         {
                             Id = 4,
-                            ConcurrencyStamp = "cd6a95aa-5dc1-4fe3-9701-7da29c47e2f2",
+                            ConcurrencyStamp = "ce735114-c9d7-4ba6-aad0-902874f2a563",
                             Name = "Seller",
                             NormalizedName = "SELLER"
                         });
@@ -237,12 +237,13 @@ namespace SalesAPI.Migrations
                         {
                             Id = 1,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "14d2569d-5f24-428b-bf39-f25cbfb3628e",
+                            ConcurrencyStamp = "bc195729-0f69-46fd-99f4-f0b090cc33cc",
                             EmailConfirmed = false,
                             LockoutEnabled = false,
                             NormalizedUserName = "ADMIN",
-                            PasswordHash = "AQAAAAEAACcQAAAAEKaqlFrEzt69TKeaa6WZunb/lSL8Q+gVRTiWhR+z5LpZq8lg0jHA6+DqKXkDm2hX2w==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEOS3B1MPVSI2398lvwFHa1e1rGuUka7wwlhxMtoWBE2YQSEzqeK2cXocGOMuBCxTzA==",
                             PhoneNumberConfirmed = false,
+                            SecurityStamp = "920dbc2b-3d44-4f15-ab95-79b39d7e6ac3",
                             TwoFactorEnabled = false,
                             UserName = "admin"
                         },
@@ -250,12 +251,13 @@ namespace SalesAPI.Migrations
                         {
                             Id = 2,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "addace34-7952-479f-b730-2ae03ab82edb",
+                            ConcurrencyStamp = "440b2945-ff0d-43c1-abe5-75c7440b273d",
                             EmailConfirmed = false,
                             LockoutEnabled = false,
                             NormalizedUserName = "MANAGER",
-                            PasswordHash = "AQAAAAEAACcQAAAAEBkqVWhOW2VSfUR+DWdXiR+ICEO4Ts/niSQ1STRQxqf4Q9TPyy5vvM822py01OKjIw==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEGqPO/6saeXVasLYi1S8IHF5+NcJyRcJnDhBFXQtEEnjelh1vFkiMuufnGl3yIQ91w==",
                             PhoneNumberConfirmed = false,
+                            SecurityStamp = "322ac5bf-c500-43e8-95e7-edc669e4a9f8",
                             TwoFactorEnabled = false,
                             UserName = "manager"
                         },
@@ -263,12 +265,13 @@ namespace SalesAPI.Migrations
                         {
                             Id = 3,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "961e0065-1c45-487a-8db1-a32a6a809772",
+                            ConcurrencyStamp = "4d36def5-b793-49ef-b198-e569fa9c5f43",
                             EmailConfirmed = false,
                             LockoutEnabled = false,
                             NormalizedUserName = "STOCK",
-                            PasswordHash = "AQAAAAEAACcQAAAAEB7lTMcav5N1nSzo1n9UMCYWlO+UUI5Y1H2YwPoHiAQR9qXAZf29i2uJ65dXlD8wDQ==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEAEPnlLW3qu6sbnexqDrFCKzp+6mkBLYxN5cDnegB0Zb+SCN10+kmEQk0hCaLUB7FQ==",
                             PhoneNumberConfirmed = false,
+                            SecurityStamp = "b89a318e-3550-4397-be26-e5d700ed6cd1",
                             TwoFactorEnabled = false,
                             UserName = "stock"
                         },
@@ -276,12 +279,13 @@ namespace SalesAPI.Migrations
                         {
                             Id = 4,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "fe8fa611-8dc6-45d1-917b-1815228e4e6b",
+                            ConcurrencyStamp = "5ef3855c-ea2e-4aa9-bc2f-5a01305cedbd",
                             EmailConfirmed = false,
                             LockoutEnabled = false,
                             NormalizedUserName = "SELLER",
-                            PasswordHash = "AQAAAAEAACcQAAAAEFrSqO9OpsKM8NRoK6FOmmLgdMod1FcBO+2chWr6LqGoYQzgIed8ByWxwyBokRWXdQ==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEPXKJbtUgcSumL8H7lrMZKkZvH4WUTIMWdUGhDcWEv7Nt24nMcLuh+ov0mhcL5hdgg==",
                             PhoneNumberConfirmed = false,
+                            SecurityStamp = "4afb9f84-be95-4b48-bc54-2bf3a487a9c1",
                             TwoFactorEnabled = false,
                             UserName = "seller"
                         });

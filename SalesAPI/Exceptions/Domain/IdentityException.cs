@@ -6,10 +6,11 @@ namespace SalesAPI.Exceptions.Domain
 {
     public class IdentityException : Exception
     {
-        public IEnumerable<IdentityError> Errors { get; set; } = new List<IdentityError>();
+        public IEnumerable<IdentityError> Errors { get; set; }
 
         public IdentityException(string message) : base(message)
         {
+            Errors = new List<IdentityError>();
         }
 
         public IdentityException(string message, IEnumerable<IdentityError> errors) : this(message)
