@@ -5,7 +5,7 @@ namespace SalesAPI.Identity
 {
     public class Role : IdentityRole<int>
     {
-        public IEnumerable<User> Users { get; set; }
-        public IEnumerable<UserRole> UserRoles { get; set; }
+        public List<User> Users { get; set; }
+        public List<UserRole> UserRoles { get; set; }
     }
 }

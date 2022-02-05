@@ -9,13 +9,17 @@ namespace SalesAPI.Persistence.Repositories
     {
         public Task<IEnumerable<User>> GetAllAsync();
 
-        public Task<User> GetByNameAsync(string userName);
+        public Task<User> GetByUserNameAsync(string userName);
 
         public Task<User> GetCurrentUserAsync();
 
         public Task<User> GetByIdAsync(int id);
 
+        public Task<IList<string>> GetRolesNamesAsync(User user);
+
         public Task<IdentityResult> CreateAsync(User user, string password);
+
+        public Task<IdentityResult> UpdateUserAsync(User user);
 
         public Task<IdentityResult> ChangePasswordAsync(User user, string currentPassword, string newPassword);
 

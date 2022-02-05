@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SalesAPI.Identity;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -10,11 +11,13 @@ namespace SalesAPI.Persistence.Repositories
 {
     public class UserRepository : IUserRepository
     {
+        private readonly SalesDbContext _context;
         private readonly UserManager<User> _userManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public UserRepository(SalesDbContext context, UserManager<User> userManager, IHttpContextAccessor httpContextAccessor)
         {
+            _context = context;
             _userManager = userManager;
             _httpContextAccessor = httpContextAccessor;
         }
@@ -27,13 +30,22 @@ namespace SalesAPI.Persistence.Repositories
 
         public async Task<User> GetByIdAsync(int id)
         {
-            return await _userManager.Users
-                                .Include(u => u.Roles)
+            var user = await _context.Users
+                .Include(u => u.Roles)
+                .ThenInclude(r => r.Users)
+                .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+                .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.User)
+
+
+
                                 .FirstOrDefaultAsync(u => u.Id == id);
+            return user;
         }
 
 
-        public async Task<User> GetByNameAsync(string userName)
+        public async Task<User> GetByUserNameAsync(string userName)
         {
             return await _userManager.Users
                             .Include(u => u.Roles)
@@ -51,13 +63,21 @@ namespace SalesAPI.Persistence.Repositories
         }
 
 
+        public async Task<IList<string>> GetRolesNamesAsync(User user)
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+
+            return roles;
+        }
+
+
         public async Task<IdentityResult> CreateAsync(User user, string password)
         {
             var result = await _userManager.CreateAsync(user, password);
             return result;
         }
 
-       
+
         public async Task<IdentityResult> ChangePasswordAsync(User user, string currentPassword, string newPassword)
         {
             var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
@@ -69,7 +89,7 @@ namespace SalesAPI.Persistence.Repositories
         {
             var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
             var result = await _userManager.ResetPasswordAsync(user, resetToken, newPassword);
-            
+
             return result;
         }
 
@@ -82,6 +102,18 @@ namespace SalesAPI.Persistence.Repositories
         public async Task<IdentityResult> RemoveFromRoleAsync(User user, string roleName)
         {
             var result = await _userManager.RemoveFromRoleAsync(user, roleName);
+            if (result.Succeeded)
+            {
+                var role = user.Roles.FirstOrDefault(r => r.NormalizedName == roleName.ToUpper());
+                user.Roles.Remove(role);
+            }
+
+            return result;
+        }
+
+        public async Task<IdentityResult> UpdateUserAsync(User user)
+        {
+            var result = await _userManager.UpdateAsync(user);
             return result;
         }
     }

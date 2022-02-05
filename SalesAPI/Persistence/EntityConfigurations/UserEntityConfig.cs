@@ -15,20 +15,23 @@ namespace SalesAPI.Persistence.EntityConfigurations
                 .HasMany(u => u.Roles)
                 .WithMany(r => r.Users)
                 .UsingEntity<UserRole>(
-                    userRole => userRole
-                            .HasOne(ur => ur.Role)
-                            .WithMany(r => r.UserRoles)
-                            .HasForeignKey(ur => ur.RoleId)
-                            .IsRequired(),
 
-                    userRole => userRole
-                            .HasOne(ur => ur.User)
-                            .WithMany(u => u.UserRoles)
-                            .HasForeignKey(ur => ur.UserId)
-                            .IsRequired(),
+                    builder => builder
+                        .HasOne(ur => ur.Role)
+                        .WithMany(r => r.UserRoles)
+                        .HasForeignKey(ur => ur.RoleId)
+                        .IsRequired(),
 
-                    userRole => userRole.HasKey(ur => new { ur.UserId, ur.RoleId })
+
+                    builder => builder
+                        .HasOne(ur => ur.User)
+                        .WithMany(u => u.UserRoles)
+                        .HasForeignKey(ur => ur.UserId)
+                        .IsRequired(),
+
+                    builder => builder.HasKey(ur => new { ur.UserId, ur.RoleId })
                 );
+
 
             var hasher = new PasswordHasher<User>();
             builder.HasData(new List<User>
@@ -39,7 +42,10 @@ namespace SalesAPI.Persistence.EntityConfigurations
                     UserName = "admin",
                     NormalizedUserName = "ADMIN",
                     PasswordHash = hasher.HashPassword(null,"string"),
-                    SecurityStamp = Guid.NewGuid().ToString()
+                    SecurityStamp = Guid.NewGuid().ToString(),
+                    FirstName = "Admin",
+                    LastName = "Almeida",
+                    DateOfbirth = new DateTime(1980,1,1)
                 },
 
                 new User
@@ -48,8 +54,10 @@ namespace SalesAPI.Persistence.EntityConfigurations
                     UserName = "manager",
                     NormalizedUserName = "MANAGER",
                     PasswordHash = hasher.HashPassword(null,"string"),
-                    SecurityStamp = Guid.NewGuid().ToString()
-
+                    SecurityStamp = Guid.NewGuid().ToString(),
+                    FirstName = "Bruno",
+                    LastName = "Bento",
+                    DateOfbirth = new DateTime(1990,1,1)
                 },
 
                 new User
@@ -58,7 +66,10 @@ namespace SalesAPI.Persistence.EntityConfigurations
                     UserName = "stock",
                     NormalizedUserName = "STOCK",
                     PasswordHash = hasher.HashPassword(null,"string"),
-                    SecurityStamp = Guid.NewGuid().ToString()
+                    SecurityStamp = Guid.NewGuid().ToString(),
+                    FirstName = "Carlos",
+                    LastName = "Costa",
+                    DateOfbirth = new DateTime(1995,1,1)
                 },
 
                 new User
@@ -68,6 +79,9 @@ namespace SalesAPI.Persistence.EntityConfigurations
                     NormalizedUserName = "SELLER",
                     PasswordHash = hasher.HashPassword(null,"string"),
                     SecurityStamp = Guid.NewGuid().ToString(),
+                    FirstName = "Diego",
+                    LastName = "Dourado",
+                    DateOfbirth = new DateTime(2000,1,1)
                 }
             });
         }

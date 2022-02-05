@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace SalesAPI.Migrations
 {
-    public partial class aa : Migration
+    public partial class mig : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -28,6 +28,9 @@ namespace SalesAPI.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DateOfbirth = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -207,21 +210,21 @@ namespace SalesAPI.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { 1, "f39e7f8d-772c-416d-9093-bc0466e8b7a4", "Administrator", "ADMINISTRATOR" },
-                    { 2, "02e7b475-71ab-44f8-9821-80f4dd2737b5", "Manager", "MANAGER" },
-                    { 3, "b34e8ad9-4fbd-4a97-8a43-38b7848b6a78", "Stock", "STOCK" },
-                    { 4, "ce735114-c9d7-4ba6-aad0-902874f2a563", "Seller", "SELLER" }
+                    { 1, "c60f4ba0-cd92-4749-ad79-ffe6be967cb9", "Administrator", "ADMINISTRATOR" },
+                    { 2, "d9c14641-8792-46b3-a17e-17ab5ace6110", "Manager", "MANAGER" },
+                    { 3, "73f84461-3c53-4433-bbb0-3c3a08021314", "Stock", "STOCK" },
+                    { 4, "d7ec5d8b-207d-4dcb-9b1e-8b1fd4956432", "Seller", "SELLER" }
                 });
 
             migrationBuilder.InsertData(
                 table: "AspNetUsers",
-                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
+                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "DateOfbirth", "Email", "EmailConfirmed", "FirstName", "LastName", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
                 values: new object[,]
                 {
-                    { 1, 0, "bc195729-0f69-46fd-99f4-f0b090cc33cc", null, false, false, null, null, "ADMIN", "AQAAAAEAACcQAAAAEOS3B1MPVSI2398lvwFHa1e1rGuUka7wwlhxMtoWBE2YQSEzqeK2cXocGOMuBCxTzA==", null, false, "920dbc2b-3d44-4f15-ab95-79b39d7e6ac3", false, "admin" },
-                    { 2, 0, "440b2945-ff0d-43c1-abe5-75c7440b273d", null, false, false, null, null, "MANAGER", "AQAAAAEAACcQAAAAEGqPO/6saeXVasLYi1S8IHF5+NcJyRcJnDhBFXQtEEnjelh1vFkiMuufnGl3yIQ91w==", null, false, "322ac5bf-c500-43e8-95e7-edc669e4a9f8", false, "manager" },
-                    { 3, 0, "4d36def5-b793-49ef-b198-e569fa9c5f43", null, false, false, null, null, "STOCK", "AQAAAAEAACcQAAAAEAEPnlLW3qu6sbnexqDrFCKzp+6mkBLYxN5cDnegB0Zb+SCN10+kmEQk0hCaLUB7FQ==", null, false, "b89a318e-3550-4397-be26-e5d700ed6cd1", false, "stock" },
-                    { 4, 0, "5ef3855c-ea2e-4aa9-bc2f-5a01305cedbd", null, false, false, null, null, "SELLER", "AQAAAAEAACcQAAAAEPXKJbtUgcSumL8H7lrMZKkZvH4WUTIMWdUGhDcWEv7Nt24nMcLuh+ov0mhcL5hdgg==", null, false, "4afb9f84-be95-4b48-bc54-2bf3a487a9c1", false, "seller" }
+                    { 1, 0, "58febdd3-9a1d-4510-a13b-f314646085ed", new DateTime(1980, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, false, "Admin", "Almeida", false, null, null, "ADMIN", "AQAAAAEAACcQAAAAEMIJTgPSEVv/wIDQwrd0N3UgHsp0bomLru8ZmIqayQENqp4VEk91ockcylce5sIgpw==", null, false, "abc7e1e6-d3d4-45d5-9068-dae5b84c4538", false, "admin" },
+                    { 2, 0, "b89ec279-e8b1-4e2e-a9ca-e33bfe7bd8f6", new DateTime(1990, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, false, "Bruno", "Bento", false, null, null, "MANAGER", "AQAAAAEAACcQAAAAEOhQk+4xn0iF0a5KSMX2ePa7DwXb1rYFN95u8TyEqrRX8YMnMzoVJnjGkz0zxKdPpA==", null, false, "fc323f65-36c0-453c-80e4-39c6fc0ad22a", false, "manager" },
+                    { 3, 0, "18d8dabf-2620-4789-8a66-a4a2ec34bf47", new DateTime(1995, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, false, "Carlos", "Costa", false, null, null, "STOCK", "AQAAAAEAACcQAAAAEAV01UQm3+97szZvCtOO/o5Q1il3DSPCK9mDP8nvIJfzZMvfu/F79A6EuJE5xbPjOA==", null, false, "29ff645e-11f7-43a2-9098-902aad8ced5b", false, "stock" },
+                    { 4, 0, "706ec659-b005-417e-9178-d2214b20edd5", new DateTime(2000, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, false, "Diego", "Dourado", false, null, null, "SELLER", "AQAAAAEAACcQAAAAEEY8kLEbiKjsXaKXRsFS/RSV/m8O8rXu4kmS17rK9PL+PTvEyXoYfeFkFENOTes/zg==", null, false, "d17b3b63-b182-4821-b96c-c9ba6cbc9ace", false, "seller" }
                 });
 
             migrationBuilder.InsertData(

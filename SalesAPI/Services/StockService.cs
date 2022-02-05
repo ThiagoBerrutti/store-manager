@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using SalesAPI.Dtos;
 using SalesAPI.Exceptions;
-using SalesAPI.Mapper;
 using SalesAPI.Models;
 using SalesAPI.Persistence.Repositories;
 using System.Collections.Generic;
@@ -15,27 +14,36 @@ namespace SalesAPI.Services
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
 
-        public StockService(IProductStockRepository productStockRepository, IMapper mapper,
-                            IUnitOfWork unitOfWork)
+        public StockService(IProductStockRepository productStockRepository, IMapper mapper, IUnitOfWork unitOfWork)
         {
             _productStockRepository = productStockRepository;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
         }
 
-        //public async Task CreateProductStock(int productId, int startingAmount = 0)
-        //{
-        //    var product = await _productRepository.GetByIdAsync(productId);
-        //    if (product == null)
-        //    {
-        //        throw new EntityNotFoundException($"No product with id [{productId}]");
-        //    }
 
-        //    var productStock = new ProductStock(productId, startingAmount);
-        //    _productStockRepository.Create(productStock);
+        public async Task<IEnumerable<ProductStockReadDto>> GetAllDtoAsync()
+        {
+            var stockList = await _productStockRepository.GetAll();
+            var dtoList = _mapper.Map<IEnumerable<ProductStock>, IEnumerable<ProductStockReadDto>>(stockList);
 
-        //    await _unitOfWork.CompleteAsync();
-        //}
+            return dtoList;
+        }
+
+
+        public async Task<ProductStockReadDto> GetDtoByProductId(int productId)
+        {
+            var productStock = await _productStockRepository.GetByProductIdAsync(productId);
+            if (productStock == null)
+            {
+                throw new DomainNotFoundException($"Stock for product [productId = {productId}] not found.");
+            }
+
+            var dto = _mapper.Map<ProductStockReadDto>(productStock);
+
+            return dto;
+        }
+
 
         public ProductStock CreateProductStock(Product product, int startingAmount = 0)
         {
@@ -45,7 +53,22 @@ namespace SalesAPI.Services
             return productStock;
         }
 
-        public async Task AddProductAmount(int id, int amount)
+
+        public async Task Delete(int id)
+        {
+            var stockOnRepo = await _productStockRepository.GetByIdAsync(id);
+            if (stockOnRepo == null)
+            {
+                throw new DomainNotFoundException($"Stock [Id = {id}] not found.");
+            }
+
+            stockOnRepo.Count = 0;
+
+            await _unitOfWork.CompleteAsync();
+        }
+
+
+        public async Task<ProductStockReadDto> AddProductAmount(int id, int amount)
         {
             if (amount <= 0)
             {
@@ -55,14 +78,18 @@ namespace SalesAPI.Services
             var productStock = await _productStockRepository.GetByIdAsync(id);
             if (productStock == null)
             {
-                throw new EntityNotFoundException($"No stock found with [Id{id}]");
+                throw new DomainNotFoundException($"Stock [Id = {id}] not found.");
             }
 
             productStock.Count += amount;
             await _unitOfWork.CompleteAsync();
+
+            var productStockDto = _mapper.Map<ProductStockReadDto>(productStock);
+            return productStockDto;
         }
 
-        public async Task RemoveProductAmount(int id, int amount)
+
+        public async Task<ProductStockReadDto> RemoveProductAmount(int id, int amount)
         {
             if (amount <= 0)
             {
@@ -72,7 +99,7 @@ namespace SalesAPI.Services
             var productStock = await _productStockRepository.GetByIdAsync(id);
             if (productStock == null)
             {
-                throw new EntityNotFoundException($"No stock found with [Id = {id}]");
+                throw new DomainNotFoundException($"Stock [Id = {id}] not found.");
             }
 
             if (productStock.Count - amount < 0)
@@ -82,10 +109,13 @@ namespace SalesAPI.Services
 
             productStock.Count -= amount;
             await _unitOfWork.CompleteAsync();
+
+            var productStockDto = _mapper.Map<ProductStockReadDto>(productStock);
+            return productStockDto;
         }
         
 
-        public async Task Update(int productId, StockWriteDto dto)
+        public async Task<ProductStockReadDto> Update(int productId, ProductStockWriteDto dto)
         { 
             var psOnRepo = await _productStockRepository.GetByProductIdAsync(productId);
             _mapper.Map(dto, psOnRepo);
@@ -93,41 +123,9 @@ namespace SalesAPI.Services
             _productStockRepository.Update(psOnRepo);
 
             await _unitOfWork.CompleteAsync();
-        }
 
-
-        public async Task<StockReadDto> GetByProductId(int productId)
-        {
-            var productStock = await _productStockRepository.GetByProductIdAsync(productId);
-            if (productStock == null)
-            {
-                throw new EntityNotFoundException($"No stock found for [productId = {productId}]");
-            }
-
-            var dto = _mapper.Map<StockReadDto>(productStock);
-
-            return dto;
-        }
-
-        public async Task<IEnumerable<StockReadDto>> GetAllAsync()
-        {
-            var stockList = await _productStockRepository.GetAll();
-            var dtoList = _mapper.Map<IEnumerable<ProductStock>, IEnumerable<StockReadDto>>(stockList);
-
-            return dtoList;
-        }
-
-        public async Task Delete(int id) 
-        {
-            var stockOnRepo = await _productStockRepository.GetByIdAsync(id);
-            if (stockOnRepo == null)
-            {
-                throw new EntityNotFoundException($"No stock [Id = {id}] found.");
-            }
-
-            stockOnRepo.Count = 0;
-
-            await _unitOfWork.CompleteAsync();
+            var productStockDto = _mapper.Map<ProductStockReadDto>(psOnRepo);
+            return productStockDto;
         }
     }
 }

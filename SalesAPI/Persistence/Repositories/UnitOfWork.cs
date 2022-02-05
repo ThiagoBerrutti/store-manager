@@ -20,9 +20,9 @@ namespace SalesAPI.Persistence.Repositories
                 var result = await _context.SaveChangesAsync();
                 return result;
             }
-            catch 
+            catch (Exception e)
             {
-                throw;
+                throw new InfrastructureException("Error during save", e);
             }
         }
     }

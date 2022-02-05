@@ -1,10 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SalesAPI.Identity;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SalesAPI.Persistence.EntityConfigurations
 {
@@ -18,7 +15,7 @@ namespace SalesAPI.Persistence.EntityConfigurations
                 new UserRole { RoleId = 2, UserId = 2 },
                 new UserRole { RoleId = 3, UserId = 3 },
                 new UserRole { RoleId = 4, UserId = 4 }
-            });            
+            });
         }
     }
 }

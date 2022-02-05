@@ -1,11 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Newtonsoft.Json;
 using SalesAPI.Exceptions;
 using SalesAPI.Exceptions.Domain;
 using SalesAPI.Models;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -16,117 +14,96 @@ namespace SalesAPI.Filters
     {
         public void OnException(ExceptionContext context)
         {
-
             var exception = context.Exception;
-            var tName = exception.GetType().Name + " :\n";
-
 
             switch (exception)
             {
-                case Exceptions.ApplicationException applicationException:
+                case ApplicationException applicationException:
                     {
-                        string json = tName + JsonConvert.SerializeObject(applicationException.Message);
+                        var statusCode = (int)HttpStatusCode.BadRequest;
 
-                        context.Result = new BadRequestObjectResult(json);
-                        context.HttpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                        var errorModel = new ErrorModelShort(applicationException, statusCode);
+                        var json = JsonConvert.SerializeObject(errorModel);
+
+                        context.Result = new BadRequestObjectResult(errorModel);
+                        context.HttpContext.Response.StatusCode = statusCode;
                         break;
                     }
-
-
-                case DomainException domainException:
+               
+                case DomainNotFoundException entityNotFoundException:
                     {
-                        string json = tName + JsonConvert.SerializeObject(domainException.Message);
+                        var statusCode = (int)HttpStatusCode.NotFound;
 
-                        context.Result = new BadRequestObjectResult(json);
-                        context.HttpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                        break;
-                    }
+                        var errorModel = new ErrorModelShort(entityNotFoundException, statusCode);
+                        var json = JsonConvert.SerializeObject(errorModel);
 
-                case DomainNotFoundException domainNotFoundException:
-                    {
-                        string json = tName + JsonConvert.SerializeObject(domainNotFoundException.Message);
-
-                        context.Result = new BadRequestObjectResult(json);
-                        context.HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                        break;
-                    }
-
-                case EntityNotFoundException entityNotFoundException:
-                    {
-                        string json = tName + JsonConvert.SerializeObject(entityNotFoundException.Message);
-
-                        context.Result = new NotFoundObjectResult(json);
-                        context.HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                        context.Result = new NotFoundObjectResult(errorModel);
+                        context.HttpContext.Response.StatusCode = statusCode;
                         break;
                     }
 
                 case IdentityException identityException:
                     {
-                        IEnumerable<string> errors = identityException.Errors.Select(e => e.Description );
-                       
-                        var error = GenerateJsonWithInnerAndStackTrace(identityException,errors);
-                        var json = JsonConvert.SerializeObject(error);
-                        //string json = tName + JsonConvert.SerializeObject(identityException.Message) + "\n" +
-                        //    JsonConvert.SerializeObject(identityException.Errors);
+                        IEnumerable<string> errors = identityException.Errors.Select(e => e.Description);
 
+                        var statusCode = (int)HttpStatusCode.BadRequest;
 
-                        context.Result = new BadRequestObjectResult(error);
-                        context.HttpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                        var errorModel = new ErrorModelShort(identityException, statusCode, errors);
+                        var json = JsonConvert.SerializeObject(errorModel);
+
+                        context.Result = new BadRequestObjectResult(errorModel);
+                        context.HttpContext.Response.StatusCode = statusCode;
+                        break;
+                    }
+
+                case IdentityNotFoundException identityNotFoundException:
+                    {
+                        var statusCode = (int)HttpStatusCode.NotFound;
+
+                        var errorModel = new ErrorModelShort(identityNotFoundException, statusCode);
+                        var json = JsonConvert.SerializeObject(errorModel);
+
+                        context.Result = new NotFoundObjectResult(errorModel);
+                        context.HttpContext.Response.StatusCode = statusCode;
                         break;
                     }
 
                 case InfrastructureException infraException:
                     {
-                        string json = tName + JsonConvert.SerializeObject(infraException.Message);
+                        var statusCode = (int)HttpStatusCode.InternalServerError;
 
-                        context.Result = new BadRequestObjectResult(json);
-                        context.HttpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                        var errorModel = new ErrorModelShort(infraException, statusCode, infraException.Errors);
+                        var json = JsonConvert.SerializeObject(errorModel);
+
+                        context.Result = new ObjectResult(errorModel);
+                        context.HttpContext.Response.StatusCode = statusCode;
                         break;
                     }
 
                 case StockException stockException:
                     {
-                        string json = tName + JsonConvert.SerializeObject(stockException.Message);
+                        var statusCode = (int)HttpStatusCode.BadRequest;
 
-                        context.Result = new BadRequestObjectResult(json);
-                        context.HttpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                        var errorModel = new ErrorModelShort(stockException, statusCode);
+                        var json = JsonConvert.SerializeObject(errorModel);
+
+                        context.Result = new BadRequestObjectResult(errorModel);
+                        context.HttpContext.Response.StatusCode = statusCode;
                         break;
                     }
 
                 default:
                     {
-                        string json = tName + JsonConvert.SerializeObject(exception.Message) +
-                            "\nInner Exception : \n" + exception.InnerException?.Message +
-                            "\nStack Trace : \n" + exception.StackTrace;
+                        var statusCode = (int)HttpStatusCode.BadRequest;
 
-                        context.Result = new BadRequestObjectResult(json);
-                        context.HttpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                        var errorModel = new ErrorModelShort(exception, statusCode);
+                        var json = JsonConvert.SerializeObject(errorModel);
+
+                        context.Result = new BadRequestObjectResult(errorModel);
+                        context.HttpContext.Response.StatusCode = statusCode;
                         break;
                     }
             }
         }
-
-        private ErrorModel GenerateJsonWithInnerAndStackTrace(Exception e, IEnumerable<string> errors)
-        {
-           
-
-            var error = new ErrorModel(e, errors);
-                
-            //var json = $"Error : {e.GetType().Name}\n";
-            //json += $"Message : {e.Message}";
-            //json += ((errors != null && errors.Count() > 0) ?
-            //   $"Errors : {errors.Select(e => e.ToString()).Aggregate((sums, y) => y + "\n")}" : "");
-            //json += ((e.InnerException != null) ?
-            //   $"InnerException : {e.InnerException?.Message}" : "");
-            //json += $"StackTrace : {e.StackTrace}";
-
-            return error;
-        }
-
-        private ErrorModel GenerateJsonWithInnerAndStackTrace(Exception e)
-        {
-            return GenerateJsonWithInnerAndStackTrace(e, null);
-        }
-
     }
 }

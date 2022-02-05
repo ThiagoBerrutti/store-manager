@@ -23,9 +23,5 @@ namespace SalesAPI.Identity.Services
         public Task<RoleReadDto> CreateAsync(RoleWriteDto role);
 
         public Task DeleteAsync(int id);
-
-        //public Task<UserViewModel> AddUserToRoleAsync(int id, int userId);
-
-        //public Task<UserViewModel> RemoveUserFromRoleAsync(int id, int userId);
     }
 }

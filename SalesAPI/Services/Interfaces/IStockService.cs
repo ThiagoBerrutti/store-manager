@@ -7,18 +7,18 @@ namespace SalesAPI.Services
 {
     public interface IStockService
     {
+        public Task<ProductStockReadDto> GetDtoByProductId(int productId);
+
+        public Task<IEnumerable<ProductStockReadDto>> GetAllDtoAsync();
+
         public ProductStock CreateProductStock(Product product, int startingAmount = 0);
 
-        public Task<StockReadDto> GetByProductId(int productId);
-
-        public Task<IEnumerable<StockReadDto>> GetAllAsync();
-
-        public Task Update(int productId, StockWriteDto dto);
+        public Task<ProductStockReadDto> Update(int productId, ProductStockWriteDto dto);
 
         public Task Delete(int id);
 
-        public Task RemoveProductAmount(int productId, int quantity);
+        public Task<ProductStockReadDto> RemoveProductAmount(int productId, int quantity);
 
-        public Task AddProductAmount(int productId, int quantity);
+        public Task<ProductStockReadDto> AddProductAmount(int productId, int quantity);
     }
 }

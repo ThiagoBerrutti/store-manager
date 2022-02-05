@@ -10,8 +10,8 @@ using SalesAPI.Persistence;
 namespace SalesAPI.Migrations
 {
     [DbContext(typeof(SalesDbContext))]
-    [Migration("20220202095626_aa")]
-    partial class aa
+    [Migration("20220204015021_mig")]
+    partial class mig
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -139,28 +139,28 @@ namespace SalesAPI.Migrations
                         new
                         {
                             Id = 1,
-                            ConcurrencyStamp = "f39e7f8d-772c-416d-9093-bc0466e8b7a4",
+                            ConcurrencyStamp = "c60f4ba0-cd92-4749-ad79-ffe6be967cb9",
                             Name = "Administrator",
                             NormalizedName = "ADMINISTRATOR"
                         },
                         new
                         {
                             Id = 2,
-                            ConcurrencyStamp = "02e7b475-71ab-44f8-9821-80f4dd2737b5",
+                            ConcurrencyStamp = "d9c14641-8792-46b3-a17e-17ab5ace6110",
                             Name = "Manager",
                             NormalizedName = "MANAGER"
                         },
                         new
                         {
                             Id = 3,
-                            ConcurrencyStamp = "b34e8ad9-4fbd-4a97-8a43-38b7848b6a78",
+                            ConcurrencyStamp = "73f84461-3c53-4433-bbb0-3c3a08021314",
                             Name = "Stock",
                             NormalizedName = "STOCK"
                         },
                         new
                         {
                             Id = 4,
-                            ConcurrencyStamp = "ce735114-c9d7-4ba6-aad0-902874f2a563",
+                            ConcurrencyStamp = "d7ec5d8b-207d-4dcb-9b1e-8b1fd4956432",
                             Name = "Seller",
                             NormalizedName = "SELLER"
                         });
@@ -180,12 +180,21 @@ namespace SalesAPI.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("DateOfbirth")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<string>("FirstName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastName")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -237,13 +246,16 @@ namespace SalesAPI.Migrations
                         {
                             Id = 1,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "bc195729-0f69-46fd-99f4-f0b090cc33cc",
+                            ConcurrencyStamp = "58febdd3-9a1d-4510-a13b-f314646085ed",
+                            DateOfbirth = new DateTime(1980, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             EmailConfirmed = false,
+                            FirstName = "Admin",
+                            LastName = "Almeida",
                             LockoutEnabled = false,
                             NormalizedUserName = "ADMIN",
-                            PasswordHash = "AQAAAAEAACcQAAAAEOS3B1MPVSI2398lvwFHa1e1rGuUka7wwlhxMtoWBE2YQSEzqeK2cXocGOMuBCxTzA==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEMIJTgPSEVv/wIDQwrd0N3UgHsp0bomLru8ZmIqayQENqp4VEk91ockcylce5sIgpw==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "920dbc2b-3d44-4f15-ab95-79b39d7e6ac3",
+                            SecurityStamp = "abc7e1e6-d3d4-45d5-9068-dae5b84c4538",
                             TwoFactorEnabled = false,
                             UserName = "admin"
                         },
@@ -251,13 +263,16 @@ namespace SalesAPI.Migrations
                         {
                             Id = 2,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "440b2945-ff0d-43c1-abe5-75c7440b273d",
+                            ConcurrencyStamp = "b89ec279-e8b1-4e2e-a9ca-e33bfe7bd8f6",
+                            DateOfbirth = new DateTime(1990, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             EmailConfirmed = false,
+                            FirstName = "Bruno",
+                            LastName = "Bento",
                             LockoutEnabled = false,
                             NormalizedUserName = "MANAGER",
-                            PasswordHash = "AQAAAAEAACcQAAAAEGqPO/6saeXVasLYi1S8IHF5+NcJyRcJnDhBFXQtEEnjelh1vFkiMuufnGl3yIQ91w==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEOhQk+4xn0iF0a5KSMX2ePa7DwXb1rYFN95u8TyEqrRX8YMnMzoVJnjGkz0zxKdPpA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "322ac5bf-c500-43e8-95e7-edc669e4a9f8",
+                            SecurityStamp = "fc323f65-36c0-453c-80e4-39c6fc0ad22a",
                             TwoFactorEnabled = false,
                             UserName = "manager"
                         },
@@ -265,13 +280,16 @@ namespace SalesAPI.Migrations
                         {
                             Id = 3,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "4d36def5-b793-49ef-b198-e569fa9c5f43",
+                            ConcurrencyStamp = "18d8dabf-2620-4789-8a66-a4a2ec34bf47",
+                            DateOfbirth = new DateTime(1995, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             EmailConfirmed = false,
+                            FirstName = "Carlos",
+                            LastName = "Costa",
                             LockoutEnabled = false,
                             NormalizedUserName = "STOCK",
-                            PasswordHash = "AQAAAAEAACcQAAAAEAEPnlLW3qu6sbnexqDrFCKzp+6mkBLYxN5cDnegB0Zb+SCN10+kmEQk0hCaLUB7FQ==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEAV01UQm3+97szZvCtOO/o5Q1il3DSPCK9mDP8nvIJfzZMvfu/F79A6EuJE5xbPjOA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "b89a318e-3550-4397-be26-e5d700ed6cd1",
+                            SecurityStamp = "29ff645e-11f7-43a2-9098-902aad8ced5b",
                             TwoFactorEnabled = false,
                             UserName = "stock"
                         },
@@ -279,13 +297,16 @@ namespace SalesAPI.Migrations
                         {
                             Id = 4,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "5ef3855c-ea2e-4aa9-bc2f-5a01305cedbd",
+                            ConcurrencyStamp = "706ec659-b005-417e-9178-d2214b20edd5",
+                            DateOfbirth = new DateTime(2000, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             EmailConfirmed = false,
+                            FirstName = "Diego",
+                            LastName = "Dourado",
                             LockoutEnabled = false,
                             NormalizedUserName = "SELLER",
-                            PasswordHash = "AQAAAAEAACcQAAAAEPXKJbtUgcSumL8H7lrMZKkZvH4WUTIMWdUGhDcWEv7Nt24nMcLuh+ov0mhcL5hdgg==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEEY8kLEbiKjsXaKXRsFS/RSV/m8O8rXu4kmS17rK9PL+PTvEyXoYfeFkFENOTes/zg==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "4afb9f84-be95-4b48-bc54-2bf3a487a9c1",
+                            SecurityStamp = "d17b3b63-b182-4821-b96c-c9ba6cbc9ace",
                             TwoFactorEnabled = false,
                             UserName = "seller"
                         });

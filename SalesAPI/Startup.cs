@@ -64,14 +64,20 @@ namespace SalesAPI
                 .AddRoleManager<RoleManager<Role>>()
                 .AddSignInManager<SignInManager<User>>();
 
-            //services.AddMvc(
-            //options =>
-            //{
-            //    var policy = new AuthorizationPolicyBuilder()
-            //        .RequireAuthenticatedUser()
-            //        .Build();
-            //    //options.Filters.Add(new AuthorizeFilter(policy));
-            //}).SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0);
+            services.AddHttpContextAccessor();
+
+            services.AddMvc(options =>
+            {
+                var policy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+                options.Filters.Add(new AuthorizeFilter(policy));
+                options.Filters.Add(typeof(ExceptionFilter));
+            })
+                .SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0);
+
+
+            // token
 
             var appSettingsSection = Configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingsSection);
@@ -98,6 +104,8 @@ namespace SalesAPI
                         ValidIssuer = appSettings.Issuer
                     };
                 });
+
+            //swagger
 
             services.AddSwaggerGen(options =>
             {                
@@ -128,38 +136,28 @@ namespace SalesAPI
                 });
             });
 
+            //app services
+
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             services.AddScoped<IStockService, StockService>();
             services.AddScoped<IProductService, ProductService>();
-            services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<IRoleService, RoleService>();
-            services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUserService, UserService>();
 
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IProductStockRepository, ProductStockRepository>();
-            services.AddScoped<IEmployeeRepository, EmployeeRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IRoleRepository, RoleRepository>();
            
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             services.AddScoped<ProductSeed>();
-            services.AddScoped<StockSeed>();
 
-            services.AddHttpContextAccessor();
-            services.AddMvc(options =>
-            {
-                var policy = new AuthorizationPolicyBuilder()
-                    .RequireAuthenticatedUser()
-                    .Build();
-                //options.Filters.Add(new AuthorizeFilter(policy));
-                options.Filters.Add(typeof(ExceptionFilter));
-                
-                
-            }).SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0);
+            
         }
+
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ProductSeed pSeed)
@@ -168,7 +166,7 @@ namespace SalesAPI
             {
                 app.UseDeveloperExceptionPage();
                 IdentityModelEventSource.ShowPII = true;
-                Task.Run(async () => await pSeed.Seed()).Wait();
+                //Task.Run(async () => await pSeed.Seed()).Wait();
             }
             app.UseAuthentication();
 

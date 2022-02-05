@@ -6,7 +6,7 @@ namespace SalesAPI.Services
 {
     public interface IProductService
     {
-        public Task CreateAsync(ProductWriteDto product);
+        public Task<ProductReadDto> CreateAsync(ProductWriteDto product);
 
         public Task<IEnumerable<ProductReadDto>> GetAllDtoAsync();
 

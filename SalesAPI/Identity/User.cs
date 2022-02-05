@@ -1,12 +1,16 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using SalesAPI.Models;
+using System;
 using System.Collections.Generic;
 
 namespace SalesAPI.Identity
 {
     public class User : IdentityUser<int>
     {
-        public IEnumerable<Role> Roles { get; set; }
-        public IEnumerable<UserRole> UserRoles { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public DateTime DateOfbirth { get; set; }
+
+        public List<Role> Roles { get; set; }
+        public List<UserRole> UserRoles { get; set; }
     }
 }

@@ -18,6 +18,8 @@ namespace SalesAPI.Identity.Services
             _mapper = mapper;
         }
 
+
+
         public async Task<IEnumerable<RoleReadDto>> GetAllDtoAsync()
         {
             var roles = await _roleRepository.GetAllAsync();
@@ -26,16 +28,18 @@ namespace SalesAPI.Identity.Services
             return rolesDto;
         }
 
+
         public async Task<Role> GetByIdAsync(int id)
         {
             var role = await _roleRepository.GetByIdAsync(id);
             if (role == null)
             {
-                throw new DomainNotFoundException($"Role [Id = {id}] not found.");
+                throw new IdentityNotFoundException($"Role [Id = {id}] not found.");
             };
 
             return role;
         }
+
 
         public async Task<RoleReadDto> GetDtoByIdAsync(int id)
         {
@@ -45,16 +49,18 @@ namespace SalesAPI.Identity.Services
             return roleDto;
         }
 
+
         public async Task<Role> GetByNameAsync(string name)
         {
             var role = await _roleRepository.GetByNameAsync(name);
             if (role == null)
             {
-                throw new DomainNotFoundException($"Role ['{name}'] not found.");
+                throw new IdentityNotFoundException($"Role ['{name}'] not found.");
             }
 
             return role;
         }
+
 
         public async Task<RoleReadDto> GetDtoByNameAsync(string name)
         {
@@ -64,6 +70,7 @@ namespace SalesAPI.Identity.Services
             return roleDto;
         }
 
+
         public async Task<IEnumerable<RoleReadDto>> SearchByNameAsync(string name)
         {
             var roles = await _roleRepository.SearchByNameAsync(name);
@@ -71,6 +78,7 @@ namespace SalesAPI.Identity.Services
 
             return rolesDto;
         }
+
 
         public async Task<RoleReadDto> CreateAsync(RoleWriteDto dto)
         {
@@ -87,20 +95,18 @@ namespace SalesAPI.Identity.Services
             return roleReturn;
         }
 
+
         public async Task DeleteAsync(int id)
         {
-            var role = await _roleRepository.GetByIdAsync(id);
-            if (role == null)
-            {
-                throw new DomainNotFoundException($"Role [Id = {id}] not found.");
-            }
+            var role = await _roleRepository.GetByIdAsync(id);           
 
             var result = await _roleRepository.DeleteAsync(role);
             if (!result.Succeeded)
             {
-                throw new IdentityException("Role couldn't be deleted", result.Errors);
+                throw new IdentityException("Error deleting role", result.Errors);
             }
         }
+
 
         public async Task<IEnumerable<UserViewModel>> GetAllUsersOnRole(int id)
         {
@@ -109,51 +115,5 @@ namespace SalesAPI.Identity.Services
 
             return usersViewModel;
         }
-
-        //public async Task<UserViewModel> AddUserToRoleAsync(int id, int userId)
-        //{
-        //    var user = await _userService.GetByIdAsync(userId);
-        //    var role = await GetByIdAsync(id);
-
-        //    var hasRole = user.Roles.Contains(role);
-        //    if (hasRole)
-        //    {
-        //        throw new IdentityException($"User already assigned to role ['{role.Name}'].");
-        //    }
-
-        //    var result = await _roleRepository.AddUserToRoleAsync(user, role.Name);
-        //    if (!result.Succeeded)
-        //    {
-        //        throw new IdentityException($"Error adding user ['{user.UserName}'] to role ['{role.Name}'] .", result.Errors);
-        //    }
-
-        //    var userWithRole = await _userService.GetByUserNameAsync(user.UserName);
-        //    var userModel = _mapper.Map<UserViewModel>(userWithRole);
-
-        //    return userModel;
-        //}
-
-        //public async Task<UserViewModel> RemoveUserFromRoleAsync(int id, int userId)
-        //{
-        //    var user = await _userService.GetByIdAsync(userId);
-        //    var role = await GetByIdAsync(id);
-
-        //    var hasRole = user.Roles.Contains(role);
-        //    if (!hasRole)
-        //    {
-        //        throw new IdentityException($"User not assigned to role ['{role.Name}'].");
-        //    }
-
-        //    var result = await _roleRepository.RemoveFromRoleAsync(user, role.Name);
-        //    if (!result.Succeeded)
-        //    {
-        //        throw new IdentityException($"Error removing user ['{user.UserName}'] to role ['{role.Name}'] .", result.Errors);
-        //    }
-
-        //    var userModel = _mapper.Map<UserViewModel>(user);
-        //    return userModel;
-        //}
-
-        //users on role R
     }
 }

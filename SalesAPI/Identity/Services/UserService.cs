@@ -4,31 +4,31 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SalesAPI.Dtos;
 using SalesAPI.Exceptions.Domain;
+using SalesAPI.Persistence;
 using SalesAPI.Persistence.Repositories;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace SalesAPI.Identity.Services
 {
     public class UserService : IUserService
     {
-        private readonly SignInManager<User> _signInManager;
         private readonly IRoleService _roleService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUserRepository _userRepository;
-        private readonly ITokenService _tokenService;
         private readonly IMapper _mapper;
 
-        public UserService(SignInManager<User> signInManager, IRoleService roleService, IHttpContextAccessor httpContextAccessor, IUserRepository userRepository, ITokenService tokenService, IMapper mapper)
+        public UserService(IRoleService roleService, IHttpContextAccessor httpContextAccessor, IUserRepository userRepository, IMapper mapper)
         {
-            _signInManager = signInManager;
             _roleService = roleService;
             _httpContextAccessor = httpContextAccessor;
             _userRepository = userRepository;
-            _tokenService = tokenService;
             _mapper = mapper;
         }
+
+
 
         public async Task<IEnumerable<UserViewModel>> GetAllDtoAsync()
         {
@@ -39,16 +39,18 @@ namespace SalesAPI.Identity.Services
             return usersModel;
         }
 
+
         public async Task<User> GetByUserNameAsync(string userName)
         {
-            var user = await _userRepository.GetByNameAsync(userName);
+            var user = await _userRepository.GetByUserNameAsync(userName);
             if (user == null)
             {
-                throw new DomainNotFoundException($"User ['{userName}'] not found.");
+                throw new IdentityNotFoundException($"User ['{userName}'] not found.");
             }
 
             return user;
         }
+
 
         public async Task<UserViewModel> GetDtoByUserNameAsync(string userName)
         {
@@ -58,16 +60,18 @@ namespace SalesAPI.Identity.Services
             return userViewModel;
         }
 
+
         public async Task<User> GetByIdAsync(int id)
         {
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null)
             {
-                throw new DomainNotFoundException($"User [Id = {id}] not found.");
+                throw new IdentityNotFoundException($"User [Id = {id}] not found.");
             }
 
             return user;
         }
+
 
         public async Task<UserViewModel> GetDtoByIdAsync(int id)
         {
@@ -77,54 +81,21 @@ namespace SalesAPI.Identity.Services
             return userViewModel;
         }
 
-        public async Task<AuthResponse> RegisterAsync(UserRegisterDto userDto)
+
+        public async  Task<IList<string>> GetRolesNamesAsync(string userName)
         {
-            var user = _mapper.Map<User>(userDto);
+            var user = await GetByUserNameAsync(userName);
+            var roles = await _userRepository.GetRolesNamesAsync(user);
 
-            var result = await _userRepository.CreateAsync(user, userDto.Password);
-            if (!result.Succeeded)
-            {
-                throw new IdentityException("Error on user registration.", result.Errors);
-            }
-
-            var appUser = await _userRepository.GetByNameAsync(user.UserName);
-            var userLogin = _mapper.Map<UserLoginDto>(appUser);
-            userLogin.Password = userDto.Password;
-
-            var loginResult = await AuthenticateAsync(userLogin);
-            var userModel = _mapper.Map<UserViewModel>(appUser);
-
-            return new AuthResponse(userModel, loginResult.Token);
+            return roles;
         }
 
 
-        public async Task<AuthResponse> AuthenticateAsync(UserLoginDto userLogin)
+        public async Task<IdentityResult> CreateAsync(User user, string password)
         {
-            var user = await _userRepository.GetByNameAsync(userLogin.UserName);
-            if (user == null)
-            {
-                throw new IdentityException("Invalid username or password.");
-            }
-
-            var signInResult = await _signInManager.CheckPasswordSignInAsync(user, userLogin.Password, false);
-            if (!signInResult.Succeeded)
-            {
-                throw new IdentityException("Invalid username or password.");
-            }
-
-            var appUser = await _userRepository.GetByNameAsync(userLogin.UserName);
-
-            var token = await _tokenService.GenerateJWTAsync(appUser);
-            var userToReturn = _mapper.Map<UserViewModel>(appUser);
-
-            return new AuthResponse(userToReturn, token);
-        }
-
-
-        public async Task<AuthResponse> AuthenticateAsync(UserRegisterDto userRegisterDto)
-        {
-            var userLoginDto = _mapper.Map<UserLoginDto>(userRegisterDto);
-            return await AuthenticateAsync(userLoginDto);
+            var result = await _userRepository.CreateAsync(user, password);
+            
+            return result;
         }
 
 
@@ -141,7 +112,7 @@ namespace SalesAPI.Identity.Services
             var hasRole = user.Roles.Contains(role);
             if (hasRole)
             {
-                throw new IdentityException($"User already assigned to role [\"{role.Name}\"].");
+                throw new IdentityException($"User already assigned to role ['{role.Name}'].");
             }
             
             var result = await _userRepository.AddToRoleAsync(user, role.Name);
@@ -167,7 +138,6 @@ namespace SalesAPI.Identity.Services
             if (user.Id == 1)
             {
                 throw new IdentityException($"Error removing user from role ['{role.Name}'].", new List<IdentityError> { new IdentityError { Description = "Cannot remove Administrator role from root user." } });
-
             }
 
             var hasRole = user.Roles.Contains(role);
@@ -211,10 +181,30 @@ namespace SalesAPI.Identity.Services
             return user;
         }
 
-
-        public async Task ChangePasswordAsync(string userName, string currentPassword, string newPassword)
+        public async Task<UserViewModel> UpdateUserAsync(string userName, UserUpdateDto userUpdateDto)
         {
             var user = await GetByUserNameAsync(userName);
+            _mapper.Map<UserUpdateDto, User>(userUpdateDto, user);
+
+            var result = await _userRepository.UpdateUserAsync(user);
+            if (!result.Succeeded)
+            {
+                throw new IdentityException("Error while updating user.", result.Errors);
+            }
+
+            var updatedUser = await GetByUserNameAsync(userName);
+            var userToResult = _mapper.Map<UserViewModel>(updatedUser);
+
+
+            return userToResult;
+        }
+
+
+
+        public async Task ChangePasswordAsync(int id, string currentPassword, string newPassword)
+        {
+            var user = await GetByIdAsync(id);
+            
             var result = await _userRepository.ChangePasswordAsync(user, currentPassword, newPassword);
             if (!result.Succeeded)
             {
@@ -234,9 +224,13 @@ namespace SalesAPI.Identity.Services
         }
 
 
-        public async Task ResetPasswordAsync(string userName, string newPassword)
+        public async Task ResetPasswordAsync(int id, string newPassword)
         {
-            var user = await GetByUserNameAsync(userName);
+            var user = await GetByIdAsync(id);
+            if (newPassword == "")
+            {
+                newPassword = user.UserName; // pra ficar mais facil
+            }
 
             var result = await _userRepository.ResetPasswordAsync(user, newPassword);
             if (!result.Succeeded)

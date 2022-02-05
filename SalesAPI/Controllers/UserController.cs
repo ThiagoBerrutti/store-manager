@@ -1,37 +1,29 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SalesAPI.Dtos;
-using SalesAPI.Identity;
+using SalesAPI.Helpers;
 using SalesAPI.Identity.Services;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace SalesAPI.Controllers
 {
-    [Produces("text/json")]
-    
     [ApiController]
     [Route("api/v1/[controller]")]
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
-        //private readonly SignInManager<User> _signInManager;
-        //private readonly UserManager<User> _userManager;
-        private readonly ITokenService _tokenService;
 
-        public UserController(SignInManager<User> signInManager, 
-                                UserManager<User> userManager,
-                                IUserService userService, ITokenService tokenService)
+        public UserController(IUserService userService)
         {
             _userService = userService;
-            //_signInManager = signInManager;
-            //_userManager = userManager;
-            _tokenService = tokenService;
         }
+
 
         [Authorize(Roles = "Administrator,Manager")]
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAllUsers()
         {
             var result = await _userService.GetAllDtoAsync();
 
@@ -39,6 +31,7 @@ namespace SalesAPI.Controllers
         }
 
 
+        [Authorize(Roles = "Administrator,Manager")]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetUserById(int id)
         {
@@ -47,7 +40,7 @@ namespace SalesAPI.Controllers
             return Ok(result);
         }
 
-        
+
         [HttpGet("currentUser")]
         public async Task<IActionResult> GetCurrentUser()
         {
@@ -57,7 +50,7 @@ namespace SalesAPI.Controllers
         }
 
 
-        [Authorize(Roles = "Administrator,Manager")]        
+        [Authorize(Roles = "Administrator,Manager")]
         [HttpGet("name", Name = "GetUserByUserName")]
         public async Task<IActionResult> GetUserByUserName(string userName)
         {
@@ -67,62 +60,78 @@ namespace SalesAPI.Controllers
         }
 
 
-        [HttpPost("register")]
-        [AllowAnonymous]
-        public async Task<IActionResult> Register(UserRegisterDto userDto)
+        [Authorize(Roles = "Administrator,Manager")]
+        [HttpPut]
+        public async Task<IActionResult> UpdateUser(string userName, UserUpdateDto userUpdate)
         {
-            var registerResponse = await _userService.RegisterAsync(userDto);
-            var authenticateResponse = await _userService.AuthenticateAsync(userDto);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState.GetErrorMessages());
+            }
 
-            return Created(nameof(GetUserByUserName), registerResponse);
+            var currentUserClaims = HttpContext.User;
+            var currentUserName = currentUserClaims.FindFirst(ClaimTypes.Name).Value;
+            var isCurrentUser = currentUserName.ToUpper() == userName.ToUpper();
+
+            if (!(currentUserClaims.IsInRole("Administrator") || currentUserClaims.IsInRole("Manager") || isCurrentUser))
+            {
+                return new UnauthorizedResult();
+            }
+
+            var result = await _userService.UpdateUserAsync(userName, userUpdate);
+
+            return Ok(result);
         }
 
-
-        [HttpPost("login")]
-        [AllowAnonymous]
-        public async Task<IActionResult> Login(UserLoginDto userLogin)
-        {
-            var authResponse = await _userService.AuthenticateAsync(userLogin);
-
-            return Ok(authResponse);
-        }
-        
 
         [Authorize(Roles = "Administrator")]
-        [HttpPut("name/changePassword")]
-        public async Task<IActionResult> ChangePassword(string userName, [FromBody] ChangePasswordsDto passwords)
+        [HttpPut("{id:int}/password")]
+        public async Task<IActionResult> ChangePassword(int id, ChangePasswordsDto passwords)
         {
-            await _userService.ChangePasswordAsync(userName, passwords.CurrentPassword, passwords.NewPassword);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState.GetErrorMessages());
+            }
+
+            await _userService.ChangePasswordAsync(id, passwords.CurrentPassword, passwords.NewPassword);
 
             return Ok();
         }
 
-        [HttpPut("current/changePassword")]
-        public async Task<IActionResult> ChangeCurrentUserPassword([FromBody] ChangePasswordsDto passwords)
+
+        [HttpPut("current/password")]
+        public async Task<IActionResult> ChangeCurrentUserPassword(ChangePasswordsDto passwords)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState.GetErrorMessages());
+            }
+
             await _userService.ChangeCurrentUserPasswordAsync(passwords.CurrentPassword, passwords.NewPassword);
 
             return Ok();
         }
 
+
         [Authorize(Roles = "Administrator")]
-        [HttpPut("name/ResetPassword")]
-        public async Task<IActionResult> ResetPassword(string userName)
+        [HttpDelete("{id:int}/password")]
+        public async Task<IActionResult> ResetPassword(int id, string newPassword = "")
         {
-            var newPassword = userName;
-            await _userService.ResetPasswordAsync(userName, newPassword);
+            await _userService.ResetPasswordAsync(id, newPassword);
 
             return Ok();
         }
+
 
         [Authorize(Roles = "Administrator,Manager")]
         [HttpPut("{id:int}/roles")]
         public async Task<IActionResult> AddUserToRole(int id, int roleId)
         {
-            var user = await _userService.AddToRoleAsync(id,roleId);
+            var user = await _userService.AddToRoleAsync(id, roleId);
 
             return Ok(user);
         }
+
 
         [Authorize(Roles = "Administrator,Manager")]
         [HttpDelete("{id:int}/roles")]

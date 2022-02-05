@@ -14,12 +14,14 @@ namespace SalesAPI.Persistence.Repositories
             _context = context;
         }
 
+
         public async Task<IEnumerable<ProductStock>> GetAll()
         {
             return await _context.ProductStocks
                                 .Include(ps => ps.Product)
                                 .ToListAsync();
         }
+
 
         public async Task<ProductStock> GetByProductIdAsync(int productId)
         {
@@ -28,12 +30,14 @@ namespace SalesAPI.Persistence.Repositories
                                 .FirstOrDefaultAsync(ps => ps.ProductId == productId);
         }
 
+
         public async Task<ProductStock> GetByIdAsync(int stockId)
         {
             return await _context.ProductStocks
                                 .Include(ps => ps.Product)
                                 .FirstOrDefaultAsync(ps => ps.Id == stockId);
         }
+
 
         public async Task<ProductStock> GetByProductAsync(Product product)
         {
@@ -42,21 +46,22 @@ namespace SalesAPI.Persistence.Repositories
                                 .FirstOrDefaultAsync(ps => ps.Product == product);
         }
 
+
         public void Create(ProductStock productStock)
         {
             _context.ProductStocks.Add(productStock);
         }
+
 
         public void Update(ProductStock productStock)
         {
             _context.ProductStocks.Update(productStock);
         }
 
+
         public void Delete(ProductStock productStock)
         {
             _context.ProductStocks.Remove(productStock);
-        }
-
-        
+        }        
     }
 }

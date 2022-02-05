@@ -16,6 +16,8 @@ namespace SalesAPI.Persistence.Repositories
             _roleManager = roleManager;
         }
 
+
+
         public async Task<IEnumerable<Role>> GetAllAsync()
         {
             var roles = await _roleManager.Roles
@@ -23,6 +25,7 @@ namespace SalesAPI.Persistence.Repositories
                                 .ToListAsync();
             return roles;
         }
+
 
         public async Task<Role> GetByNameAsync(string roleName)
         {
@@ -32,14 +35,16 @@ namespace SalesAPI.Persistence.Repositories
             return role;
         }
 
+
         public async Task<Role> GetByIdAsync(int id)
         {
             var role = await _roleManager.Roles
                                 .Include(r => r.Users)
                                 .FirstOrDefaultAsync(r => r.Id == id);
-           
+
             return role;
         }
+
 
         public async Task<IEnumerable<Role>> SearchByNameAsync(string name)
         {
@@ -51,17 +56,18 @@ namespace SalesAPI.Persistence.Repositories
             return roles;
         }
 
+
         public async Task<IdentityResult> CreateAsync(Role role)
         {
             var result = await _roleManager.CreateAsync(role);
             return result;
         }
 
+
         public async Task<IdentityResult> DeleteAsync(Role role)
         {
             var result = await _roleManager.DeleteAsync(role);
             return result;
         }
-       
     }
 }

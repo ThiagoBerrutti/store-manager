@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using SalesAPI.Dtos;
+using SalesAPI.Helpers;
 using SalesAPI.Identity;
 using SalesAPI.Models;
+using System;
 
 namespace SalesAPI.Mapper
 {
@@ -12,16 +14,17 @@ namespace SalesAPI.Mapper
             CreateMap<ProductWriteDto, Product>().ReverseMap();
             CreateMap<ProductReadDto, Product>().ReverseMap();
 
-            CreateMap<StockReadDto, ProductStock>().ReverseMap();
-            CreateMap<StockWriteDto, ProductStock>().ReverseMap();
+            CreateMap<ProductStockReadDto, ProductStock>().ReverseMap();
+            CreateMap<ProductStockWriteDto, ProductStock>().ReverseMap();
 
-            CreateMap<UserLoginDto, User>().ReverseMap();
-            CreateMap<UserRegisterDto, User>().ReverseMap();
+            CreateMap<User, UserLoginDto>().ReverseMap();
+            CreateMap<UserUpdateDto, User>().ReverseMap();
+            CreateMap<User, UserAuthViewModel>().ReverseMap();
+            CreateMap<User, UserRegisterDto>().ReverseMap();
             CreateMap<UserRegisterDto, UserLoginDto>().ReverseMap();
-            CreateMap<User, UserViewModel>();
-                
-            CreateMap<Employee, EmployeeReadDto>().ReverseMap();
-            CreateMap<Employee, EmployeeWriteDto>().ReverseMap();
+            CreateMap<User, UserViewModel>()
+                .ForMember(dto => dto.FullName, o => o.MapFrom(src => src.FirstName + " " + src.LastName))
+                .ForMember(dto => dto.Age, o => o.MapFrom(src => AgeCalculator.Calculate(src.DateOfbirth)));
 
             CreateMap<Role, RoleReadDto>().ReverseMap();
             CreateMap<Role, RoleWriteDto>().ReverseMap();

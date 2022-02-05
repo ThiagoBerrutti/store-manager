@@ -1,13 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SalesAPI.Dtos;
-using SalesAPI.Identity;
 using SalesAPI.Identity.Services;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SalesAPI.Controllers
 {
+    [Authorize(Roles = "Administrator,Manager")]
     [ApiController]
     [Route("api/v1/[controller]")]
     public class RoleController : ControllerBase
@@ -19,32 +19,31 @@ namespace SalesAPI.Controllers
             _roleService = roleService;
         }
 
-        [Authorize(Roles = "Administrator,Manager")]
+
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<RoleReadDto>>> GetAll()
+        public async Task<ActionResult<IEnumerable<RoleReadDto>>> GetAllRoles()
         {
             var roles = await _roleService.GetAllDtoAsync();
             return Ok(roles);
         }
-        
-        [Authorize(Roles = "Administrator,Manager")]
+
+
         [HttpGet("{id:int}", Name = "GetById")]
-        public async Task<ActionResult<RoleReadDto>> GetById(int id)
+        public async Task<ActionResult<RoleReadDto>> GetRoleById(int id)
         {
             var employee = await _roleService.GetDtoByIdAsync(id);
             return Ok(employee);
         }
 
-        [Authorize(Roles = "Administrator,Manager")]
+
         [HttpGet("name", Name = "GetByName")]
-        public async Task<ActionResult<RoleReadDto>> GetByName(string roleName)
+        public async Task<ActionResult<RoleReadDto>> GetRoleByName(string roleName)
         {
             var employee = await _roleService.GetDtoByNameAsync(roleName);
             return Ok(employee);
         }
 
 
-        [Authorize(Roles = "Administrator,Manager")]
         [HttpGet("{id:int}/users")]
         public async Task<ActionResult<UserViewModel>> GetUsersOnRole(int id)
         {
@@ -53,31 +52,29 @@ namespace SalesAPI.Controllers
         }
 
 
-        [Authorize(Roles = "Administrator,Manager")]
         [HttpGet("search")]
-        public async Task<ActionResult<IEnumerable<RoleReadDto>>> Search(string name)
+        public async Task<ActionResult<IEnumerable<RoleReadDto>>> SearchRole(string name)
         {
             var employees = await _roleService.SearchByNameAsync(name);
             return Ok(employees);
         }
 
-        [Authorize(Roles = "Administrator,Manager")]
+
         [HttpPost]
-        public async Task<ActionResult> Create(RoleWriteDto roleDto)
+        public async Task<ActionResult> CreateRole(RoleWriteDto roleDto)
         {
             var roleOnRepo = await _roleService.CreateAsync(roleDto);
 
-            return CreatedAtRoute(nameof(GetById), new { roleOnRepo.Id }, roleOnRepo);
+            return CreatedAtRoute(nameof(GetRoleById), new { roleOnRepo.Id }, roleOnRepo);
         }
+
 
         [Authorize(Roles = "Administrator")]
-        [HttpDelete]
-        public async Task<IActionResult> Delete(int ide)
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> DeleteRole(int id)
         {
-            await _roleService.DeleteAsync(ide);
+            await _roleService.DeleteAsync(id);
             return Ok();
         }
-
-        
     }
 }
