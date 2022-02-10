@@ -27,7 +27,7 @@ namespace SalesAPI.Controllers
         }
 
 
-        [HttpGet("{id:int}", Name = "GetProductById")]
+        [HttpGet("{id}", Name = "GetProductById")]
         public async Task<ActionResult<ProductReadDto>> GetProductById(int id)
         {
             var result = await _productService.GetDtoByIdAsync(id);
@@ -45,15 +45,15 @@ namespace SalesAPI.Controllers
 
         [Authorize(Roles = "Administrator,Manager")]
         [HttpPost]
-        public async Task<IActionResult> CreateProduct(ProductWriteDto product)
+        public async Task<IActionResult> CreateProduct(ProductWriteDto product, int amount)
         {
-            var productCreated = await _productService.CreateAsync(product);
+            var productCreated = await _productService.CreateAsync(product, amount);
             return CreatedAtRoute(nameof(GetProductById), new { productCreated.Id }, productCreated);
         }
 
 
         [Authorize(Roles = "Administrator,Manager")]
-        [HttpDelete("{id:int}")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProduct([FromRoute] int id)
         {
             await _productService.DeleteAsync(id);
@@ -62,7 +62,7 @@ namespace SalesAPI.Controllers
 
 
         [Authorize(Roles = "Administrator,Manager")]
-        [HttpPut("{id:int}")]
+        [HttpPut("{id}")]
         public async Task<IActionResult> UpdateProduct([FromRoute] int id, [FromBody] ProductWriteDto productUpdate)
         {
             var updatedProductDto = await _productService.UpdateAsync(id, productUpdate);

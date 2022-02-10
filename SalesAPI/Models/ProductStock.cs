@@ -16,19 +16,5 @@
             Product = product;
             Count = count;
         }
-
-
-        //public override bool Equals(object obj)
-        //{
-        //    if (ReferenceEquals(null, obj)) return false;
-        //    if (ReferenceEquals(this, obj)) return true;
-
-        //    if (obj is ProductStock compareTo)
-        //    {
-        //        return Product.Equals(compareTo);
-        //    }
-
-        //    return false;
-        //}
     }
 }

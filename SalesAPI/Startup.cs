@@ -3,10 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -57,7 +54,7 @@ namespace SalesAPI
                 options.Password.RequiredLength = 6;
                 options.Password.RequiredUniqueChars = 0;
                 options.Password.RequireUppercase = false;
-                options.Password.RequireNonAlphanumeric = false;                
+                options.Password.RequireNonAlphanumeric = false;
             })
                 .AddRoles<Role>()
                 .AddEntityFrameworkStores<SalesDbContext>()
@@ -66,7 +63,7 @@ namespace SalesAPI
                 .AddRoleManager<RoleManager<Role>>()
                 .AddSignInManager<SignInManager<User>>();
 
-            
+
 
             services.AddMvc(options =>
             {
@@ -155,14 +152,6 @@ namespace SalesAPI
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             services.AddScoped<ProductSeed>();
-
-            //services.AddSingleton<IActionContextAccessor>()
-            //    .AddScoped(s => s
-            //        .GetRequiredService<IUrlHelperFactory>()
-            //        .GetUrlHelper(s.GetRequiredService<IActionContextAccessor>().ActionContext));
-                
-
-
 
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.AddHttpContextAccessor();

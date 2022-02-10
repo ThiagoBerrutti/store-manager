@@ -31,7 +31,7 @@ namespace SalesAPI.Controllers
 
 
         [Authorize(Roles = "Administrator,Manager")]
-        [HttpGet("{id:int}", Name = "GetUserById")]
+        [HttpGet("{id}", Name = "GetUserById")]
         public async Task<IActionResult> GetUserById(int id)
         {
             var result = await _userService.GetDtoByIdAsync(id);
@@ -50,7 +50,7 @@ namespace SalesAPI.Controllers
 
 
         [Authorize(Roles = "Administrator,Manager")]
-        [HttpGet("userName")]
+        [HttpGet("userName/{userName}")]
         public async Task<IActionResult> GetUserByUserName(string userName)
         {
             var result = await _userService.GetDtoByUserNameAsync(userName);
@@ -60,7 +60,7 @@ namespace SalesAPI.Controllers
 
 
         [Authorize(Roles = "Administrator,Manager")]
-        [HttpGet("search")]
+        [HttpGet("search/{search}")]
         public async Task<IActionResult> SearchUser(string search)
         {
             var result = await _userService.SearchAsync(search);
@@ -94,7 +94,7 @@ namespace SalesAPI.Controllers
 
 
         [Authorize(Roles = "Administrator")]
-        [HttpPut("{id:int}/password")]
+        [HttpPut("{id}/password")]
         public async Task<IActionResult> ChangePassword(int id, ChangePasswordsDto passwords)
         {
             if (!ModelState.IsValid)
@@ -123,7 +123,7 @@ namespace SalesAPI.Controllers
 
 
         [Authorize(Roles = "Administrator")]
-        [HttpDelete("{id:int}/password")]
+        [HttpDelete("{id}/password")]
         public async Task<IActionResult> ResetPassword(int id, string newPassword = "")
         {
             await _userService.ResetPasswordAsync(id, newPassword);
@@ -133,7 +133,7 @@ namespace SalesAPI.Controllers
 
 
         [Authorize(Roles = "Administrator,Manager")]
-        [HttpPut("{id:int}/roles/add/{roleId}")]
+        [HttpPut("{id}/roles/add/{roleId}")]
         public async Task<IActionResult> AddUserToRole(int id, int roleId)
         {
             var user = await _userService.AddToRoleAsync(id, roleId);
@@ -143,7 +143,7 @@ namespace SalesAPI.Controllers
 
 
         [Authorize(Roles = "Administrator,Manager")]
-        [HttpPut("{id:int}/roles/remove/{roleId}")]
+        [HttpPut("{id}/roles/remove/{roleId}")]
         public async Task<IActionResult> RemoveFromRole(int id, int roleId)
         {
             var user = await _userService.RemoveFromRoleAsync(id, roleId);

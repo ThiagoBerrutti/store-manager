@@ -30,7 +30,15 @@ namespace SalesAPI.Persistence.Repositories
                                 .FirstOrDefaultAsync(ps => ps.ProductId == productId);
         }
 
-                
+
+        public async Task<ProductStock> GetByIdAsync(int id)
+        {
+            return await _context.ProductStocks
+                                .Include(ps => ps.Product)
+                                .FirstOrDefaultAsync(ps => ps.Id == id);
+        }
+
+
         public void Create(ProductStock productStock)
         {
             _context.ProductStocks.Add(productStock);
@@ -46,6 +54,6 @@ namespace SalesAPI.Persistence.Repositories
         public void Delete(ProductStock productStock)
         {
             _context.ProductStocks.Remove(productStock);
-        }        
+        }
     }
 }

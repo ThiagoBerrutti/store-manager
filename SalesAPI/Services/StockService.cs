@@ -36,7 +36,7 @@ namespace SalesAPI.Services
             var stock = await _stockRepository.GetByProductIdAsync(productId);
             if (stock == null)
             {
-                throw new DomainNotFoundException($"Stock for product [productId = {productId}] not found.");
+                throw new DomainNotFoundException($"Stock for product [productId = {productId}] not found");
             }
 
             return stock;
@@ -52,6 +52,27 @@ namespace SalesAPI.Services
         }
 
 
+        public async Task<ProductStock> GetByIdAsync(int id)
+        {
+            var stock = await _stockRepository.GetByIdAsync(id);
+            if (stock == null)
+            {
+                throw new DomainNotFoundException($"Stock [Id = {id}] not found");
+            }
+
+            return stock;
+        }
+
+
+        public async Task<ProductStockReadDto> GetDtoByIdAsync(int id)
+        {
+            var stock = await GetByIdAsync(id);
+            var dto = _mapper.Map<ProductStockReadDto>(stock);
+
+            return dto;
+        }
+
+
         public ProductStock CreateProductStock(Product product, int startingAmount = 0)
         {
             var productStock = new ProductStock(product, startingAmount);
@@ -61,58 +82,9 @@ namespace SalesAPI.Services
         }
 
 
-        public async Task DeleteAsync(int productId)
+        public async Task<ProductStockReadDto> UpdateAsync(int id, ProductStockWriteDto dto)
         {
-            var stockOnRepo = await GetByProductIdAsync(productId);
-
-            stockOnRepo.Count = 0;
-
-            await _unitOfWork.CompleteAsync();
-        }
-
-
-        public async Task<ProductStockReadDto> AddProductAmountAsync(int productId, int amount)
-        {
-            if (amount <= 0)
-            {
-                throw new ApplicationException("Amount should be a positive number.");
-            }
-
-            var productStock = await GetByProductIdAsync(productId);            
-
-            productStock.Count += amount;
-            await _unitOfWork.CompleteAsync();
-
-            var productStockDto = _mapper.Map<ProductStockReadDto>(productStock);
-            return productStockDto;
-        }
-
-
-        public async Task<ProductStockReadDto> RemoveProductAmountAsync(int productId, int amount)
-        {
-            if (amount <= 0)
-            {
-                throw new ApplicationException("Amount should be a positive number.");
-            }
-
-            var productStock = await GetByProductIdAsync(productId);
-            
-            if (productStock.Count - amount < 0)
-            {
-                throw new StockException($"Not enough products available. Only [{productStock.Count}] on stock.");
-            }
-
-            productStock.Count -= amount;
-            await _unitOfWork.CompleteAsync();
-
-            var productStockDto = _mapper.Map<ProductStockReadDto>(productStock);
-            return productStockDto;
-        }
-        
-
-        public async Task<ProductStockReadDto> UpdateAsync(int productId, ProductStockWriteDto dto)
-        { 
-            var psOnRepo = await GetByProductIdAsync(productId);
+            var psOnRepo = await GetByIdAsync(id);
             _mapper.Map(dto, psOnRepo);
 
             _stockRepository.Update(psOnRepo);
@@ -122,5 +94,47 @@ namespace SalesAPI.Services
             var productStockDto = _mapper.Map<ProductStockReadDto>(psOnRepo);
             return productStockDto;
         }
+
+
+        public async Task<ProductStockReadDto> AddProductAmountAsync(int id, int amount)
+        {
+            if (amount <= 0)
+            {
+                throw new ApplicationException("Amount should be a positive number");
+            }
+
+            var productStock = await GetByIdAsync(id);            
+            if (productStock.Count + amount > int.MaxValue)
+            {
+                throw new ApplicationException("Error adding amount. [Count] value too large");
+            }
+
+            productStock.Count += amount;
+            await _unitOfWork.CompleteAsync();
+
+            var productStockDto = _mapper.Map<ProductStockReadDto>(productStock);
+            return productStockDto;
+        }
+
+
+        public async Task<ProductStockReadDto> RemoveProductAmountAsync(int id, int amount)
+        {
+            if (amount <= 0)
+            {
+                throw new ApplicationException("Amount should be a positive number");
+            }
+
+            var productStock = await GetByIdAsync(id);            
+            if (productStock.Count - amount < 0)
+            {
+                throw new StockException($"Not enough products available. Only [{productStock.Count}] on stock");
+            }
+
+            productStock.Count -= amount;
+            await _unitOfWork.CompleteAsync();
+
+            var productStockDto = _mapper.Map<ProductStockReadDto>(productStock);
+            return productStockDto;
+        }        
     }
 }

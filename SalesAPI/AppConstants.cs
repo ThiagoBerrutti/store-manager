@@ -4,11 +4,6 @@
     {
         public struct Roles
         {
-            public const int ADMIN_ID = 1;
-            public const int MANAGER_ID = 1;
-            public const int STOCK_ID = 1;
-            public const int SELLER_ID = 1;
-
             public struct Admin
             {
                 public const int Id = 1;

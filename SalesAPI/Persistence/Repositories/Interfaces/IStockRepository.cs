@@ -10,6 +10,8 @@ namespace SalesAPI.Persistence.Repositories
 
         public Task<ProductStock> GetByProductIdAsync(int productId);
 
+        public Task<ProductStock> GetByIdAsync(int id);
+
         public void Create(ProductStock productStock);
 
         public void Update(ProductStock productStock);

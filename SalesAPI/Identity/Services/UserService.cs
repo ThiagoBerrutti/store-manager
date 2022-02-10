@@ -42,7 +42,7 @@ namespace SalesAPI.Identity.Services
             return usersModel;
         }
 
-        
+
         public async Task<User> GetByUserNameAsync(string userName)
         {
             var user = await _userRepository.GetByUserNameAsync(userName);
@@ -69,7 +69,7 @@ namespace SalesAPI.Identity.Services
 
             var usersDto = _mapper.Map<IEnumerable<UserViewModel>>(result);
 
-            return usersDto;                
+            return usersDto;
         }
 
 
@@ -113,17 +113,23 @@ namespace SalesAPI.Identity.Services
 
         public async Task<UserViewModel> AddToRoleAsync(int id, int roleId)
         {
+            var adminRoleId = AppConstants.Roles.Admin.Id;
+            var adminUserId = AppConstants.Users.Admin.Id;
+            var adminRoleName = AppConstants.Roles.Admin.Name;
             var role = await _roleService.GetByIdAsync(roleId);
-            string adminRoleName = AppConstants.Roles.Admin.Name;
-
-            if (role.Name == adminRoleName && !_httpContextAccessor.HttpContext.User.IsInRole(adminRoleName))
+            
+            if (roleId == adminRoleId) 
             {
-                throw new IdentityException($"Error removing user from role ['{role.Name}']: Administrator role required.");
+                var currentUser = await GetCurrentUserAsync();
+                if (currentUser.Id != adminUserId)
+                {
+                    throw new IdentityException($"Only root {adminRoleName} [Id = {adminUserId}] can assign {adminRoleName} role");
+                }
             }
 
             var user = await GetByIdAsync(id);
-
             var hasRole = user.Roles.Contains(role);
+
             if (hasRole)
             {
                 throw new IdentityException($"User already assigned to role ['{role.Name}'].");
@@ -142,24 +148,23 @@ namespace SalesAPI.Identity.Services
 
         public async Task<UserViewModel> RemoveFromRoleAsync(int id, int roleId)
         {
-            var adminId = AppConstants.Users.Admin.Id;
+            var adminUserId = AppConstants.Users.Admin.Id;
             var adminRoleName = AppConstants.Roles.Admin.Name;
             var adminRoleId = AppConstants.Roles.Admin.Id;
+            var currentUser = await GetCurrentUserAsync();
 
-            if (id == adminId && roleId == adminRoleId)
+            if (id == adminUserId && roleId == adminRoleId) 
             {
                 throw new IdentityException($"Cannot remove ['{adminRoleName}'] role from root admin.");
             }
 
-            var currentUser = await GetCurrentUserAsync();
-
-            var roleToRemove = await _roleService.GetByIdAsync(roleId);
-            if (roleToRemove.Name == adminRoleName && !currentUser.IsInRole(adminRoleName))
+            if (roleId == adminRoleId && currentUser.Id != adminUserId)
             {
-                throw new IdentityException($"Error removing user from role ['{roleToRemove.Name}']: Administrator role required.");
+                throw new IdentityException($"Only root {adminRoleName} [Id = {adminUserId}] can assign {adminRoleName} role");
             }
 
-            var userToRemoveRole = await GetByIdAsync(id);            
+            var roleToRemove = await _roleService.GetByIdAsync(roleId);
+            var userToRemoveRole = await GetByIdAsync(id);
             var hasRole = userToRemoveRole.Roles.Contains(roleToRemove);
 
             if (!hasRole)
@@ -174,8 +179,8 @@ namespace SalesAPI.Identity.Services
             }
 
             var userToReturn = await GetByIdAsync(id);
-
             var userModel = _mapper.Map<UserViewModel>(userToReturn);
+
             return userModel;
         }
 

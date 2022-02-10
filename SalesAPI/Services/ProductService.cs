@@ -27,12 +27,12 @@ namespace SalesAPI.Services
         }
 
 
-        public async Task<ProductReadDto> CreateAsync(ProductWriteDto productDto)
+        public async Task<ProductReadDto> CreateAsync(ProductWriteDto productDto, int amount)
         {
             var product = _mapper.Map<Product>(productDto);
             _productRepository.Add(product);
 
-            _stockService.CreateProductStock(product, 0);
+            _stockService.CreateProductStock(product, amount);
             await _unitOfWork.CompleteAsync();
 
             var stockDto = _mapper.Map<ProductReadDto>(product);

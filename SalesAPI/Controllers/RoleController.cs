@@ -28,7 +28,7 @@ namespace SalesAPI.Controllers
         }
 
 
-        [HttpGet("{id:int}", Name = "GetRoleById")]
+        [HttpGet("{id}", Name = "GetRoleById")]
         public async Task<ActionResult<RoleReadDto>> GetRoleById(int id)
         {
             var employee = await _roleService.GetDtoByIdAsync(id);
@@ -44,7 +44,7 @@ namespace SalesAPI.Controllers
         }
 
 
-        [HttpGet("{id:int}/users")]
+        [HttpGet("{id}/users")]
         public async Task<ActionResult<UserViewModel>> GetUsersOnRole(int id)
         {
             var users = await _roleService.GetAllUsersOnRole(id);
@@ -70,7 +70,7 @@ namespace SalesAPI.Controllers
 
 
         [Authorize(Roles = "Administrator")]
-        [HttpDelete("{id:int}")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteRole(int id)
         {
             await _roleService.DeleteAsync(id);

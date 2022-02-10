@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SalesAPI.Dtos;
 using SalesAPI.Services;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SalesAPI.Controllers
@@ -20,45 +21,59 @@ namespace SalesAPI.Controllers
         }
 
 
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ProductStockReadDto>>> GetAllStocks()
         {
             var result = await _stockService.GetAllDtoAsync();
+
             return Ok(result);
         }
 
 
-        [HttpGet("{productId:int}")]
-        public async Task<ActionResult<ProductStockReadDto>> GetStockByProductId(int productId)
+        [HttpGet("product")]
+        public async Task<ActionResult<ProductStockReadDto>> GetStockByProductId(int id)
         {
-            var productStock = await _stockService.GetDtoByProductIdAsync(productId);
+            var productStock = await _stockService.GetDtoByProductIdAsync(id);
+
             return Ok(productStock);
         }
 
-        
-        [Authorize(Roles = "Administrator,Manager")]
-        [HttpPut("{productId:int}")]
-        public async Task<IActionResult> UpdateStock(int productId, [FromBody] ProductStockWriteDto stockUpdate)
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ProductStockReadDto>> GetStockById(int id)
         {
-            var productStockDto = await _stockService.UpdateAsync(productId, stockUpdate);
+            var productStock = await _stockService.GetDtoByIdAsync(id);
+
+            return Ok(productStock);
+        }
+
+
+        [Authorize(Roles = "Administrator,Manager")]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateStock(int id, [FromBody] ProductStockWriteDto stockUpdate)
+        {
+            var productStockDto = await _stockService.UpdateAsync(id, stockUpdate);
 
             return Ok(productStockDto);
         }
 
 
         [Authorize(Roles = "Administrator,Manager,Stock")]
-        [HttpPut("{productId:int}/add")]
-        public async Task<IActionResult> AddToStock(int productId, int amount)
+        [HttpPut("{id}/add")]
+        public async Task<IActionResult> AddAmountToStock(int id, int amount)
         {
-            var productStockDto = await _stockService.AddProductAmountAsync(productId, amount);
+            var productStockDto = await _stockService.AddProductAmountAsync(id, amount);
+
             return Ok(productStockDto);
         }
 
 
-        [HttpPut("{productId:int}/remove")]
-        public async Task<IActionResult> RemoveFromStock(int productId, int amount)
+        [HttpPut("{id}/remove")]
+        public async Task<IActionResult> RemoveAmountFromStock(int id, int amount)
         {
-            var productStockDto = await _stockService.RemoveProductAmountAsync(productId, amount);
+            var productStockDto = await _stockService.RemoveProductAmountAsync(id, amount);
+
             return Ok(productStockDto);
         }
     }
