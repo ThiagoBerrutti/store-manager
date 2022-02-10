@@ -4,14 +4,14 @@ using System.Net;
 
 namespace SalesAPI.Models
 {
-    public class ErrorModelShort
+    public class ErrorModel
     {
         public int StatusCode { get; set; }
         public string Type { get; set; }
         public string Message { get; set; }
         public IEnumerable<string> Errors { get; set; }
 
-        public ErrorModelShort(int statusCode, string type, string message, IEnumerable<string> errors)
+        public ErrorModel(int statusCode, string type, string message, IEnumerable<string> errors)
         {
             StatusCode = statusCode;
             Type = type;
@@ -19,7 +19,7 @@ namespace SalesAPI.Models
             Errors = errors ?? new List<string>();
         }
 
-        public ErrorModelShort(Exception ex) 
+        public ErrorModel(Exception ex) 
         {
             StatusCode = (int)HttpStatusCode.BadRequest;
             Type = ex.GetType().Name;
@@ -27,7 +27,7 @@ namespace SalesAPI.Models
             Errors = new List<string>();
         }
 
-        public ErrorModelShort(Exception ex, int statusCode)
+        public ErrorModel(Exception ex, int statusCode)
         {
             StatusCode = statusCode;
             Type = ex.GetType().Name;
@@ -35,7 +35,7 @@ namespace SalesAPI.Models
             Errors = new List<string>();
         }
 
-        public ErrorModelShort(Exception ex, IEnumerable<string> errors)
+        public ErrorModel(Exception ex, IEnumerable<string> errors)
         {
             StatusCode = (int)HttpStatusCode.BadRequest;
             Type = ex.GetType().Name;
@@ -43,7 +43,7 @@ namespace SalesAPI.Models
             Errors = errors;
         }
 
-        public ErrorModelShort(Exception ex, int statusCode, IEnumerable<string> errors)
+        public ErrorModel(Exception ex, int statusCode, IEnumerable<string> errors)
         {
             StatusCode = statusCode;
             Type = ex.GetType().Name;
@@ -51,7 +51,7 @@ namespace SalesAPI.Models
             Errors = errors;
         }
 
-        public ErrorModelShort()
+        public ErrorModel()
         {
         }
     }

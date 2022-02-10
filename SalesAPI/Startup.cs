@@ -3,7 +3,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,7 +23,6 @@ using SalesAPI.Persistence.Repositories;
 using SalesAPI.Services;
 using System;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace SalesAPI
@@ -55,7 +57,7 @@ namespace SalesAPI
                 options.Password.RequiredLength = 6;
                 options.Password.RequiredUniqueChars = 0;
                 options.Password.RequireUppercase = false;
-                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireNonAlphanumeric = false;                
             })
                 .AddRoles<Role>()
                 .AddEntityFrameworkStores<SalesDbContext>()
@@ -64,7 +66,7 @@ namespace SalesAPI
                 .AddRoleManager<RoleManager<Role>>()
                 .AddSignInManager<SignInManager<User>>();
 
-            services.AddHttpContextAccessor();
+            
 
             services.AddMvc(options =>
             {
@@ -108,7 +110,7 @@ namespace SalesAPI
             //swagger
 
             services.AddSwaggerGen(options =>
-            {                
+            {
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
                 {
                     Name = "Authorization",
@@ -138,7 +140,6 @@ namespace SalesAPI
 
             //app services
 
-            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             services.AddScoped<IStockService, StockService>();
             services.AddScoped<IProductService, ProductService>();
@@ -147,15 +148,24 @@ namespace SalesAPI
             services.AddScoped<IUserService, UserService>();
 
             services.AddScoped<IProductRepository, ProductRepository>();
-            services.AddScoped<IProductStockRepository, ProductStockRepository>();
+            services.AddScoped<IStockRepository, StockRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IRoleRepository, RoleRepository>();
-           
+
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             services.AddScoped<ProductSeed>();
 
-            
+            //services.AddSingleton<IActionContextAccessor>()
+            //    .AddScoped(s => s
+            //        .GetRequiredService<IUrlHelperFactory>()
+            //        .GetUrlHelper(s.GetRequiredService<IActionContextAccessor>().ActionContext));
+                
+
+
+
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            services.AddHttpContextAccessor();
         }
 
 
@@ -166,7 +176,7 @@ namespace SalesAPI
             {
                 app.UseDeveloperExceptionPage();
                 IdentityModelEventSource.ShowPII = true;
-                //Task.Run(async () => await pSeed.Seed()).Wait();
+                Task.Run(async () => await pSeed.Seed()).Wait();
             }
             app.UseAuthentication();
 

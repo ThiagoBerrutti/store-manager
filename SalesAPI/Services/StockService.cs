@@ -10,13 +10,13 @@ namespace SalesAPI.Services
 {
     public class StockService : IStockService
     {
-        private readonly IProductStockRepository _productStockRepository;
+        private readonly IStockRepository _stockRepository;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
 
-        public StockService(IProductStockRepository productStockRepository, IMapper mapper, IUnitOfWork unitOfWork)
+        public StockService(IStockRepository productStockRepository, IMapper mapper, IUnitOfWork unitOfWork)
         {
-            _productStockRepository = productStockRepository;
+            _stockRepository = productStockRepository;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
         }
@@ -24,22 +24,29 @@ namespace SalesAPI.Services
 
         public async Task<IEnumerable<ProductStockReadDto>> GetAllDtoAsync()
         {
-            var stockList = await _productStockRepository.GetAll();
+            var stockList = await _stockRepository.GetAll();
             var dtoList = _mapper.Map<IEnumerable<ProductStock>, IEnumerable<ProductStockReadDto>>(stockList);
 
             return dtoList;
         }
 
 
-        public async Task<ProductStockReadDto> GetDtoByProductId(int productId)
+        public async Task<ProductStock> GetByProductIdAsync(int productId)
         {
-            var productStock = await _productStockRepository.GetByProductIdAsync(productId);
-            if (productStock == null)
+            var stock = await _stockRepository.GetByProductIdAsync(productId);
+            if (stock == null)
             {
                 throw new DomainNotFoundException($"Stock for product [productId = {productId}] not found.");
             }
 
-            var dto = _mapper.Map<ProductStockReadDto>(productStock);
+            return stock;
+        }
+
+
+        public async Task<ProductStockReadDto> GetDtoByProductIdAsync(int productId)
+        {
+            var stock = await GetByProductIdAsync(productId);
+            var dto = _mapper.Map<ProductStockReadDto>(stock);
 
             return dto;
         }
@@ -48,19 +55,15 @@ namespace SalesAPI.Services
         public ProductStock CreateProductStock(Product product, int startingAmount = 0)
         {
             var productStock = new ProductStock(product, startingAmount);
-            _productStockRepository.Create(productStock);
+            _stockRepository.Create(productStock);
 
             return productStock;
         }
 
 
-        public async Task Delete(int id)
+        public async Task DeleteAsync(int productId)
         {
-            var stockOnRepo = await _productStockRepository.GetByIdAsync(id);
-            if (stockOnRepo == null)
-            {
-                throw new DomainNotFoundException($"Stock [Id = {id}] not found.");
-            }
+            var stockOnRepo = await GetByProductIdAsync(productId);
 
             stockOnRepo.Count = 0;
 
@@ -68,18 +71,14 @@ namespace SalesAPI.Services
         }
 
 
-        public async Task<ProductStockReadDto> AddProductAmount(int id, int amount)
+        public async Task<ProductStockReadDto> AddProductAmountAsync(int productId, int amount)
         {
             if (amount <= 0)
             {
                 throw new ApplicationException("Amount should be a positive number.");
             }
 
-            var productStock = await _productStockRepository.GetByIdAsync(id);
-            if (productStock == null)
-            {
-                throw new DomainNotFoundException($"Stock [Id = {id}] not found.");
-            }
+            var productStock = await GetByProductIdAsync(productId);            
 
             productStock.Count += amount;
             await _unitOfWork.CompleteAsync();
@@ -89,19 +88,15 @@ namespace SalesAPI.Services
         }
 
 
-        public async Task<ProductStockReadDto> RemoveProductAmount(int id, int amount)
+        public async Task<ProductStockReadDto> RemoveProductAmountAsync(int productId, int amount)
         {
             if (amount <= 0)
             {
                 throw new ApplicationException("Amount should be a positive number.");
             }
 
-            var productStock = await _productStockRepository.GetByIdAsync(id);
-            if (productStock == null)
-            {
-                throw new DomainNotFoundException($"Stock [Id = {id}] not found.");
-            }
-
+            var productStock = await GetByProductIdAsync(productId);
+            
             if (productStock.Count - amount < 0)
             {
                 throw new StockException($"Not enough products available. Only [{productStock.Count}] on stock.");
@@ -115,12 +110,12 @@ namespace SalesAPI.Services
         }
         
 
-        public async Task<ProductStockReadDto> Update(int productId, ProductStockWriteDto dto)
+        public async Task<ProductStockReadDto> UpdateAsync(int productId, ProductStockWriteDto dto)
         { 
-            var psOnRepo = await _productStockRepository.GetByProductIdAsync(productId);
+            var psOnRepo = await GetByProductIdAsync(productId);
             _mapper.Map(dto, psOnRepo);
 
-            _productStockRepository.Update(psOnRepo);
+            _stockRepository.Update(psOnRepo);
 
             await _unitOfWork.CompleteAsync();
 

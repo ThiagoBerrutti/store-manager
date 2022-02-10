@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using SalesAPI.Identity;
+using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace SalesAPI.Persistence.Repositories
@@ -14,6 +16,8 @@ namespace SalesAPI.Persistence.Repositories
         public Task<User> GetCurrentUserAsync();
 
         public Task<User> GetByIdAsync(int id);
+
+        public Task<IEnumerable<User>> SearchAsync(string search);
 
         public Task<IList<string>> GetRolesNamesAsync(User user);
 

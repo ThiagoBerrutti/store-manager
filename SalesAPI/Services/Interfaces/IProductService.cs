@@ -10,6 +10,8 @@ namespace SalesAPI.Services
 
         public Task<IEnumerable<ProductReadDto>> GetAllDtoAsync();
 
+        public Task<IEnumerable<ProductReadDto>> SearchDtosAsync(string search);
+
         public Task<ProductReadDto> GetDtoByIdAsync(int id);
 
         public Task<ProductReadDto> UpdateAsync(int productId, ProductWriteDto product);

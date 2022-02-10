@@ -22,7 +22,6 @@ namespace SalesAPI.Controllers
 
         [Authorize(Roles = "Administrator,Manager")]
         [HttpGet]
-        [AllowAnonymous]
         public async Task<IActionResult> GetAllUsers()
         {
             var result = await _userService.GetAllDtoAsync();
@@ -32,7 +31,7 @@ namespace SalesAPI.Controllers
 
 
         [Authorize(Roles = "Administrator,Manager")]
-        [HttpGet("{id:int}")]
+        [HttpGet("{id:int}", Name = "GetUserById")]
         public async Task<IActionResult> GetUserById(int id)
         {
             var result = await _userService.GetDtoByIdAsync(id);
@@ -41,7 +40,7 @@ namespace SalesAPI.Controllers
         }
 
 
-        [HttpGet("currentUser")]
+        [HttpGet("current")]
         public async Task<IActionResult> GetCurrentUser()
         {
             var result = await _userService.GetDtoCurrentUserAsync();
@@ -51,10 +50,20 @@ namespace SalesAPI.Controllers
 
 
         [Authorize(Roles = "Administrator,Manager")]
-        [HttpGet("name", Name = "GetUserByUserName")]
+        [HttpGet("userName")]
         public async Task<IActionResult> GetUserByUserName(string userName)
         {
             var result = await _userService.GetDtoByUserNameAsync(userName);
+
+            return Ok(result);
+        }
+
+
+        [Authorize(Roles = "Administrator,Manager")]
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchUser(string search)
+        {
+            var result = await _userService.SearchAsync(search);
 
             return Ok(result);
         }
@@ -124,7 +133,7 @@ namespace SalesAPI.Controllers
 
 
         [Authorize(Roles = "Administrator,Manager")]
-        [HttpPut("{id:int}/roles")]
+        [HttpPut("{id:int}/roles/add/{roleId}")]
         public async Task<IActionResult> AddUserToRole(int id, int roleId)
         {
             var user = await _userService.AddToRoleAsync(id, roleId);
@@ -134,7 +143,7 @@ namespace SalesAPI.Controllers
 
 
         [Authorize(Roles = "Administrator,Manager")]
-        [HttpDelete("{id:int}/roles")]
+        [HttpPut("{id:int}/roles/remove/{roleId}")]
         public async Task<IActionResult> RemoveFromRole(int id, int roleId)
         {
             var user = await _userService.RemoveFromRoleAsync(id, roleId);

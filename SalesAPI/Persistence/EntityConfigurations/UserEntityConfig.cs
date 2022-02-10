@@ -36,51 +36,55 @@ namespace SalesAPI.Persistence.EntityConfigurations
             var hasher = new PasswordHasher<User>();
             builder.HasData(new List<User>
             {
+                //Admin
                 new User
                 {
-                    Id = 1,
-                    UserName = "admin",
-                    NormalizedUserName = "ADMIN",
+                    Id = AppConstants.Users.Admin.Id,
+                    UserName = AppConstants.Users.Admin.UserName,
+                    NormalizedUserName = AppConstants.Users.Admin.NormalizedUserName,
+                    FirstName = AppConstants.Users.Admin.FirstName,
+                    LastName = AppConstants.Users.Admin.LastName,
                     PasswordHash = hasher.HashPassword(null,"string"),
                     SecurityStamp = Guid.NewGuid().ToString(),
-                    FirstName = "Admin",
-                    LastName = "Almeida",
                     DateOfbirth = new DateTime(1980,1,1)
                 },
 
+                //Manager
                 new User
                 {
-                    Id = 2,
-                    UserName = "manager",
-                    NormalizedUserName = "MANAGER",
+                    Id = AppConstants.Users.Manager.Id,
+                    UserName = AppConstants.Users.Manager.UserName,
+                    NormalizedUserName = AppConstants.Users.Manager.NormalizedUserName,
+                    FirstName = AppConstants.Users.Manager.FirstName,
+                    LastName = AppConstants.Users.Manager.LastName,
                     PasswordHash = hasher.HashPassword(null,"string"),
                     SecurityStamp = Guid.NewGuid().ToString(),
-                    FirstName = "Bruno",
-                    LastName = "Bento",
                     DateOfbirth = new DateTime(1990,1,1)
                 },
 
+                //Stock
                 new User
                 {
-                    Id = 3,
-                    UserName = "stock",
-                    NormalizedUserName = "STOCK",
+                    Id = AppConstants.Users.Stock.Id,
+                    UserName = AppConstants.Users.Stock.UserName,
+                    NormalizedUserName = AppConstants.Users.Stock.NormalizedUserName,
+                    FirstName = AppConstants.Users.Stock.FirstName,
+                    LastName = AppConstants.Users.Stock.LastName,
                     PasswordHash = hasher.HashPassword(null,"string"),
                     SecurityStamp = Guid.NewGuid().ToString(),
-                    FirstName = "Carlos",
-                    LastName = "Costa",
                     DateOfbirth = new DateTime(1995,1,1)
                 },
 
+                //Seller
                 new User
                 {
-                    Id = 4,
-                    UserName = "seller",
-                    NormalizedUserName = "SELLER",
+                    Id = AppConstants.Users.Seller.Id,
+                    UserName = AppConstants.Users.Seller.UserName,
+                    NormalizedUserName = AppConstants.Users.Seller.NormalizedUserName,
+                    FirstName = AppConstants.Users.Seller.FirstName,
+                    LastName = AppConstants.Users.Seller.LastName,
                     PasswordHash = hasher.HashPassword(null,"string"),
                     SecurityStamp = Guid.NewGuid().ToString(),
-                    FirstName = "Diego",
-                    LastName = "Dourado",
                     DateOfbirth = new DateTime(2000,1,1)
                 }
             });

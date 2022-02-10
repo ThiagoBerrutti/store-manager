@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using SalesAPI.Dtos;
 using SalesAPI.Exceptions;
-using SalesAPI.Exceptions.Domain;
+using SalesAPI.Extensions;
 using SalesAPI.Models;
 using SalesAPI.Persistence.Repositories;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SalesAPI.Services
@@ -59,6 +61,15 @@ namespace SalesAPI.Services
 
             return dto;
         }
+
+        public async Task<IEnumerable<ProductReadDto>> SearchDtosAsync(string search)
+        {
+            var results = await _productRepository.SearchAsync(search);
+
+            var productsDto = _mapper.Map<IEnumerable<ProductReadDto>>(results);
+            return productsDto;
+        }
+
 
 
         public async Task<ProductReadDto> UpdateAsync(int id, ProductWriteDto productDto)

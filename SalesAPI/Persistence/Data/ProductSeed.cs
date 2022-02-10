@@ -23,11 +23,11 @@ namespace SalesAPI.Persistence.Data
         {
             if (!_context.Products.Any())
             {
-                await _productService.CreateAsync(new ProductWriteDto { Name = "Abacate", Price = 9.99 });
-                await _productService.CreateAsync(new ProductWriteDto { Name = "Berinjela", Price = 3.00 });
-                await _productService.CreateAsync(new ProductWriteDto { Name = "Coco", Price = 5.50 });
-                await _productService.CreateAsync(new ProductWriteDto { Name = "Danoninho", Price = 6.00 });
-                await _productService.CreateAsync(new ProductWriteDto { Name = "Espaguete", Price = 4.00 });
+                await _productService.CreateAsync(new ProductWriteDto { Name = "Abacate", Price = 9.99 , Description = "Abacate 1kg"});
+                await _productService.CreateAsync(new ProductWriteDto { Name = "Berinjela", Price = 3.00, Description = "Berinjela preta 1kg"});
+                await _productService.CreateAsync(new ProductWriteDto { Name = "Coco", Price = 7.50, Description = "Coco seco un" });
+                await _productService.CreateAsync(new ProductWriteDto { Name = "Danoninho", Price = 6.00, Description = "Danoninho Ice 70g" });
+                await _productService.CreateAsync(new ProductWriteDto { Name = "Espaguete", Price = 4.00, Description = "Espaguete Isabela 500g" });
             }
         }
     }

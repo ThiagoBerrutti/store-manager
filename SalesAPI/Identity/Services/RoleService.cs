@@ -98,7 +98,7 @@ namespace SalesAPI.Identity.Services
 
         public async Task DeleteAsync(int id)
         {
-            var role = await _roleRepository.GetByIdAsync(id);           
+            var role = await GetByIdAsync(id);           
 
             var result = await _roleRepository.DeleteAsync(role);
             if (!result.Succeeded)

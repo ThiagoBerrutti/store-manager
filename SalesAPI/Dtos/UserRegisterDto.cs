@@ -6,11 +6,11 @@ namespace SalesAPI.Dtos
     public class UserRegisterDto
     {
         [Required]
-        [StringLength(50, MinimumLength = 3, ErrorMessage = "{0} must have between {2} and {1} characters minimum.")]
+        [StringLength(50, MinimumLength = 6, ErrorMessage = "{0} must have between {2} and {1} characters minimum.")]
         public string UserName { get; set; }
 
         [Required]
-        [StringLength(150, MinimumLength = 3, ErrorMessage = "{0} must have between {2} and {1} characters minimum.")]
+        [StringLength(150, MinimumLength = 6, ErrorMessage = "{0} must have between {2} and {1} characters minimum.")]
         public string Password { get; set; }
 
         [Required]

@@ -9,6 +9,8 @@ namespace SalesAPI.Identity.Services
     {        
         public Task<UserViewModel> GetDtoByUserNameAsync(string userName);
 
+        public Task<IEnumerable<UserViewModel>> SearchAsync(string search);
+
         public Task<User> GetByUserNameAsync(string userName);
 
         public Task<UserViewModel> GetDtoCurrentUserAsync();

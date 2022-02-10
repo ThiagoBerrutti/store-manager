@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace SalesAPI.Migrations
 {
-    public partial class mig : Migration
+    public partial class sssee : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -49,20 +49,6 @@ namespace SalesAPI.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Employees",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    BaseSalary = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Employees", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -210,10 +196,10 @@ namespace SalesAPI.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { 1, "c60f4ba0-cd92-4749-ad79-ffe6be967cb9", "Administrator", "ADMINISTRATOR" },
-                    { 2, "d9c14641-8792-46b3-a17e-17ab5ace6110", "Manager", "MANAGER" },
-                    { 3, "73f84461-3c53-4433-bbb0-3c3a08021314", "Stock", "STOCK" },
-                    { 4, "d7ec5d8b-207d-4dcb-9b1e-8b1fd4956432", "Seller", "SELLER" }
+                    { 1, "d436c23c-eeea-473a-8561-306f78d102cb", "Administrator", "ADMINISTRATOR" },
+                    { 2, "f80128b5-2ddf-4cac-a8f4-56792f3a3e53", "Manager", "MANAGER" },
+                    { 3, "78f454e6-273f-418a-91a8-a77d8295f3d1", "Stock", "STOCK" },
+                    { 4, "72087377-8454-47da-9bf1-ef8b3a17065b", "Seller", "SELLER" }
                 });
 
             migrationBuilder.InsertData(
@@ -221,10 +207,10 @@ namespace SalesAPI.Migrations
                 columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "DateOfbirth", "Email", "EmailConfirmed", "FirstName", "LastName", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
                 values: new object[,]
                 {
-                    { 1, 0, "58febdd3-9a1d-4510-a13b-f314646085ed", new DateTime(1980, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, false, "Admin", "Almeida", false, null, null, "ADMIN", "AQAAAAEAACcQAAAAEMIJTgPSEVv/wIDQwrd0N3UgHsp0bomLru8ZmIqayQENqp4VEk91ockcylce5sIgpw==", null, false, "abc7e1e6-d3d4-45d5-9068-dae5b84c4538", false, "admin" },
-                    { 2, 0, "b89ec279-e8b1-4e2e-a9ca-e33bfe7bd8f6", new DateTime(1990, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, false, "Bruno", "Bento", false, null, null, "MANAGER", "AQAAAAEAACcQAAAAEOhQk+4xn0iF0a5KSMX2ePa7DwXb1rYFN95u8TyEqrRX8YMnMzoVJnjGkz0zxKdPpA==", null, false, "fc323f65-36c0-453c-80e4-39c6fc0ad22a", false, "manager" },
-                    { 3, 0, "18d8dabf-2620-4789-8a66-a4a2ec34bf47", new DateTime(1995, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, false, "Carlos", "Costa", false, null, null, "STOCK", "AQAAAAEAACcQAAAAEAV01UQm3+97szZvCtOO/o5Q1il3DSPCK9mDP8nvIJfzZMvfu/F79A6EuJE5xbPjOA==", null, false, "29ff645e-11f7-43a2-9098-902aad8ced5b", false, "stock" },
-                    { 4, 0, "706ec659-b005-417e-9178-d2214b20edd5", new DateTime(2000, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, false, "Diego", "Dourado", false, null, null, "SELLER", "AQAAAAEAACcQAAAAEEY8kLEbiKjsXaKXRsFS/RSV/m8O8rXu4kmS17rK9PL+PTvEyXoYfeFkFENOTes/zg==", null, false, "d17b3b63-b182-4821-b96c-c9ba6cbc9ace", false, "seller" }
+                    { 1, 0, "d33fe107-39e1-42f5-b758-ba4e514bd0fe", new DateTime(1980, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, false, "Admin", "Almeida", false, null, null, "ADMIN", "AQAAAAEAACcQAAAAECclsCUNkmzJk7F5CfRkDqtcRL0BI1S3yM0a+BBLVVR4scMf0TPX79p3o6gUTcnerQ==", null, false, "b2af7c38-f3db-4c43-8aee-2c5163fe5e7a", false, "admin" },
+                    { 2, 0, "099aeecb-793f-41be-8761-b02009baa8f4", new DateTime(1990, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, false, "Bruno", "Bento", false, null, null, "MANAGER", "AQAAAAEAACcQAAAAEPnXljUt6glPtsNG6zKXMf+217/Jx46BkMuLOMaeJv8DV4MtUyPb/J2xOl2KqlRJtA==", null, false, "34049067-e9a1-44e2-897d-a88873428f58", false, "manager" },
+                    { 3, 0, "cd5365b1-0ceb-42b4-9db5-c885e3fa486a", new DateTime(1995, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, false, "Carlos", "Costa", false, null, null, "STOCK", "AQAAAAEAACcQAAAAEKe7qXAGUFGVoQMzi8uV3ZYMMZnosd2gK/W2I1CFJGeaXCfNe52sL7o9VFlBvh039w==", null, false, "0a2cfa4f-c6c9-4c4f-ac5c-751a61068e24", false, "stock" },
+                    { 4, 0, "89302b7a-5bbf-4ac5-b68c-ed0aa5f0b3e0", new DateTime(2000, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, false, "Diego", "Dourado", false, null, null, "SELLER", "AQAAAAEAACcQAAAAEBsTwQRb22Pj6mPHW50jDWtTbUV5ol9WsP6R1sMJ/5PPjJ2d/dWYSU1zYC1DDXxuzA==", null, false, "673c3bdf-48b7-4753-a282-50b07cab5d68", false, "seller" }
                 });
 
             migrationBuilder.InsertData(
@@ -300,9 +286,6 @@ namespace SalesAPI.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
-
-            migrationBuilder.DropTable(
-                name: "Employees");
 
             migrationBuilder.DropTable(
                 name: "ProductStocks");

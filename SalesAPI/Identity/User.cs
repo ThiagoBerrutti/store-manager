@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SalesAPI.Identity
 {
@@ -12,5 +13,10 @@ namespace SalesAPI.Identity
 
         public List<Role> Roles { get; set; }
         public List<UserRole> UserRoles { get; set; }
+
+        public bool IsInRole(string roleName)
+        {
+            return Roles.Any(r => r.NormalizedName.Contains(roleName.ToUpper()));
+        }
     }
 }

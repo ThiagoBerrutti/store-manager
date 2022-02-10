@@ -13,30 +13,30 @@ namespace SalesAPI.Persistence.EntityConfigurations
             {
                 new Role
                 {
-                    Id = 1,
-                    Name = "Administrator",
-                    NormalizedName = "ADMINISTRATOR"
+                    Id = AppConstants.Roles.Admin.Id,
+                    Name = AppConstants.Roles.Admin.Name,
+                    NormalizedName = AppConstants.Roles.Admin.NormalizedName
                 },
 
                 new Role
                 {
-                    Id = 2,
-                    Name = "Manager",
-                    NormalizedName = "MANAGER"
+                    Id = AppConstants.Roles.Manager.Id,
+                    Name = AppConstants.Roles.Manager.Name,
+                    NormalizedName = AppConstants.Roles.Manager.NormalizedName
                 },
 
                 new Role
                 {
-                    Id = 3,
-                    Name = "Stock",
-                    NormalizedName = "STOCK"
+                    Id = AppConstants.Roles.Stock.Id,
+                    Name = AppConstants.Roles.Stock.Name,
+                    NormalizedName = AppConstants.Roles.Stock.NormalizedName
                 },
 
                 new Role
                 {
-                    Id = 4,
-                    Name = "Seller",
-                    NormalizedName = "SELLER"
+                    Id = AppConstants.Roles.Seller.Id,
+                    Name = AppConstants.Roles.Seller.Name,
+                    NormalizedName = AppConstants.Roles.Seller.NormalizedName
                 }
             });
         }

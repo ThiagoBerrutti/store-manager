@@ -4,15 +4,11 @@ using System.Threading.Tasks;
 
 namespace SalesAPI.Persistence.Repositories
 {
-    public interface IProductStockRepository
+    public interface IStockRepository
     {
         public Task<IEnumerable<ProductStock>> GetAll();
 
-        public Task<ProductStock> GetByIdAsync(int stockId);
-
-        public Task<ProductStock> GetByProductIdAsync(int id);
-
-        public Task<ProductStock> GetByProductAsync(Product product);
+        public Task<ProductStock> GetByProductIdAsync(int productId);
 
         public void Create(ProductStock productStock);
 

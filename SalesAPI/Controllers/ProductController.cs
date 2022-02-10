@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SalesAPI.Controllers
-{    
+{
     [ApiController]
     [Route("api/v1/[controller]")]
     public class ProductController : Controller
@@ -22,8 +22,8 @@ namespace SalesAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ProductReadDto>>> GetAllProducts()
         {
-            var a = await _productService.GetAllDtoAsync();
-            return Ok(a);
+            var result = await _productService.GetAllDtoAsync();
+            return Ok(result);
         }
 
 
@@ -35,12 +35,20 @@ namespace SalesAPI.Controllers
         }
 
 
+        [HttpGet("search")]
+        public async Task<ActionResult<ProductReadDto>> SearchProduct(string search)
+        {
+            var result = await _productService.SearchDtosAsync(search);
+            return Ok(result);
+        }
+
+
         [Authorize(Roles = "Administrator,Manager")]
         [HttpPost]
         public async Task<IActionResult> CreateProduct(ProductWriteDto product)
         {
             var productCreated = await _productService.CreateAsync(product);
-            return CreatedAtRoute(nameof(GetProductById),productCreated.Id,productCreated);
+            return CreatedAtRoute(nameof(GetProductById), new { productCreated.Id }, productCreated);
         }
 
 
@@ -57,8 +65,9 @@ namespace SalesAPI.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateProduct([FromRoute] int id, [FromBody] ProductWriteDto productUpdate)
         {
-            await _productService.UpdateAsync(id, productUpdate);
-            return Ok();
+            var updatedProductDto = await _productService.UpdateAsync(id, productUpdate);
+            return Ok(updatedProductDto);
         }
+
     }
 }

@@ -25,24 +25,6 @@ namespace SalesAPI.Persistence
         {
             base.OnModelCreating(modelBuilder);
 
-
-
-            //modelBuilder.Entity<ProductStock>(productStock =>
-            //{
-            //    productStock
-            //        .HasOne(s => s.Product)
-            //        .WithOne(p => p.ProductStock)
-            //        .HasForeignKey<ProductStock>(p => p.ProductId)
-            //        .OnDelete(DeleteBehavior.Cascade);
-            //});
-
-            //modelBuilder.Entity<Product>(product =>
-            //{
-            //    product
-            //        .HasOne(p => p.ProductStock)
-            //        .WithOne(ps => ps.Product);
-            //});
-
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(SalesDbContext).Assembly);
         }
     }

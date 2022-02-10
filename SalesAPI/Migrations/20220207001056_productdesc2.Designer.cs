@@ -10,8 +10,8 @@ using SalesAPI.Persistence;
 namespace SalesAPI.Migrations
 {
     [DbContext(typeof(SalesDbContext))]
-    [Migration("20220204015021_mig")]
-    partial class mig
+    [Migration("20220207001056_productdesc2")]
+    partial class productdesc2
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -139,28 +139,28 @@ namespace SalesAPI.Migrations
                         new
                         {
                             Id = 1,
-                            ConcurrencyStamp = "c60f4ba0-cd92-4749-ad79-ffe6be967cb9",
+                            ConcurrencyStamp = "9ae0aaa3-ca8e-436e-9224-1640c9e66de7",
                             Name = "Administrator",
                             NormalizedName = "ADMINISTRATOR"
                         },
                         new
                         {
                             Id = 2,
-                            ConcurrencyStamp = "d9c14641-8792-46b3-a17e-17ab5ace6110",
+                            ConcurrencyStamp = "8bdbb723-724b-42be-85b1-35a6c6639b8d",
                             Name = "Manager",
                             NormalizedName = "MANAGER"
                         },
                         new
                         {
                             Id = 3,
-                            ConcurrencyStamp = "73f84461-3c53-4433-bbb0-3c3a08021314",
+                            ConcurrencyStamp = "36c7455a-253e-4ef5-9eea-5678a145cb85",
                             Name = "Stock",
                             NormalizedName = "STOCK"
                         },
                         new
                         {
                             Id = 4,
-                            ConcurrencyStamp = "d7ec5d8b-207d-4dcb-9b1e-8b1fd4956432",
+                            ConcurrencyStamp = "15a5359f-9dca-4421-949a-b0f0cc66bfca",
                             Name = "Seller",
                             NormalizedName = "SELLER"
                         });
@@ -246,16 +246,16 @@ namespace SalesAPI.Migrations
                         {
                             Id = 1,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "58febdd3-9a1d-4510-a13b-f314646085ed",
+                            ConcurrencyStamp = "4efd3b8d-1c1f-4303-99a4-865b3e2228dc",
                             DateOfbirth = new DateTime(1980, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             EmailConfirmed = false,
                             FirstName = "Admin",
-                            LastName = "Almeida",
+                            LastName = "Istrator",
                             LockoutEnabled = false,
                             NormalizedUserName = "ADMIN",
-                            PasswordHash = "AQAAAAEAACcQAAAAEMIJTgPSEVv/wIDQwrd0N3UgHsp0bomLru8ZmIqayQENqp4VEk91ockcylce5sIgpw==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEEqACSKQng61h2/EmH2p8TfdnojLEmTYXBZo/t3uhG6xclM02o9oNzQUjNILHgU6PA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "abc7e1e6-d3d4-45d5-9068-dae5b84c4538",
+                            SecurityStamp = "30d7fbc8-28ca-4203-838d-aa00724140fe",
                             TwoFactorEnabled = false,
                             UserName = "admin"
                         },
@@ -263,16 +263,16 @@ namespace SalesAPI.Migrations
                         {
                             Id = 2,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "b89ec279-e8b1-4e2e-a9ca-e33bfe7bd8f6",
+                            ConcurrencyStamp = "1fca9c45-4673-4943-bc7b-d3fa08ba0230",
                             DateOfbirth = new DateTime(1990, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             EmailConfirmed = false,
                             FirstName = "Bruno",
                             LastName = "Bento",
                             LockoutEnabled = false,
                             NormalizedUserName = "MANAGER",
-                            PasswordHash = "AQAAAAEAACcQAAAAEOhQk+4xn0iF0a5KSMX2ePa7DwXb1rYFN95u8TyEqrRX8YMnMzoVJnjGkz0zxKdPpA==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEIrLGvY1FiXZ6H9liM/XDiwqH4cgGypKs6WoAwxnaA4JPX67nVsRiJmtxGS/x+ZJLw==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "fc323f65-36c0-453c-80e4-39c6fc0ad22a",
+                            SecurityStamp = "a9d35060-fb4b-4884-9a96-81d4df254de8",
                             TwoFactorEnabled = false,
                             UserName = "manager"
                         },
@@ -280,16 +280,16 @@ namespace SalesAPI.Migrations
                         {
                             Id = 3,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "18d8dabf-2620-4789-8a66-a4a2ec34bf47",
+                            ConcurrencyStamp = "a9a548a7-f0d0-4790-9f02-c9b9d56d3f22",
                             DateOfbirth = new DateTime(1995, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             EmailConfirmed = false,
                             FirstName = "Carlos",
                             LastName = "Costa",
                             LockoutEnabled = false,
                             NormalizedUserName = "STOCK",
-                            PasswordHash = "AQAAAAEAACcQAAAAEAV01UQm3+97szZvCtOO/o5Q1il3DSPCK9mDP8nvIJfzZMvfu/F79A6EuJE5xbPjOA==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEDeqXm7PoKc9dcuju8Tasj90CjCXe5RVldnjvqH/mn6j8bXmA0jlgEkDepeCsHQxQQ==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "29ff645e-11f7-43a2-9098-902aad8ced5b",
+                            SecurityStamp = "e85beb18-361f-49e7-a854-0b2f68b6ef71",
                             TwoFactorEnabled = false,
                             UserName = "stock"
                         },
@@ -297,16 +297,16 @@ namespace SalesAPI.Migrations
                         {
                             Id = 4,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "706ec659-b005-417e-9178-d2214b20edd5",
+                            ConcurrencyStamp = "2223364d-d60a-4364-b10d-b7d7b948f042",
                             DateOfbirth = new DateTime(2000, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             EmailConfirmed = false,
                             FirstName = "Diego",
                             LastName = "Dourado",
                             LockoutEnabled = false,
                             NormalizedUserName = "SELLER",
-                            PasswordHash = "AQAAAAEAACcQAAAAEEY8kLEbiKjsXaKXRsFS/RSV/m8O8rXu4kmS17rK9PL+PTvEyXoYfeFkFENOTes/zg==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEFSm8eNGC0FAGiWwNAgcyjtGORh7/oa9/PI/0p6hPK4yChEo932mEkh2ol/hiYJR/Q==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "d17b3b63-b182-4821-b96c-c9ba6cbc9ace",
+                            SecurityStamp = "f45381de-ef0c-4577-a502-d50bfd90feb3",
                             TwoFactorEnabled = false,
                             UserName = "seller"
                         });
@@ -349,30 +349,15 @@ namespace SalesAPI.Migrations
                         });
                 });
 
-            modelBuilder.Entity("SalesAPI.Models.Employee", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<decimal>("BaseSalary")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Employees");
-                });
-
             modelBuilder.Entity("SalesAPI.Models.Product", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");

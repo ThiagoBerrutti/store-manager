@@ -22,7 +22,7 @@ namespace SalesAPI.Filters
                     {
                         var statusCode = (int)HttpStatusCode.BadRequest;
 
-                        var errorModel = new ErrorModelShort(applicationException, statusCode);
+                        var errorModel = new ErrorModel(applicationException, statusCode);
                         var json = JsonConvert.SerializeObject(errorModel);
 
                         context.Result = new BadRequestObjectResult(errorModel);
@@ -34,7 +34,7 @@ namespace SalesAPI.Filters
                     {
                         var statusCode = (int)HttpStatusCode.NotFound;
 
-                        var errorModel = new ErrorModelShort(entityNotFoundException, statusCode);
+                        var errorModel = new ErrorModel(entityNotFoundException, statusCode);
                         var json = JsonConvert.SerializeObject(errorModel);
 
                         context.Result = new NotFoundObjectResult(errorModel);
@@ -48,7 +48,7 @@ namespace SalesAPI.Filters
 
                         var statusCode = (int)HttpStatusCode.BadRequest;
 
-                        var errorModel = new ErrorModelShort(identityException, statusCode, errors);
+                        var errorModel = new ErrorModel(identityException, statusCode, errors);
                         var json = JsonConvert.SerializeObject(errorModel);
 
                         context.Result = new BadRequestObjectResult(errorModel);
@@ -60,7 +60,7 @@ namespace SalesAPI.Filters
                     {
                         var statusCode = (int)HttpStatusCode.NotFound;
 
-                        var errorModel = new ErrorModelShort(identityNotFoundException, statusCode);
+                        var errorModel = new ErrorModel(identityNotFoundException, statusCode);
                         var json = JsonConvert.SerializeObject(errorModel);
 
                         context.Result = new NotFoundObjectResult(errorModel);
@@ -72,7 +72,7 @@ namespace SalesAPI.Filters
                     {
                         var statusCode = (int)HttpStatusCode.InternalServerError;
 
-                        var errorModel = new ErrorModelShort(infraException, statusCode, infraException.Errors);
+                        var errorModel = new ErrorModel(infraException, statusCode, infraException.Errors);
                         var json = JsonConvert.SerializeObject(errorModel);
 
                         context.Result = new ObjectResult(errorModel);
@@ -84,7 +84,7 @@ namespace SalesAPI.Filters
                     {
                         var statusCode = (int)HttpStatusCode.BadRequest;
 
-                        var errorModel = new ErrorModelShort(stockException, statusCode);
+                        var errorModel = new ErrorModel(stockException, statusCode);
                         var json = JsonConvert.SerializeObject(errorModel);
 
                         context.Result = new BadRequestObjectResult(errorModel);
@@ -96,7 +96,7 @@ namespace SalesAPI.Filters
                     {
                         var statusCode = (int)HttpStatusCode.BadRequest;
 
-                        var errorModel = new ErrorModelShort(exception, statusCode);
+                        var errorModel = new ErrorModel(exception, statusCode);
                         var json = JsonConvert.SerializeObject(errorModel);
 
                         context.Result = new BadRequestObjectResult(errorModel);

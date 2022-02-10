@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc.Testing;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using SalesAPI.Dtos;
 using SalesAPI.Helpers;
@@ -10,6 +13,8 @@ using SalesAPI.Persistence;
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Claims;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 
 namespace SalesAPI.IntegrationTests
@@ -17,6 +22,10 @@ namespace SalesAPI.IntegrationTests
     public class IntegrationTest
     {
         protected readonly HttpClient TestClient;
+        protected static readonly Claim AdminClaim = new Claim(ClaimTypes.Role, "Administrator");
+        protected static readonly Claim ManagerClaim = new Claim(ClaimTypes.Role, "Manager");
+        protected static readonly Claim StockClaim = new Claim(ClaimTypes.Role, "Stock");
+        protected static readonly Claim SellerClaim = new Claim(ClaimTypes.Role, "Seller");
 
         protected IntegrationTest()
         {
@@ -25,11 +34,12 @@ namespace SalesAPI.IntegrationTests
                 {
                     builder.ConfigureServices(services =>
                     {
-                        services.RemoveAll(typeof(DbContextOptions<SalesDbContext>));
                         services.AddDbContext<SalesDbContext>(options =>
                         {
                             options.UseInMemoryDatabase("TestDb");
+                            
                         });
+                        services.RemoveAll(typeof(DbContextOptions<SalesDbContext>));
                     });
                 });
             TestClient = appFactory.CreateClient();
@@ -82,6 +92,9 @@ namespace SalesAPI.IntegrationTests
             return token;
         }
     }
+
+
+    
 
 
     public static class HttpClientExtensions

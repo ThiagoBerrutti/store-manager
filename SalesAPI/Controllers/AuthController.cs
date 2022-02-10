@@ -27,7 +27,8 @@ namespace SalesAPI.Controllers
             var registerResponse = await _authService.RegisterAsync(userDto);
             var authenticateResponse = await _authService.AuthenticateAsync(userDto);
 
-            return Created(nameof(UserController.GetUserByUserName), authenticateResponse);
+            var routeCreated = "api/v1/user/" + nameof(UserController.GetUserById) + "/" + authenticateResponse.User.Id;
+            return Created(routeCreated, authenticateResponse);
         }
 
         [AllowAnonymous]
@@ -35,7 +36,7 @@ namespace SalesAPI.Controllers
         public async Task<ActionResult<AuthResponse>> Authenticate(UserLoginDto userLogin)
         {
             var authResponse = await _authService.AuthenticateAsync(userLogin);
-
+            
             return Ok(authResponse);
         }
     }

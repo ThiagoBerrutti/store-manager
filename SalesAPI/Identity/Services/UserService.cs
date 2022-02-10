@@ -4,10 +4,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SalesAPI.Dtos;
 using SalesAPI.Exceptions.Domain;
+using SalesAPI.Extensions;
 using SalesAPI.Persistence;
 using SalesAPI.Persistence.Repositories;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -39,7 +42,7 @@ namespace SalesAPI.Identity.Services
             return usersModel;
         }
 
-
+        
         public async Task<User> GetByUserNameAsync(string userName)
         {
             var user = await _userRepository.GetByUserNameAsync(userName);
@@ -58,6 +61,15 @@ namespace SalesAPI.Identity.Services
             var userViewModel = _mapper.Map<UserViewModel>(user);
 
             return userViewModel;
+        }
+
+        public async Task<IEnumerable<UserViewModel>> SearchAsync(string search)
+        {
+            var result = await _userRepository.SearchAsync(search);
+
+            var usersDto = _mapper.Map<IEnumerable<UserViewModel>>(result);
+
+            return usersDto;                
         }
 
 
@@ -82,7 +94,7 @@ namespace SalesAPI.Identity.Services
         }
 
 
-        public async  Task<IList<string>> GetRolesNamesAsync(string userName)
+        public async Task<IList<string>> GetRolesNamesAsync(string userName)
         {
             var user = await GetByUserNameAsync(userName);
             var roles = await _userRepository.GetRolesNamesAsync(user);
@@ -94,7 +106,7 @@ namespace SalesAPI.Identity.Services
         public async Task<IdentityResult> CreateAsync(User user, string password)
         {
             var result = await _userRepository.CreateAsync(user, password);
-            
+
             return result;
         }
 
@@ -102,7 +114,9 @@ namespace SalesAPI.Identity.Services
         public async Task<UserViewModel> AddToRoleAsync(int id, int roleId)
         {
             var role = await _roleService.GetByIdAsync(roleId);
-            if (role.Name == "Administrator" && !_httpContextAccessor.HttpContext.User.IsInRole("Administrator"))
+            string adminRoleName = AppConstants.Roles.Admin.Name;
+
+            if (role.Name == adminRoleName && !_httpContextAccessor.HttpContext.User.IsInRole(adminRoleName))
             {
                 throw new IdentityException($"Error removing user from role ['{role.Name}']: Administrator role required.");
             }
@@ -114,7 +128,7 @@ namespace SalesAPI.Identity.Services
             {
                 throw new IdentityException($"User already assigned to role ['{role.Name}'].");
             }
-            
+
             var result = await _userRepository.AddToRoleAsync(user, role.Name);
             if (!result.Succeeded)
             {
@@ -128,28 +142,35 @@ namespace SalesAPI.Identity.Services
 
         public async Task<UserViewModel> RemoveFromRoleAsync(int id, int roleId)
         {
-            var role = await _roleService.GetByIdAsync(roleId);
-            if (role.Name == "Administrator" && !_httpContextAccessor.HttpContext.User.IsInRole("Administrator"))
+            var adminId = AppConstants.Users.Admin.Id;
+            var adminRoleName = AppConstants.Roles.Admin.Name;
+            var adminRoleId = AppConstants.Roles.Admin.Id;
+
+            if (id == adminId && roleId == adminRoleId)
             {
-                throw new IdentityException($"Error removing user from role ['{role.Name}']: Administrator role required.");
+                throw new IdentityException($"Cannot remove ['{adminRoleName}'] role from root admin.");
             }
 
-            var user = await GetByIdAsync(id);
-            if (user.Id == 1)
+            var currentUser = await GetCurrentUserAsync();
+
+            var roleToRemove = await _roleService.GetByIdAsync(roleId);
+            if (roleToRemove.Name == adminRoleName && !currentUser.IsInRole(adminRoleName))
             {
-                throw new IdentityException($"Error removing user from role ['{role.Name}'].", new List<IdentityError> { new IdentityError { Description = "Cannot remove Administrator role from root user." } });
+                throw new IdentityException($"Error removing user from role ['{roleToRemove.Name}']: Administrator role required.");
             }
 
-            var hasRole = user.Roles.Contains(role);
+            var userToRemoveRole = await GetByIdAsync(id);            
+            var hasRole = userToRemoveRole.Roles.Contains(roleToRemove);
+
             if (!hasRole)
             {
-                throw new IdentityException($"User not assigned to role ['{role.Name}'].");
+                throw new IdentityException($"User not assigned to role ['{roleToRemove.Name}'].");
             }
 
-            var result = await _userRepository.RemoveFromRoleAsync(user, role.Name);
+            var result = await _userRepository.RemoveFromRoleAsync(userToRemoveRole, roleToRemove.Name);
             if (!result.Succeeded)
             {
-                throw new IdentityException($"Error removing user ['{user.UserName}'] to role ['{role.Name}'] .", result.Errors);
+                throw new IdentityException($"Error removing user ['{userToRemoveRole.UserName}'] to role ['{roleToRemove.Name}'] .", result.Errors);
             }
 
             var userToReturn = await GetByIdAsync(id);
@@ -181,6 +202,7 @@ namespace SalesAPI.Identity.Services
             return user;
         }
 
+
         public async Task<UserViewModel> UpdateUserAsync(string userName, UserUpdateDto userUpdateDto)
         {
             var user = await GetByUserNameAsync(userName);
@@ -200,11 +222,10 @@ namespace SalesAPI.Identity.Services
         }
 
 
-
         public async Task ChangePasswordAsync(int id, string currentPassword, string newPassword)
         {
             var user = await GetByIdAsync(id);
-            
+
             var result = await _userRepository.ChangePasswordAsync(user, currentPassword, newPassword);
             if (!result.Succeeded)
             {
@@ -229,7 +250,7 @@ namespace SalesAPI.Identity.Services
             var user = await GetByIdAsync(id);
             if (newPassword == "")
             {
-                newPassword = user.UserName; // pra ficar mais facil
+                newPassword = user.UserName; // pra ficar mais facil, poderia ser outro método
             }
 
             var result = await _userRepository.ResetPasswordAsync(user, newPassword);

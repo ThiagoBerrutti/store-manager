@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 
 namespace SalesAPI.Persistence.Repositories
 {
-    public class ProductStockRepository : IProductStockRepository
+    public class StockRepository : IStockRepository
     {
         private readonly SalesDbContext _context;
 
-        public ProductStockRepository(SalesDbContext context)
+        public StockRepository(SalesDbContext context)
         {
             _context = context;
         }
@@ -30,23 +30,7 @@ namespace SalesAPI.Persistence.Repositories
                                 .FirstOrDefaultAsync(ps => ps.ProductId == productId);
         }
 
-
-        public async Task<ProductStock> GetByIdAsync(int stockId)
-        {
-            return await _context.ProductStocks
-                                .Include(ps => ps.Product)
-                                .FirstOrDefaultAsync(ps => ps.Id == stockId);
-        }
-
-
-        public async Task<ProductStock> GetByProductAsync(Product product)
-        {
-            return await _context.ProductStocks
-                                .Include(ps => ps.Product)
-                                .FirstOrDefaultAsync(ps => ps.Product == product);
-        }
-
-
+                
         public void Create(ProductStock productStock)
         {
             _context.ProductStocks.Add(productStock);

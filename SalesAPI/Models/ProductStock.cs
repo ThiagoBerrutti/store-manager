@@ -1,6 +1,4 @@
-﻿using SalesAPI.Dtos;
-
-namespace SalesAPI.Models
+﻿namespace SalesAPI.Models
 {
     public class ProductStock
     {
@@ -19,28 +17,18 @@ namespace SalesAPI.Models
             Count = count;
         }
 
-        public ProductStock(int productId, int count)
-        {
-            ProductId = productId;
-            Count = count;
-        }
 
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
+        //public override bool Equals(object obj)
+        //{
+        //    if (ReferenceEquals(null, obj)) return false;
+        //    if (ReferenceEquals(this, obj)) return true;
 
-            if (obj is ProductStock compareTo)
-            {
-                return Product.Equals(compareTo);
-            }
+        //    if (obj is ProductStock compareTo)
+        //    {
+        //        return Product.Equals(compareTo);
+        //    }
 
-            return false;
-        }
-
-        public override int GetHashCode()
-        {
-            return Product.GetHashCode();
-        }
+        //    return false;
+        //}
     }
 }

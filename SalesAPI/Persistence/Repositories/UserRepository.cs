@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SalesAPI.Identity;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -31,25 +33,30 @@ namespace SalesAPI.Persistence.Repositories
         public async Task<User> GetByIdAsync(int id)
         {
             var user = await _context.Users
-                .Include(u => u.Roles)
-                .ThenInclude(r => r.Users)
-                .Include(u => u.UserRoles)
-                .ThenInclude(ur => ur.Role)
-                .Include(u => u.UserRoles)
-                .ThenInclude(ur => ur.User)
-
-
-
-                                .FirstOrDefaultAsync(u => u.Id == id);
+                            .Include(u => u.Roles)
+                            .FirstOrDefaultAsync(u => u.Id == id);
             return user;
         }
 
 
         public async Task<User> GetByUserNameAsync(string userName)
         {
-            return await _userManager.Users
+            return await _context.Users
                             .Include(u => u.Roles)
                             .FirstOrDefaultAsync(u => u.NormalizedUserName == userName.ToUpper());
+        }
+
+
+        public async Task<IEnumerable<User>> SearchAsync(string search)
+        {
+            var result = await _context.Users
+                                            .Where(u =>
+                                                u.FirstName.ToLower().Contains(search.ToLower()) ||
+                                                u.UserName.ToLower().Contains(search.ToLower()) ||
+                                                u.LastName.ToLower().Contains(search.ToLower()))
+                                            .ToListAsync();
+
+            return result;
         }
 
 
@@ -61,7 +68,7 @@ namespace SalesAPI.Persistence.Repositories
                                 .FirstOrDefaultAsync(u => u.Id.ToString() == currentUserNameId);
             return user;
         }
-
+        
 
         public async Task<IList<string>> GetRolesNamesAsync(User user)
         {

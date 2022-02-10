@@ -10,11 +10,11 @@ namespace SalesAPI.Controllers
     [Authorize(Roles = "Administrator,Manager,Stock,Seller")]
     [ApiController]
     [Route("api/v1/[controller]")]
-    public class ProductStockController : Controller
+    public class StockController : Controller
     {
         private readonly IStockService _stockService;
 
-        public ProductStockController(IStockService stockService)
+        public StockController(IStockService stockService)
         {
             _stockService = stockService;
         }
@@ -28,45 +28,37 @@ namespace SalesAPI.Controllers
         }
 
 
-        [HttpGet("product/{productId:int}")]
-        public async Task<ActionResult<ProductStockReadDto>> GetStockByProductId(int id)
+        [HttpGet("{productId:int}")]
+        public async Task<ActionResult<ProductStockReadDto>> GetStockByProductId(int productId)
         {
-            var productStock = await _stockService.GetDtoByProductId(id);
+            var productStock = await _stockService.GetDtoByProductIdAsync(productId);
             return Ok(productStock);
         }
 
-
-        [HttpGet("{id:int}")]
-        public async Task<ActionResult<ProductStockReadDto>> GetStockById(int productId)
-        {
-            var productStock = await _stockService.GetDtoByProductId(productId);
-            return Ok(productStock);
-        }
-
-
+        
         [Authorize(Roles = "Administrator,Manager")]
-        [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateStock(int id, [FromBody] ProductStockWriteDto stockUpdate)
+        [HttpPut("{productId:int}")]
+        public async Task<IActionResult> UpdateStock(int productId, [FromBody] ProductStockWriteDto stockUpdate)
         {
-            var productStockDto = await _stockService.Update(id, stockUpdate);
+            var productStockDto = await _stockService.UpdateAsync(productId, stockUpdate);
 
             return Ok(productStockDto);
         }
 
 
         [Authorize(Roles = "Administrator,Manager,Stock")]
-        [HttpPut("{id:int}/add")]
-        public async Task<IActionResult> AddToStock(int id, int amount)
+        [HttpPut("{productId:int}/add")]
+        public async Task<IActionResult> AddToStock(int productId, int amount)
         {
-            var productStockDto = await _stockService.AddProductAmount(id, amount);
+            var productStockDto = await _stockService.AddProductAmountAsync(productId, amount);
             return Ok(productStockDto);
         }
 
 
-        [HttpPut("{id:int}/remove")]
-        public async Task<IActionResult> RemoveFromStock(int id, int amount)
+        [HttpPut("{productId:int}/remove")]
+        public async Task<IActionResult> RemoveFromStock(int productId, int amount)
         {
-            var productStockDto = await _stockService.RemoveProductAmount(id, amount);
+            var productStockDto = await _stockService.RemoveProductAmountAsync(productId, amount);
             return Ok(productStockDto);
         }
     }
