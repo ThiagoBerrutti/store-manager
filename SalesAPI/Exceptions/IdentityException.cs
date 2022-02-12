@@ -1,21 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-
-namespace SalesAPI.Exceptions.Domain
+﻿namespace SalesAPI.Exceptions.Domain
 {
-    public class IdentityException : Exception
+    public class IdentityException : ExceptionWithProblemDetails
     {
-        public IEnumerable<IdentityError> Errors { get; set; }
-
-        public IdentityException(string message) : base(message)
+        public IdentityException()
         {
-            Errors = new List<IdentityError>();
-        }
-
-        public IdentityException(string message, IEnumerable<IdentityError> errors) : this(message)
-        {
-           Errors = errors;
         }
     }
 }

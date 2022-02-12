@@ -64,79 +64,46 @@ namespace SalesAPI.Filters
 
                 case IdentityException identityException:
                     {
-                        var errors = identityException.Errors.Select(e => e.Description);
-                        //var errors = ((IEnumerable<IdentityError>)identityException.Data["Errors"])
-                        //                .Select(e => e.Description);
+                        var problemDetails = identityException.ProblemDetails;
 
-                        var statusCode = (int)HttpStatusCode.BadRequest;
+                        int statusCode = problemDetails.Status ?? (int)HttpStatusCode.BadRequest;
+                        if (!problemDetails.Status.HasValue)
+                        {
+                            identityException.SetStatus(statusCode);
+                        }
 
-                        var errorModel = new ErrorModel(identityException, statusCode, errors);
-                        var json = JsonConvert.SerializeObject(errorModel);
-
-                        context.Result = new BadRequestObjectResult(errorModel);
-                        context.HttpContext.Response.StatusCode = statusCode;
-
-                        //problemDetail.Extensions.Add("errors", errors);
-                        //problemDetail.Status = statusCode;
-                        //problemDetail.Title = identityException.Message;
-                        //problemDetail.Detail =
-
-
-                        break;
-                    }
-
-                case IdentityNotFoundException identityNotFoundException:
-                    {
-                        var statusCode = (int)HttpStatusCode.NotFound;
-
-                        var errorModel = new ErrorModel(identityNotFoundException, statusCode);
-                        var json = JsonConvert.SerializeObject(errorModel);
-
-                        context.Result = new NotFoundObjectResult(errorModel);
-                        context.HttpContext.Response.StatusCode = statusCode;
-                        break;
-                    }
-
-                case InfrastructureException infraException:
-                    {
-                        var statusCode = (int)HttpStatusCode.InternalServerError;
-
-                        var errorModel = new ErrorModel(infraException, statusCode, infraException.Errors);
-                        var json = JsonConvert.SerializeObject(errorModel);
-
-                        context.Result = new ObjectResult(errorModel);
-                        context.HttpContext.Response.StatusCode = statusCode;
-                        break;
-                    }
-
-                case StockException stockException:
-                    {
-                        var statusCode = (int)HttpStatusCode.BadRequest;
-
-                        stockException.SetStatus(statusCode);
-                        var problemDetails = stockException.ProblemDetails;
-                        
-                        var json = JsonConvert.SerializeObject(problemDetails);
-
-                        context.Result = new BadRequestObjectResult(json);
+                        context.Result = new BadRequestObjectResult(problemDetails);
                         context.HttpContext.Response.StatusCode = statusCode;
                         context.HttpContext.Response.ContentType = "application/problem+json";
+
                         break;
                     }
 
-                //case ValidationException validationException:
+                //case IdentityNotFoundException identityNotFoundException:
                 //    {
-                //        var statusCode = (int)HttpStatusCode.BadRequest;
-                //        var validationProblemDetails = new ValidationProblemDetails();
-                //        problemDetail.Extensions["Errors"] = validationException.Errors;
+                //        var statusCode = (int)HttpStatusCode.NotFound;
 
-                //        //var errorModel = new ErrorModel(stockException, statusCode);
+                //        var errorModel = new ErrorModel(identityNotFoundException, statusCode);
                 //        var json = JsonConvert.SerializeObject(errorModel);
 
-                //        context.Result = new BadRequestObjectResult(errorModel);
+                //        context.Result = new NotFoundObjectResult(errorModel);
                 //        context.HttpContext.Response.StatusCode = statusCode;
                 //        break;
                 //    }
+
+                //case InfrastructureException infraException:
+                //    {
+                //        var statusCode = (int)HttpStatusCode.InternalServerError;
+
+                //        var errorModel = new ErrorModel(infraException, statusCode, infraException.Errors);
+                //        var json = JsonConvert.SerializeObject(errorModel);
+
+                //        context.Result = new ObjectResult(errorModel);
+                //        context.HttpContext.Response.StatusCode = statusCode;
+                //        break;
+                //    }
+                
+                
 
 
 
@@ -144,8 +111,8 @@ namespace SalesAPI.Filters
                     {
                         var statusCode = (int)HttpStatusCode.BadRequest;
 
-                        var errorModel = new ErrorModel(exception, statusCode);
-                        var json = JsonConvert.SerializeObject(errorModel);
+                        //var errorModel = new ErrorModel(exception, statusCode);
+                        //var json = JsonConvert.SerializeObject(errorModel);
 
                         context.Result = new BadRequestObjectResult("DEU RUIM");
                         context.HttpContext.Response.StatusCode = statusCode;

@@ -12,6 +12,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Routing;
 
 namespace SalesAPI.Identity.Services
 {
@@ -20,16 +21,19 @@ namespace SalesAPI.Identity.Services
         private readonly SignInManager<User> _signInManager;
         private readonly IUserService _userService;
         private readonly IMapper _mapper;
+        private readonly LinkGenerator _linkGenerator;
+
         //private readonly IUserRegisterValidator _userRegisterValidator;
         private readonly AppSettings _appSettings;
 
-        public AuthService(SignInManager<User> signInManager, IOptions<AppSettings> appSettings, IUserService userService, IMapper mapper)
+        public AuthService(SignInManager<User> signInManager, IOptions<AppSettings> appSettings, IUserService userService, IMapper mapper, LinkGenerator linkGenerator)
             //, IUserRegisterValidator userRegisterValidator )
         {
             _signInManager = signInManager;
             _appSettings = appSettings.Value;
             _userService = userService;
             _mapper = mapper;
+            _linkGenerator = linkGenerator;
             //_userRegisterValidator = userRegisterValidator;
         }
 
@@ -47,7 +51,10 @@ namespace SalesAPI.Identity.Services
             var result = await _userService.CreateAsync(user, userDto.Password);
             if (!result.Succeeded)
             {
-                throw new IdentityException("Error on user registration.", result.Errors);
+                throw new IdentityException()
+                    .SetTitle("Error on user registration")
+                    .SetDetail("Registration cancelled. See 'errors' property for more details")
+                    .SetErrors(result.Errors);
             }
 
             var appUser = await _userService.GetByUserNameAsync(user.UserName);
@@ -70,15 +77,23 @@ namespace SalesAPI.Identity.Services
             {
                 if (signInResult.IsLockedOut)
                 {
-                    throw new IdentityException($"User locked out until {user.LockoutEnd:G}");
+                    //var instance = _linkGenerator.GetPathByName(nameof(Controllers.UserController.GetUserById), new { id = user.Id });
+                    throw new IdentityException()
+                        .SetTitle("Error authenticating user")
+                        .SetDetail($"User locked out until {user.LockoutEnd:G}");
+                        //.SetInstance(instance);
                 }
 
                 if (signInResult.IsNotAllowed)
                 {
-                    throw new IdentityException($"User not allowed.");
+                    //var instance = _linkGenerator.GetPathByName(nameof(Controllers.UserController.GetUserById), new { id = user.Id });
+                    throw new IdentityException()
+                        .SetTitle("Error authenticating user")
+                        .SetDetail($"User not allowed.");
+                        //.SetInstance(instance);
                 }
 
-                throw new IdentityException("Error authenticating.");
+                throw new IdentityException().SetTitle("Error authenticating user");
             }
 
             var appUser = await _userService.GetByUserNameAsync(userLogin.UserName);

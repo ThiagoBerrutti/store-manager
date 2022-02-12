@@ -86,7 +86,10 @@ namespace SalesAPI.Identity.Services
             var result = await _roleRepository.CreateAsync(role);
             if (!result.Succeeded)
             {
-                throw new IdentityException("Role couldn't be created", result.Errors);
+                throw new IdentityException()
+                    .SetTitle("Error creating role")
+                    .SetDetail("Role not created. See 'errors' property for more details")
+                    .SetErrors(result.Errors);
             }
 
             var appRole = await _roleRepository.GetByNameAsync(dto.Name);
@@ -103,7 +106,10 @@ namespace SalesAPI.Identity.Services
             var result = await _roleRepository.DeleteAsync(role);
             if (!result.Succeeded)
             {
-                throw new IdentityException("Error deleting role", result.Errors);
+                throw new IdentityException()
+                    .SetTitle("Error deleting role")
+                    .SetDetail("Role not deleted. See 'errors' property for more details")
+                    .SetErrors(result.Errors);
             }
         }
 

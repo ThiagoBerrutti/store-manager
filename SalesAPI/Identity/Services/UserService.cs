@@ -48,7 +48,7 @@ namespace SalesAPI.Identity.Services
             var user = await _userRepository.GetByUserNameAsync(userName);
             if (user == null)
             {
-                throw new IdentityNotFoundException($"User ['{userName}'] not found.");
+                throw new IdentityNotFoundException($"User '{userName}' not found.");
             }
 
             return user;
@@ -123,7 +123,9 @@ namespace SalesAPI.Identity.Services
                 var currentUser = await GetCurrentUserAsync();
                 if (currentUser.Id != adminUserId)
                 {
-                    throw new IdentityException($"Only root {adminRoleName} [Id = {adminUserId}] can assign {adminRoleName} role");
+                    throw new IdentityException()
+                        .SetTitle("Error adding role to user")
+                        .SetDetail($"Only root {adminRoleName} [Id = {adminUserId}] can assign {adminRoleName} role");
                 }
             }
 
@@ -132,13 +134,18 @@ namespace SalesAPI.Identity.Services
 
             if (hasRole)
             {
-                throw new IdentityException($"User already assigned to role ['{role.Name}'].");
+                throw new IdentityException()
+                    .SetTitle("Error adding role to user")
+                    .SetDetail($"User already assigned to role '{role.Name}'.");
             }
 
             var result = await _userRepository.AddToRoleAsync(user, role.Name);
             if (!result.Succeeded)
             {
-                throw new IdentityException($"Error adding user ['{user.UserName}'] to role ['{role.Name}'] .", result.Errors);
+                throw new IdentityException()
+                    .SetTitle("Error adding role to user")
+                    .SetDetail($"User not assigned to role '{role.Name}'. See 'errors' property for more details")
+                    .SetErrors(result.Errors);
             }
 
             var userModel = _mapper.Map<UserViewModel>(user);
@@ -155,12 +162,16 @@ namespace SalesAPI.Identity.Services
 
             if (id == adminUserId && roleId == adminRoleId) 
             {
-                throw new IdentityException($"Cannot remove ['{adminRoleName}'] role from root admin.");
+                throw new IdentityException()
+                    .SetTitle("Error removing role from user")
+                    .SetDetail($"Cannot remove '{adminRoleName}' role from root admin.");
             }
 
             if (roleId == adminRoleId && currentUser.Id != adminUserId)
             {
-                throw new IdentityException($"Only root {adminRoleName} [Id = {adminUserId}] can assign {adminRoleName} role");
+                throw new IdentityException()
+                    .SetTitle("Error removing role from user")
+                    .SetDetail($"Only root {adminRoleName} [Id = {adminUserId}] can remove {adminRoleName} role");
             }
 
             var roleToRemove = await _roleService.GetByIdAsync(roleId);
@@ -169,13 +180,18 @@ namespace SalesAPI.Identity.Services
 
             if (!hasRole)
             {
-                throw new IdentityException($"User not assigned to role ['{roleToRemove.Name}'].");
+                throw new IdentityException()
+                    .SetTitle("Error removing role from user")
+                    .SetDetail($"User not assigned to role '{roleToRemove.Name}'.");
             }
 
             var result = await _userRepository.RemoveFromRoleAsync(userToRemoveRole, roleToRemove.Name);
             if (!result.Succeeded)
             {
-                throw new IdentityException($"Error removing user ['{userToRemoveRole.UserName}'] to role ['{roleToRemove.Name}'] .", result.Errors);
+                throw new IdentityException()
+                    .SetTitle("Error removing role from user")
+                    .SetDetail($"Error removing user from role '{roleToRemove.Name}'. See 'errors' property for more details")
+                    .SetErrors(result.Errors);
             }
 
             var userToReturn = await GetByIdAsync(id);
@@ -195,13 +211,7 @@ namespace SalesAPI.Identity.Services
 
 
         public async Task<User> GetCurrentUserAsync()
-        {
-            var isAuthenticated = _httpContextAccessor.HttpContext.User.Identity.IsAuthenticated;
-            if (!isAuthenticated)
-            {
-                throw new IdentityException("User not logged in");
-            }
-
+        {            
             var user = await _userRepository.GetCurrentUserAsync();
 
             return user;
@@ -216,7 +226,10 @@ namespace SalesAPI.Identity.Services
             var result = await _userRepository.UpdateUserAsync(user);
             if (!result.Succeeded)
             {
-                throw new IdentityException("Error while updating user.", result.Errors);
+                throw new IdentityException()
+                    .SetTitle("Error updating user")
+                    .SetDetail("See 'errors' property for more details")
+                    .SetErrors(result.Errors);
             }
 
             var updatedUser = await GetByUserNameAsync(userName);
@@ -234,7 +247,10 @@ namespace SalesAPI.Identity.Services
             var result = await _userRepository.ChangePasswordAsync(user, currentPassword, newPassword);
             if (!result.Succeeded)
             {
-                throw new IdentityException("Error changing password.", result.Errors);
+                throw new IdentityException()
+                    .SetTitle("Error changing password")
+                    .SetDetail("See 'errors' property for more details")
+                    .SetErrors(result.Errors);
             }
         }
 
@@ -245,7 +261,10 @@ namespace SalesAPI.Identity.Services
             var result = await _userRepository.ChangePasswordAsync(currentUser, currentPassword, newPassword);
             if (!result.Succeeded)
             {
-                throw new IdentityException("Error changing password.", result.Errors);
+                throw new IdentityException()
+                    .SetTitle("Error changing password")
+                    .SetDetail("See 'errors' property for more details")
+                    .SetErrors(result.Errors);
             }
         }
 
@@ -261,7 +280,10 @@ namespace SalesAPI.Identity.Services
             var result = await _userRepository.ResetPasswordAsync(user, newPassword);
             if (!result.Succeeded)
             {
-                throw new IdentityException("Error reseting password.", result.Errors);
+                throw new IdentityException()
+                    .SetTitle("Error reseting password")
+                    .SetDetail("See 'errors' property for more details")
+                    .SetErrors(result.Errors);
             }
         }
     }
