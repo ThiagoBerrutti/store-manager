@@ -1,9 +1,12 @@
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +21,7 @@ using SalesAPI.Persistence;
 using SalesAPI.Persistence.Data;
 using SalesAPI.Persistence.Repositories;
 using SalesAPI.Services;
+using SalesAPI.Validations;
 using System;
 using System.Text;
 using System.Threading.Tasks;
@@ -36,7 +40,10 @@ namespace SalesAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            //services.AddControllers()
+
+
+
 
             var connectionString = Configuration["ConnectionStrings:SalesDbSQLServer"];
             services.AddDbContext<SalesDbContext>(options =>
@@ -64,16 +71,21 @@ namespace SalesAPI
                 .AddSignInManager<SignInManager<User>>();
 
 
-
             services.AddMvc(options =>
             {
                 var policy = new AuthorizationPolicyBuilder()
                     .RequireAuthenticatedUser()
                     .Build();
+
                 options.Filters.Add(new AuthorizeFilter(policy));
                 options.Filters.Add(typeof(ExceptionFilter));
             })
                 .SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0);
+                //.AddFluentValidation(config =>
+                //{
+                //    config.RegisterValidatorsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
+                //    config.DisableDataAnnotationsValidation = true;                    
+                //});
 
 
             // token
@@ -137,6 +149,7 @@ namespace SalesAPI
 
             //app services
 
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             services.AddScoped<IStockService, StockService>();
             services.AddScoped<IProductService, ProductService>();
@@ -153,7 +166,16 @@ namespace SalesAPI
 
             services.AddScoped<ProductSeed>();
 
-            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            //services.AddScoped<IUrlHelper, UrlHelper>();
+
+            //services.AddScoped<IChangePasswordValidator, ChangePasswordValidator>();
+            //services.AddScoped<IProductValidator, ProductValidator>();
+            //services.AddScoped<IRoleValidator, RoleValidator>();
+            //services.AddScoped<IStockValidator, StockValidator>();
+            //services.AddScoped<IUserLoginValidator, UserLoginValidator>();
+            //services.AddScoped<IUserRegisterValidator, UserRegisterValidator>();
+            //services.AddScoped<IUserUpdateValidator, UserUpdateValidator>();
+
             services.AddHttpContextAccessor();
         }
 

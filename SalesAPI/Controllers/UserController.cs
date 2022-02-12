@@ -31,7 +31,7 @@ namespace SalesAPI.Controllers
 
 
         [Authorize(Roles = "Administrator,Manager")]
-        [HttpGet("{id}", Name = "GetUserById")]
+        [HttpGet("{id}", Name = nameof(GetUserById))]
         public async Task<IActionResult> GetUserById(int id)
         {
             var result = await _userService.GetDtoByIdAsync(id);
@@ -95,7 +95,7 @@ namespace SalesAPI.Controllers
 
         [Authorize(Roles = "Administrator")]
         [HttpPut("{id}/password")]
-        public async Task<IActionResult> ChangePassword(int id, ChangePasswordsDto passwords)
+        public async Task<IActionResult> ChangePassword(int id, ChangePasswordDto passwords)
         {
             if (!ModelState.IsValid)
             {
@@ -109,7 +109,7 @@ namespace SalesAPI.Controllers
 
 
         [HttpPut("current/password")]
-        public async Task<IActionResult> ChangeCurrentUserPassword(ChangePasswordsDto passwords)
+        public async Task<IActionResult> ChangeCurrentUserPassword(ChangePasswordDto passwords)
         {
             if (!ModelState.IsValid)
             {

@@ -1,10 +1,8 @@
-﻿using System;
-
-namespace SalesAPI.Exceptions
+﻿namespace SalesAPI.Exceptions
 {
-    public class DomainNotFoundException : Exception
+    public class DomainNotFoundException : ExceptionWithProblemDetails
     {
-        public DomainNotFoundException(string message) : base(message)
+        public DomainNotFoundException()
         {
         }
     }

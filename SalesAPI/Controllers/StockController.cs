@@ -11,7 +11,7 @@ namespace SalesAPI.Controllers
     [Authorize(Roles = "Administrator,Manager,Stock,Seller")]
     [ApiController]
     [Route("api/v1/[controller]")]
-    public class StockController : Controller
+    public class StockController : ControllerBase
     {
         private readonly IStockService _stockService;
 
@@ -40,7 +40,7 @@ namespace SalesAPI.Controllers
         }
 
 
-        [HttpGet("{id}")]
+        [HttpGet("{id}", Name = nameof(GetStockById))]
         public async Task<ActionResult<ProductStockReadDto>> GetStockById(int id)
         {
             var productStock = await _stockService.GetDtoByIdAsync(id);

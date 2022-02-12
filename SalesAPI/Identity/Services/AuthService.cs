@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using FluentValidation;
 using SalesAPI.Dtos;
 using SalesAPI.Exceptions.Domain;
+using SalesAPI.Validations;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -18,20 +20,28 @@ namespace SalesAPI.Identity.Services
         private readonly SignInManager<User> _signInManager;
         private readonly IUserService _userService;
         private readonly IMapper _mapper;
+        //private readonly IUserRegisterValidator _userRegisterValidator;
         private readonly AppSettings _appSettings;
 
         public AuthService(SignInManager<User> signInManager, IOptions<AppSettings> appSettings, IUserService userService, IMapper mapper)
+            //, IUserRegisterValidator userRegisterValidator )
         {
             _signInManager = signInManager;
             _appSettings = appSettings.Value;
             _userService = userService;
             _mapper = mapper;
+            //_userRegisterValidator = userRegisterValidator;
         }
 
 
 
         public async Task<AuthResponse> RegisterAsync(UserRegisterDto userDto)
         {
+            //var validationRes = _userRegisterValidator.Validate(userDto);
+            var x = new UserRegisterValidator();
+            
+            
+
             var user = _mapper.Map<User>(userDto);
 
             var result = await _userService.CreateAsync(user, userDto.Password);

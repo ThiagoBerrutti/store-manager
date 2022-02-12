@@ -2,9 +2,9 @@
 
 namespace SalesAPI.Exceptions
 {
-    public class StockException : Exception
+    public class StockException : ExceptionWithProblemDetails
     {
-        public StockException(string message) : base(message)
+        public StockException()
         {
         }
     }

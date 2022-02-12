@@ -15,7 +15,7 @@ namespace SalesAPI.Exceptions.Domain
 
         public IdentityException(string message, IEnumerable<IdentityError> errors) : this(message)
         {
-            Errors = errors;
+           Errors = errors;
         }
     }
 }

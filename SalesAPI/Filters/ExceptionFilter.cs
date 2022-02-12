@@ -4,7 +4,6 @@ using Newtonsoft.Json;
 using SalesAPI.Exceptions;
 using SalesAPI.Exceptions.Domain;
 using SalesAPI.Models;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 
@@ -20,31 +19,54 @@ namespace SalesAPI.Filters
             {
                 case ApplicationException applicationException:
                     {
-                        var statusCode = (int)HttpStatusCode.BadRequest;
+                        var problemDetails = applicationException.ProblemDetails;
 
-                        var errorModel = new ErrorModel(applicationException, statusCode);
-                        var json = JsonConvert.SerializeObject(errorModel);
+                        int statusCode = problemDetails.Status ?? (int)HttpStatusCode.BadRequest;
+                        if (!problemDetails.Status.HasValue) 
+                        { 
+                            applicationException.SetStatus(statusCode);
+                        }
 
-                        context.Result = new BadRequestObjectResult(errorModel);
-                        context.HttpContext.Response.StatusCode = statusCode;
+                        context.Result = new BadRequestObjectResult(problemDetails);
+                        context.HttpContext.Response.StatusCode =  statusCode;
+                        context.HttpContext.Response.ContentType = "application/problem+json";
                         break;
                     }
-               
-                case DomainNotFoundException entityNotFoundException:
+
+                case DomainNotFoundException domainNotFoundException:
                     {
-                        var statusCode = (int)HttpStatusCode.NotFound;
+                        //var statusCode = (int)HttpStatusCode.NotFound;
 
-                        var errorModel = new ErrorModel(entityNotFoundException, statusCode);
-                        var json = JsonConvert.SerializeObject(errorModel);
+                        //var errorModel = new ErrorModel(entityNotFoundException, statusCode);
+                        //var json = JsonConvert.SerializeObject(errorModel);
 
-                        context.Result = new NotFoundObjectResult(errorModel);
+                        //context.Result = new NotFoundObjectResult(errorModel);
+                        //context.HttpContext.Response.StatusCode = statusCode;
+                        ////
+                        var problemDetails = domainNotFoundException.ProblemDetails;
+                        int statusCode;
+                        
+                        if (!problemDetails.Status.HasValue)
+                        {
+                            statusCode = (int)HttpStatusCode.NotFound;
+                            domainNotFoundException.SetStatus(statusCode);                            
+                        }
+                        else
+                        {
+                            statusCode = problemDetails.Status.Value;
+                        }
+
+                        context.Result = new NotFoundObjectResult(problemDetails);
                         context.HttpContext.Response.StatusCode = statusCode;
+                        context.HttpContext.Response.ContentType = "application/problem+json";
                         break;
                     }
 
                 case IdentityException identityException:
                     {
-                        IEnumerable<string> errors = identityException.Errors.Select(e => e.Description);
+                        var errors = identityException.Errors.Select(e => e.Description);
+                        //var errors = ((IEnumerable<IdentityError>)identityException.Data["Errors"])
+                        //                .Select(e => e.Description);
 
                         var statusCode = (int)HttpStatusCode.BadRequest;
 
@@ -53,6 +75,13 @@ namespace SalesAPI.Filters
 
                         context.Result = new BadRequestObjectResult(errorModel);
                         context.HttpContext.Response.StatusCode = statusCode;
+
+                        //problemDetail.Extensions.Add("errors", errors);
+                        //problemDetail.Status = statusCode;
+                        //problemDetail.Title = identityException.Message;
+                        //problemDetail.Detail =
+
+
                         break;
                     }
 
@@ -84,13 +113,32 @@ namespace SalesAPI.Filters
                     {
                         var statusCode = (int)HttpStatusCode.BadRequest;
 
-                        var errorModel = new ErrorModel(stockException, statusCode);
-                        var json = JsonConvert.SerializeObject(errorModel);
+                        stockException.SetStatus(statusCode);
+                        var problemDetails = stockException.ProblemDetails;
+                        
+                        var json = JsonConvert.SerializeObject(problemDetails);
 
-                        context.Result = new BadRequestObjectResult(errorModel);
+                        context.Result = new BadRequestObjectResult(json);
                         context.HttpContext.Response.StatusCode = statusCode;
+                        context.HttpContext.Response.ContentType = "application/problem+json";
                         break;
                     }
+
+                //case ValidationException validationException:
+                //    {
+                //        var statusCode = (int)HttpStatusCode.BadRequest;
+                //        var validationProblemDetails = new ValidationProblemDetails();
+                //        problemDetail.Extensions["Errors"] = validationException.Errors;
+
+                //        //var errorModel = new ErrorModel(stockException, statusCode);
+                //        var json = JsonConvert.SerializeObject(errorModel);
+
+                //        context.Result = new BadRequestObjectResult(errorModel);
+                //        context.HttpContext.Response.StatusCode = statusCode;
+                //        break;
+                //    }
+
+
 
                 default:
                     {
@@ -99,7 +147,7 @@ namespace SalesAPI.Filters
                         var errorModel = new ErrorModel(exception, statusCode);
                         var json = JsonConvert.SerializeObject(errorModel);
 
-                        context.Result = new BadRequestObjectResult(errorModel);
+                        context.Result = new BadRequestObjectResult("DEU RUIM");
                         context.HttpContext.Response.StatusCode = statusCode;
                         break;
                     }

@@ -27,6 +27,7 @@ namespace SalesAPI.Controllers
             var registerResponse = await _authService.RegisterAsync(userDto);
             var authenticateResponse = await _authService.AuthenticateAsync(userDto);
 
+            //return CreatedAtRoute("GetUserById", new { authenticateResponse.User.Id }, authenticateResponse);
             return CreatedAtRoute(nameof(UserController.GetUserById), new { authenticateResponse.User.Id }, authenticateResponse);
         }
 

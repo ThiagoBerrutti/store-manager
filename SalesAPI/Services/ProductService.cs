@@ -52,15 +52,26 @@ namespace SalesAPI.Services
 
         public async Task<ProductReadDto> GetDtoByIdAsync(int id)
         {
-            var product = await _productRepository.GetByIdAsync(id);
-            if (product == null)
-            {
-                throw new DomainNotFoundException($"Product [Id = {id}] not found.");
-            }
+            var product = await GetByIdAsync(id);
             var dto = _mapper.Map<ProductReadDto>(product);
 
             return dto;
         }
+
+
+        public async Task<Product> GetByIdAsync(int id)
+        {
+            var product = await _productRepository.GetByIdAsync(id);
+            if (product == null)
+            {
+                throw new DomainNotFoundException()
+                    .SetTitle("Product not found")
+                    .SetDetail($"Product [Id = {id}] not found.");
+            }            
+
+            return product;
+        }
+        
 
         public async Task<IEnumerable<ProductReadDto>> SearchDtosAsync(string search)
         {
@@ -74,11 +85,7 @@ namespace SalesAPI.Services
 
         public async Task<ProductReadDto> UpdateAsync(int id, ProductWriteDto productDto)
         {
-            var productOnRepo = await _productRepository.GetByIdAsync(id);
-            if (productOnRepo == null)
-            {
-                throw new DomainNotFoundException($"Product id [{id}] not found.");
-            }
+            var productOnRepo = await GetByIdAsync(id);            
 
             _mapper.Map(productDto, productOnRepo);
             _productRepository.Update(productOnRepo);
@@ -92,12 +99,7 @@ namespace SalesAPI.Services
 
         public async Task DeleteAsync(int id)
         {
-            var product = await _productRepository.GetByIdAsync(id);
-            if (product == null)
-            {
-                throw new DomainNotFoundException($"Product id {id} not found");
-            }
-
+            var product = await GetByIdAsync(id);
             _productRepository.Delete(product);
 
             await _unitOfWork.CompleteAsync();
