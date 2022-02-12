@@ -22,7 +22,9 @@ namespace SalesAPI.Persistence.Repositories
             }
             catch (Exception e)
             {
-                throw new InfrastructureException("Error during save", e);
+                throw new InfrastructureException()
+                    .SetTitle("Error saving data")
+                    .SetDetail(e.Message);
             }
         }
     }

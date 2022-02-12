@@ -28,7 +28,7 @@ namespace SalesAPI.Controllers
         }
 
 
-        [HttpGet("{id}", Name = "GetRoleById")]
+        [HttpGet("{id:int}", Name = "GetRoleById")]
         public async Task<ActionResult<RoleReadDto>> GetRoleById(int id)
         {
             var employee = await _roleService.GetDtoByIdAsync(id);

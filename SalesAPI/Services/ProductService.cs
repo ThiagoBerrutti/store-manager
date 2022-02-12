@@ -4,7 +4,7 @@ using SalesAPI.Exceptions;
 using SalesAPI.Extensions;
 using SalesAPI.Models;
 using SalesAPI.Persistence.Repositories;
-using System;
+//using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -29,6 +29,13 @@ namespace SalesAPI.Services
 
         public async Task<ProductReadDto> CreateAsync(ProductWriteDto productDto, int amount)
         {
+            if (amount < 0 || amount > int.MaxValue)
+            {
+                throw new ApplicationException()
+                    .SetTitle("Error creating product")
+                    .SetDetail("Amount should be greater or equal to zero");
+            }
+
             var product = _mapper.Map<Product>(productDto);
             _productRepository.Add(product);
 

@@ -34,7 +34,9 @@ namespace SalesAPI.Identity.Services
             var role = await _roleRepository.GetByIdAsync(id);
             if (role == null)
             {
-                throw new IdentityNotFoundException($"Role [Id = {id}] not found.");
+                throw new IdentityNotFoundException()
+                    .SetTitle("Role not found")
+                    .SetDetail($"Role [Id = {id}] not found.");
             };
 
             return role;
@@ -55,7 +57,9 @@ namespace SalesAPI.Identity.Services
             var role = await _roleRepository.GetByNameAsync(name);
             if (role == null)
             {
-                throw new IdentityNotFoundException($"Role ['{name}'] not found.");
+                throw new IdentityNotFoundException()
+                    .SetTitle("Role not found.")
+                    .SetDetail($"Role '{name}' not found.");
             }
 
             return role;

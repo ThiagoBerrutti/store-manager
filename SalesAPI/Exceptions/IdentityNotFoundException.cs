@@ -1,12 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-
-namespace SalesAPI.Exceptions.Domain
+﻿namespace SalesAPI.Exceptions.Domain
 {
-    public class IdentityNotFoundException : Exception
+    public class IdentityNotFoundException : ExceptionWithProblemDetails
     {
-        public IdentityNotFoundException(string message) : base(message)
+        public IdentityNotFoundException()
         {
         }
     }

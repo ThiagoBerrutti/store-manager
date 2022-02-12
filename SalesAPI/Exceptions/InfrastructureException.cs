@@ -3,20 +3,12 @@ using System.Collections.Generic;
 
 namespace SalesAPI.Exceptions
 {
-    public class InfrastructureException : Exception
+    public class InfrastructureException : ExceptionWithProblemDetails
     {
         public IEnumerable<string> Errors;
 
-        public InfrastructureException(string message) : base(message)
+        public InfrastructureException()
         {
-        }
-
-        public InfrastructureException(string message, Exception e) 
-            : base(message)
-        {
-            Errors = new List<string> { e.GetType().Name + ": " + e.Message };
-        }
-
-        
+        }        
     }
 }

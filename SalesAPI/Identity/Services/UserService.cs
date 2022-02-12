@@ -48,7 +48,9 @@ namespace SalesAPI.Identity.Services
             var user = await _userRepository.GetByUserNameAsync(userName);
             if (user == null)
             {
-                throw new IdentityNotFoundException($"User '{userName}' not found.");
+                throw new IdentityNotFoundException()
+                    .SetTitle("User not found")
+                    .SetDetail($"User '{userName}' not found.");
             }
 
             return user;
@@ -78,7 +80,9 @@ namespace SalesAPI.Identity.Services
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null)
             {
-                throw new IdentityNotFoundException($"User [Id = {id}] not found.");
+                throw new IdentityNotFoundException()
+                    .SetTitle("User not found")
+                    .SetDetail($"User [Id = {id}] not found.");
             }
 
             return user;

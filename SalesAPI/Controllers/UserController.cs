@@ -42,7 +42,7 @@ namespace SalesAPI.Controllers
 
         [HttpGet("current")]
         public async Task<IActionResult> GetCurrentUser()
-        {
+        {            
             var result = await _userService.GetDtoCurrentUserAsync();
 
             return Ok(result);

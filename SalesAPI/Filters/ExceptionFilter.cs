@@ -1,10 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Newtonsoft.Json;
 using SalesAPI.Exceptions;
 using SalesAPI.Exceptions.Domain;
-using SalesAPI.Models;
-using System.Linq;
 using System.Net;
 
 namespace SalesAPI.Filters
@@ -14,111 +11,63 @@ namespace SalesAPI.Filters
         public void OnException(ExceptionContext context)
         {
             var exception = context.Exception;
+            int statusCode = (int)HttpStatusCode.BadRequest;
+            object response;
 
-            switch (exception)
+            if (exception is ExceptionWithProblemDetails exceptionWithProblemDetails)
             {
-                case ApplicationException applicationException:
-                    {
-                        var problemDetails = applicationException.ProblemDetails;
+                var problemDetails = exceptionWithProblemDetails.ProblemDetails;
 
-                        int statusCode = problemDetails.Status ?? (int)HttpStatusCode.BadRequest;
-                        if (!problemDetails.Status.HasValue) 
-                        { 
-                            applicationException.SetStatus(statusCode);
-                        }
-
-                        context.Result = new BadRequestObjectResult(problemDetails);
-                        context.HttpContext.Response.StatusCode =  statusCode;
-                        context.HttpContext.Response.ContentType = "application/problem+json";
-                        break;
-                    }
-
-                case DomainNotFoundException domainNotFoundException:
-                    {
-                        //var statusCode = (int)HttpStatusCode.NotFound;
-
-                        //var errorModel = new ErrorModel(entityNotFoundException, statusCode);
-                        //var json = JsonConvert.SerializeObject(errorModel);
-
-                        //context.Result = new NotFoundObjectResult(errorModel);
-                        //context.HttpContext.Response.StatusCode = statusCode;
-                        ////
-                        var problemDetails = domainNotFoundException.ProblemDetails;
-                        int statusCode;
-                        
-                        if (!problemDetails.Status.HasValue)
+                switch (exceptionWithProblemDetails)
+                {
+                    case ApplicationException _:
                         {
-                            statusCode = (int)HttpStatusCode.NotFound;
-                            domainNotFoundException.SetStatus(statusCode);                            
+                            statusCode = problemDetails.Status ?? (int)HttpStatusCode.BadRequest;
+                            break;
                         }
-                        else
+
+                    case DomainNotFoundException _:
                         {
-                            statusCode = problemDetails.Status.Value;
+                            statusCode = problemDetails.Status ?? (int)HttpStatusCode.NotFound;
+                            break;
                         }
 
-                        context.Result = new NotFoundObjectResult(problemDetails);
-                        context.HttpContext.Response.StatusCode = statusCode;
-                        context.HttpContext.Response.ContentType = "application/problem+json";
-                        break;
-                    }
-
-                case IdentityException identityException:
-                    {
-                        var problemDetails = identityException.ProblemDetails;
-
-                        int statusCode = problemDetails.Status ?? (int)HttpStatusCode.BadRequest;
-                        if (!problemDetails.Status.HasValue)
+                    case IdentityException _:
                         {
-                            identityException.SetStatus(statusCode);
+                            statusCode = problemDetails.Status ?? (int)HttpStatusCode.BadRequest;
+                            break;
                         }
 
-                        context.Result = new BadRequestObjectResult(problemDetails);
-                        context.HttpContext.Response.StatusCode = statusCode;
-                        context.HttpContext.Response.ContentType = "application/problem+json";
+                    case IdentityNotFoundException _:
+                        {
+                            statusCode = problemDetails.Status ?? (int)HttpStatusCode.NotFound;
+                            break;
+                        }
 
-                        break;
-                    }
+                    case InfrastructureException _:
+                        {
+                            statusCode = problemDetails.Status ?? (int)HttpStatusCode.InternalServerError;
+                            break;
+                        }
+                }
 
-                //case IdentityNotFoundException identityNotFoundException:
-                //    {
-                //        var statusCode = (int)HttpStatusCode.NotFound;
+                if (!problemDetails.Status.HasValue)
+                {
+                    exceptionWithProblemDetails.SetStatus(statusCode);
+                }
 
-                //        var errorModel = new ErrorModel(identityNotFoundException, statusCode);
-                //        var json = JsonConvert.SerializeObject(errorModel);
-
-                //        context.Result = new NotFoundObjectResult(errorModel);
-                //        context.HttpContext.Response.StatusCode = statusCode;
-                //        break;
-                //    }
-
-                //case InfrastructureException infraException:
-                //    {
-                //        var statusCode = (int)HttpStatusCode.InternalServerError;
-
-                //        var errorModel = new ErrorModel(infraException, statusCode, infraException.Errors);
-                //        var json = JsonConvert.SerializeObject(errorModel);
-
-                //        context.Result = new ObjectResult(errorModel);
-                //        context.HttpContext.Response.StatusCode = statusCode;
-                //        break;
-                //    }
-                
-                
-
-
-
-                default:
-                    {
-                        var statusCode = (int)HttpStatusCode.BadRequest;
-
-                        //var errorModel = new ErrorModel(exception, statusCode);
-                        //var json = JsonConvert.SerializeObject(errorModel);
-
-                        context.Result = new BadRequestObjectResult("DEU RUIM");
-                        context.HttpContext.Response.StatusCode = statusCode;
-                        break;
-                    }
+                response = problemDetails;
             }
+            else
+            {
+                statusCode = (int)HttpStatusCode.BadRequest;
+                response = new ProblemDetails { Title = "Unexpected error", Detail = "Something unexpected happened", Status = statusCode };
+            }
+
+            context.HttpContext.Response.ContentType = "application/problem+json";
+            context.HttpContext.Response.StatusCode = statusCode;
+
+            context.Result = new ObjectResult(response);
         }
     }
 }
