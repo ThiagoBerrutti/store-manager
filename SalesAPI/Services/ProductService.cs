@@ -1,12 +1,9 @@
 ﻿using AutoMapper;
 using SalesAPI.Dtos;
 using SalesAPI.Exceptions;
-using SalesAPI.Extensions;
 using SalesAPI.Models;
 using SalesAPI.Persistence.Repositories;
-//using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace SalesAPI.Services
@@ -74,11 +71,11 @@ namespace SalesAPI.Services
                 throw new DomainNotFoundException()
                     .SetTitle("Product not found")
                     .SetDetail($"Product [Id = {id}] not found.");
-            }            
+            }
 
             return product;
         }
-        
+
 
         public async Task<IEnumerable<ProductReadDto>> SearchDtosAsync(string search)
         {
@@ -92,7 +89,7 @@ namespace SalesAPI.Services
 
         public async Task<ProductReadDto> UpdateAsync(int id, ProductWriteDto productDto)
         {
-            var productOnRepo = await GetByIdAsync(id);            
+            var productOnRepo = await GetByIdAsync(id);
 
             _mapper.Map(productDto, productOnRepo);
             _productRepository.Update(productOnRepo);

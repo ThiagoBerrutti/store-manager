@@ -1,32 +1,24 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using SalesAPI.Dtos;
 using SalesAPI.Exceptions.Domain;
-using SalesAPI.Extensions;
-using SalesAPI.Persistence;
+using SalesAPI.Identity;
 using SalesAPI.Persistence.Repositories;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace SalesAPI.Identity.Services
+namespace SalesAPI.Services
 {
     public class UserService : IUserService
     {
         private readonly IRoleService _roleService;
-        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
 
-        public UserService(IRoleService roleService, IHttpContextAccessor httpContextAccessor, IUserRepository userRepository, IMapper mapper)
+        public UserService(IRoleService roleService, IUserRepository userRepository, IMapper mapper)
         {
             _roleService = roleService;
-            _httpContextAccessor = httpContextAccessor;
             _userRepository = userRepository;
             _mapper = mapper;
         }
@@ -121,8 +113,8 @@ namespace SalesAPI.Identity.Services
             var adminUserId = AppConstants.Users.Admin.Id;
             var adminRoleName = AppConstants.Roles.Admin.Name;
             var role = await _roleService.GetByIdAsync(roleId);
-            
-            if (roleId == adminRoleId) 
+
+            if (roleId == adminRoleId)
             {
                 var currentUser = await GetCurrentUserAsync();
                 if (currentUser.Id != adminUserId)
@@ -164,7 +156,7 @@ namespace SalesAPI.Identity.Services
             var adminRoleId = AppConstants.Roles.Admin.Id;
             var currentUser = await GetCurrentUserAsync();
 
-            if (id == adminUserId && roleId == adminRoleId) 
+            if (id == adminUserId && roleId == adminRoleId)
             {
                 throw new IdentityException()
                     .SetTitle("Error removing role from user")
@@ -215,7 +207,7 @@ namespace SalesAPI.Identity.Services
 
 
         public async Task<User> GetCurrentUserAsync()
-        {            
+        {
             var user = await _userRepository.GetCurrentUserAsync();
 
             return user;

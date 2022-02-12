@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SalesAPI.Dtos;
-using SalesAPI.Identity.Services;
+using SalesAPI.Services;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

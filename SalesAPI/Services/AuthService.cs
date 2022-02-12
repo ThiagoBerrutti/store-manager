@@ -13,39 +13,30 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Routing;
+using SalesAPI.Identity;
 
-namespace SalesAPI.Identity.Services
+namespace SalesAPI.Services
 {
     public class AuthService : IAuthService
     {
         private readonly SignInManager<User> _signInManager;
         private readonly IUserService _userService;
         private readonly IMapper _mapper;
-        private readonly LinkGenerator _linkGenerator;
 
-        //private readonly IUserRegisterValidator _userRegisterValidator;
         private readonly AppSettings _appSettings;
 
-        public AuthService(SignInManager<User> signInManager, IOptions<AppSettings> appSettings, IUserService userService, IMapper mapper, LinkGenerator linkGenerator)
-            //, IUserRegisterValidator userRegisterValidator )
+        public AuthService(SignInManager<User> signInManager, IOptions<AppSettings> appSettings, IUserService userService, IMapper mapper)
         {
             _signInManager = signInManager;
             _appSettings = appSettings.Value;
             _userService = userService;
             _mapper = mapper;
-            _linkGenerator = linkGenerator;
-            //_userRegisterValidator = userRegisterValidator;
         }
 
 
 
         public async Task<AuthResponse> RegisterAsync(UserRegisterDto userDto)
         {
-            //var validationRes = _userRegisterValidator.Validate(userDto);
-            var x = new UserRegisterValidator();
-            
-            
-
             var user = _mapper.Map<User>(userDto);
 
             var result = await _userService.CreateAsync(user, userDto.Password);
@@ -77,20 +68,16 @@ namespace SalesAPI.Identity.Services
             {
                 if (signInResult.IsLockedOut)
                 {
-                    //var instance = _linkGenerator.GetPathByName(nameof(Controllers.UserController.GetUserById), new { id = user.Id });
                     throw new IdentityException()
                         .SetTitle("Error authenticating user")
                         .SetDetail($"User locked out until {user.LockoutEnd:G}");
-                        //.SetInstance(instance);
                 }
 
                 if (signInResult.IsNotAllowed)
                 {
-                    //var instance = _linkGenerator.GetPathByName(nameof(Controllers.UserController.GetUserById), new { id = user.Id });
                     throw new IdentityException()
                         .SetTitle("Error authenticating user")
                         .SetDetail($"User not allowed.");
-                        //.SetInstance(instance);
                 }
 
                 throw new IdentityException().SetTitle("Error authenticating user");

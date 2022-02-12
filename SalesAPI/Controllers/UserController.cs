@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SalesAPI.Dtos;
-using SalesAPI.Helpers;
-using SalesAPI.Identity.Services;
+using SalesAPI.Services;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -42,7 +41,7 @@ namespace SalesAPI.Controllers
 
         [HttpGet("current")]
         public async Task<IActionResult> GetCurrentUser()
-        {            
+        {
             var result = await _userService.GetDtoCurrentUserAsync();
 
             return Ok(result);
@@ -73,11 +72,6 @@ namespace SalesAPI.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateUser(string userName, UserUpdateDto userUpdate)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState.GetErrorMessages());
-            }
-
             var currentUserClaims = HttpContext.User;
             var currentUserName = currentUserClaims.FindFirst(ClaimTypes.Name).Value;
             var isCurrentUser = currentUserName.ToUpper() == userName.ToUpper();
@@ -97,11 +91,6 @@ namespace SalesAPI.Controllers
         [HttpPut("{id}/password")]
         public async Task<IActionResult> ChangePassword(int id, ChangePasswordDto passwords)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState.GetErrorMessages());
-            }
-
             await _userService.ChangePasswordAsync(id, passwords.CurrentPassword, passwords.NewPassword);
 
             return Ok();
@@ -111,11 +100,6 @@ namespace SalesAPI.Controllers
         [HttpPut("current/password")]
         public async Task<IActionResult> ChangeCurrentUserPassword(ChangePasswordDto passwords)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState.GetErrorMessages());
-            }
-
             await _userService.ChangeCurrentUserPasswordAsync(passwords.CurrentPassword, passwords.NewPassword);
 
             return Ok();

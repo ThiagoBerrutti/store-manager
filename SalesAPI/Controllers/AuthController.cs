@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SalesAPI.Dtos;
 using SalesAPI.Identity;
-using SalesAPI.Identity.Services;
+using SalesAPI.Services;
 using System.Threading.Tasks;
 
 namespace SalesAPI.Controllers
@@ -27,7 +27,6 @@ namespace SalesAPI.Controllers
             var registerResponse = await _authService.RegisterAsync(userDto);
             var authenticateResponse = await _authService.AuthenticateAsync(userDto);
 
-            //return CreatedAtRoute("GetUserById", new { authenticateResponse.User.Id }, authenticateResponse);
             return CreatedAtRoute(nameof(UserController.GetUserById), new { authenticateResponse.User.Id }, authenticateResponse);
         }
 
@@ -37,7 +36,7 @@ namespace SalesAPI.Controllers
         public async Task<ActionResult<AuthResponse>> Authenticate(UserLoginDto userLogin)
         {
             var authResponse = await _authService.AuthenticateAsync(userLogin);
-            
+
             return Ok(authResponse);
         }
     }

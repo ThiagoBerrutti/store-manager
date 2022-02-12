@@ -1,12 +1,9 @@
-using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,12 +13,10 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using SalesAPI.Filters;
 using SalesAPI.Identity;
-using SalesAPI.Identity.Services;
 using SalesAPI.Persistence;
 using SalesAPI.Persistence.Data;
 using SalesAPI.Persistence.Repositories;
 using SalesAPI.Services;
-using SalesAPI.Validations;
 using System;
 using System.Text;
 using System.Threading.Tasks;
@@ -81,11 +76,11 @@ namespace SalesAPI
                 options.Filters.Add(typeof(ExceptionFilter));
             })
                 .SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0);
-                //.AddFluentValidation(config =>
-                //{
-                //    config.RegisterValidatorsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
-                //    config.DisableDataAnnotationsValidation = true;                    
-                //});
+            //.AddFluentValidation(config =>
+            //{
+            //    config.RegisterValidatorsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
+            //    config.DisableDataAnnotationsValidation = true;
+            //});
 
 
             // token

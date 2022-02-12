@@ -68,6 +68,5 @@ namespace SalesAPI.Controllers
             var updatedProductDto = await _productService.UpdateAsync(id, productUpdate);
             return Ok(updatedProductDto);
         }
-
     }
 }

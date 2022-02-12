@@ -1,7 +1,8 @@
 ﻿using SalesAPI.Dtos;
+using SalesAPI.Identity;
 using System.Threading.Tasks;
 
-namespace SalesAPI.Identity.Services
+namespace SalesAPI.Services
 {
     public interface IAuthService
     {

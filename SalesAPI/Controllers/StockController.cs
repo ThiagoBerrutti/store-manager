@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using SalesAPI.Dtos;
 using SalesAPI.Services;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace SalesAPI.Controllers
