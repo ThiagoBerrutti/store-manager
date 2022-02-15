@@ -2,10 +2,11 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using SalesAPI.Dtos;
-using SalesAPI.Exceptions.Domain;
+using SalesAPI.Exceptions;
 using SalesAPI.Identity;
 using SalesAPI.Persistence.Repositories;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SalesAPI.Services
@@ -15,12 +16,14 @@ namespace SalesAPI.Services
         private readonly IRoleService _roleService;
         private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public UserService(IRoleService roleService, IUserRepository userRepository, IMapper mapper)
+        public UserService(IRoleService roleService, IUserRepository userRepository, IMapper mapper, IHttpContextAccessor httpContextAcessor)
         {
             _roleService = roleService;
             _userRepository = userRepository;
             _mapper = mapper;
+            _httpContextAccessor = httpContextAcessor;
         }
 
 
@@ -121,7 +124,8 @@ namespace SalesAPI.Services
                 {
                     throw new IdentityException()
                         .SetTitle("Error adding role to user")
-                        .SetDetail($"Only root {adminRoleName} [Id = {adminUserId}] can assign {adminRoleName} role");
+                        .SetDetail($"Only root {adminRoleName} [Id = {adminUserId}] can assign {adminRoleName} role")                
+                        .SetInstance(_httpContextAccessor.HttpContext.Request.Path.Value);
                 }
             }
 
@@ -132,7 +136,8 @@ namespace SalesAPI.Services
             {
                 throw new IdentityException()
                     .SetTitle("Error adding role to user")
-                    .SetDetail($"User already assigned to role '{role.Name}'.");
+                    .SetDetail($"User already assigned to role '{role.Name}'.")
+                    .SetInstance(_httpContextAccessor.HttpContext.Request.Path.Value);
             }
 
             var result = await _userRepository.AddToRoleAsync(user, role.Name);
@@ -141,7 +146,8 @@ namespace SalesAPI.Services
                 throw new IdentityException()
                     .SetTitle("Error adding role to user")
                     .SetDetail($"User not assigned to role '{role.Name}'. See 'errors' property for more details")
-                    .SetErrors(result.Errors);
+                    .SetErrors(result.Errors.Select(e => e.Description))
+                    .SetInstance(_httpContextAccessor.HttpContext.Request.Path.Value);
             }
 
             var userModel = _mapper.Map<UserViewModel>(user);
@@ -160,14 +166,16 @@ namespace SalesAPI.Services
             {
                 throw new IdentityException()
                     .SetTitle("Error removing role from user")
-                    .SetDetail($"Cannot remove '{adminRoleName}' role from root admin.");
+                    .SetDetail($"Cannot remove '{adminRoleName}' role from root admin.")
+                    .SetInstance(_httpContextAccessor.HttpContext.Request.Path.Value);
             }
 
             if (roleId == adminRoleId && currentUser.Id != adminUserId)
             {
                 throw new IdentityException()
                     .SetTitle("Error removing role from user")
-                    .SetDetail($"Only root {adminRoleName} [Id = {adminUserId}] can remove {adminRoleName} role");
+                    .SetDetail($"Only root {adminRoleName} [Id = {adminUserId}] can remove {adminRoleName} role")
+                    .SetInstance(_httpContextAccessor.HttpContext.Request.Path.Value);
             }
 
             var roleToRemove = await _roleService.GetByIdAsync(roleId);
@@ -178,7 +186,8 @@ namespace SalesAPI.Services
             {
                 throw new IdentityException()
                     .SetTitle("Error removing role from user")
-                    .SetDetail($"User not assigned to role '{roleToRemove.Name}'.");
+                    .SetDetail($"User not assigned to role '{roleToRemove.Name}'.")
+                    .SetInstance(_httpContextAccessor.HttpContext.Request.Path.Value);
             }
 
             var result = await _userRepository.RemoveFromRoleAsync(userToRemoveRole, roleToRemove.Name);
@@ -187,7 +196,8 @@ namespace SalesAPI.Services
                 throw new IdentityException()
                     .SetTitle("Error removing role from user")
                     .SetDetail($"Error removing user from role '{roleToRemove.Name}'. See 'errors' property for more details")
-                    .SetErrors(result.Errors);
+                    .SetErrors(result.Errors.Select(e => e.Description))
+                    .SetInstance(_httpContextAccessor.HttpContext.Request.Path.Value);
             }
 
             var userToReturn = await GetByIdAsync(id);
@@ -225,7 +235,8 @@ namespace SalesAPI.Services
                 throw new IdentityException()
                     .SetTitle("Error updating user")
                     .SetDetail("See 'errors' property for more details")
-                    .SetErrors(result.Errors);
+                    .SetErrors(result.Errors.Select(e => e.Description))
+                    .SetInstance(_httpContextAccessor.HttpContext.Request.Path.Value);
             }
 
             var updatedUser = await GetByUserNameAsync(userName);
@@ -246,7 +257,8 @@ namespace SalesAPI.Services
                 throw new IdentityException()
                     .SetTitle("Error changing password")
                     .SetDetail("See 'errors' property for more details")
-                    .SetErrors(result.Errors);
+                    .SetErrors(result.Errors.Select(e => e.Description))
+                    .SetInstance(_httpContextAccessor.HttpContext.Request.Path.Value);
             }
         }
 
@@ -260,7 +272,8 @@ namespace SalesAPI.Services
                 throw new IdentityException()
                     .SetTitle("Error changing password")
                     .SetDetail("See 'errors' property for more details")
-                    .SetErrors(result.Errors);
+                    .SetErrors(result.Errors.Select(e => e.Description))
+                    .SetInstance(_httpContextAccessor.HttpContext.Request.Path.Value);
             }
         }
 
@@ -279,7 +292,8 @@ namespace SalesAPI.Services
                 throw new IdentityException()
                     .SetTitle("Error reseting password")
                     .SetDetail("See 'errors' property for more details")
-                    .SetErrors(result.Errors);
+                    .SetErrors(result.Errors.Select(e => e.Description))
+                    .SetInstance(_httpContextAccessor.HttpContext.Request.Path.Value);
             }
         }
     }

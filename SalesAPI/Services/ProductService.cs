@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using SalesAPI.Dtos;
 using SalesAPI.Exceptions;
 using SalesAPI.Models;
@@ -14,13 +15,15 @@ namespace SalesAPI.Services
         private readonly IStockService _stockService;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public ProductService(IProductRepository productRepository, IStockService stockService, IMapper mapper, IUnitOfWork unitOfWork)
+        public ProductService(IProductRepository productRepository, IStockService stockService, IMapper mapper, IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
         {
             _productRepository = productRepository;
             _stockService = stockService;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
+            _httpContextAccessor = httpContextAccessor;
         }
 
 
@@ -28,9 +31,10 @@ namespace SalesAPI.Services
         {
             if (amount < 0 || amount > int.MaxValue)
             {
-                throw new ApplicationException()
+                throw new AppException()
                     .SetTitle("Error creating product")
                     .SetDetail("Amount should be greater or equal to zero");
+                    //.SetInstance(_httpContextAccessor.HttpContext.Request.Path.Value);
             }
 
             var product = _mapper.Map<Product>(productDto);

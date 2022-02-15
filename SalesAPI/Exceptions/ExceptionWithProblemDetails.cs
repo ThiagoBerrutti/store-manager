@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using System;
 
 namespace SalesAPI.Exceptions
@@ -6,9 +7,10 @@ namespace SalesAPI.Exceptions
     public class ExceptionWithProblemDetails : Exception
     {
         public const string ErrorKey = "error";
+
         public ProblemDetails ProblemDetails { get; }
 
-        public ExceptionWithProblemDetails()
+        public ExceptionWithProblemDetails() 
         {
              ProblemDetails = new ProblemDetails();
         }
@@ -56,7 +58,7 @@ namespace SalesAPI.Exceptions
             return this;
         }
 
-
+                
         public ExceptionWithProblemDetails SetStatus(int statusCode)
         {
             ProblemDetails.Status = statusCode;

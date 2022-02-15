@@ -22,6 +22,7 @@ namespace SalesAPI.Services
         private readonly IStockRepository _stockRepository;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly LinkGenerator _linkGenerator;
 
     
@@ -29,12 +30,13 @@ namespace SalesAPI.Services
 
         //private readonly IStockValidator _stockValidator;
 
-        public StockService(IStockRepository productStockRepository, IMapper mapper, IUnitOfWork unitOfWork, LinkGenerator linkGenerator)
+        public StockService(IStockRepository productStockRepository, IMapper mapper, IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, LinkGenerator linkGenerator)
         //, IStockValidator stockValidator)
         {
             _stockRepository = productStockRepository;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
+            _httpContextAccessor = httpContextAccessor;
             _linkGenerator = linkGenerator;
         }
 
@@ -126,22 +128,23 @@ namespace SalesAPI.Services
         public async Task<ProductStockReadDto> AddProductAmountAsync(int id, int amount)
         {
             if (amount <= 0)
-            {                          
+            {
                 var instance = _linkGenerator.GetPathByName(InstanceRouteName, new { id });                
-                throw new ApplicationException()
+                throw new AppException()
                     .SetTitle("Error adding amount")
                     .SetDetail("Amount should be a positive number")
-                    .SetInstance($"{instance}");
+                    .SetInstance(instance);
+                    
             }
 
             var productStock = await GetByIdAsync(id);
             if (productStock.Count >= 0 && (productStock.Count + amount < 0)) //overflow test
             {
                 var instance = _linkGenerator.GetPathByName(InstanceRouteName, new { id });
-                throw new ApplicationException()
+                throw new AppException()
                     .SetTitle("Error adding amount")
                     .SetDetail("Stock's [Count] value will overflow")
-                    .SetInstance($"{instance}");
+                    .SetInstance(instance);
             }
 
             productStock.Count += amount;
@@ -157,20 +160,20 @@ namespace SalesAPI.Services
             if (amount <= 0)
             {
                 var instance = _linkGenerator.GetPathByName(InstanceRouteName, new { id });
-                throw new ApplicationException()
+                throw new AppException()
                     .SetTitle("Error adding amount")
                     .SetDetail("Amount should be a positive number")
-                    .SetInstance($"{instance}");
+                    .SetInstance(instance);
             }
 
             var productStock = await GetByIdAsync(id);
             if (productStock.Count - amount < 0)
             {
                 var instance = _linkGenerator.GetPathByName(InstanceRouteName, new { id });
-                throw new ApplicationException()
+                throw new AppException()
                     .SetTitle($"Not enough products available")
                     .SetDetail($"Only [{productStock.Count}] on stock")
-                    .SetInstance($"{instance}");
+                    .SetInstance(instance);
 
             }
 

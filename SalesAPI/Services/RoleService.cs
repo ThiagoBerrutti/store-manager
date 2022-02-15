@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
 using SalesAPI.Dtos;
-using SalesAPI.Exceptions.Domain;
+using SalesAPI.Exceptions;
 using SalesAPI.Identity;
 using SalesAPI.Persistence.Repositories;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SalesAPI.Services
@@ -94,7 +95,7 @@ namespace SalesAPI.Services
                 throw new IdentityException()
                     .SetTitle("Error creating role")
                     .SetDetail("Role not created. See 'errors' property for more details")
-                    .SetErrors(result.Errors);
+                    .SetErrors(result.Errors.Select(e => e.Description));
             }
 
             var appRole = await _roleRepository.GetByNameAsync(dto.Name);
@@ -106,7 +107,7 @@ namespace SalesAPI.Services
 
         public async Task DeleteAsync(int id)
         {
-            var role = await GetByIdAsync(id);           
+            var role = await GetByIdAsync(id);
 
             var result = await _roleRepository.DeleteAsync(role);
             if (!result.Succeeded)
@@ -114,7 +115,8 @@ namespace SalesAPI.Services
                 throw new IdentityException()
                     .SetTitle("Error deleting role")
                     .SetDetail("Role not deleted. See 'errors' property for more details")
-                    .SetErrors(result.Errors);
+                    .SetErrors(result.Errors.Select(e => e.Description));
+
             }
         }
 

@@ -2,18 +2,16 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using FluentValidation;
 using SalesAPI.Dtos;
-using SalesAPI.Exceptions.Domain;
-using SalesAPI.Validations;
+using SalesAPI.Exceptions;
+using SalesAPI.Identity;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Routing;
-using SalesAPI.Identity;
 
 namespace SalesAPI.Services
 {
@@ -45,7 +43,7 @@ namespace SalesAPI.Services
                 throw new IdentityException()
                     .SetTitle("Error on user registration")
                     .SetDetail("Registration cancelled. See 'errors' property for more details")
-                    .SetErrors(result.Errors);
+                    .SetErrors(result.Errors.Select(e => e.Description));
             }
 
             var appUser = await _userService.GetByUserNameAsync(user.UserName);

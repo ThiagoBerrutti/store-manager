@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using SalesAPI.Exceptions;
-using SalesAPI.Exceptions.Domain;
 using System.Net;
 
 namespace SalesAPI.Filters
@@ -20,7 +19,7 @@ namespace SalesAPI.Filters
 
                 switch (exceptionWithProblemDetails)
                 {
-                    case ApplicationException _:
+                    case AppException _:
                         {
                             statusCode = problemDetails.Status ?? (int)HttpStatusCode.BadRequest;
                             break;
@@ -50,6 +49,7 @@ namespace SalesAPI.Filters
                             break;
                         }
                 }
+                //problemDetails.Instance = context.HttpContext.Request.Path.Value;
 
                 if (!problemDetails.Status.HasValue)
                 {
@@ -57,17 +57,12 @@ namespace SalesAPI.Filters
                 }
 
                 response = problemDetails;
-            }
-            else
-            {
-                statusCode = (int)HttpStatusCode.BadRequest;
-                response = new ProblemDetails { Title = "Unexpected error", Detail = "Something unexpected happened", Status = statusCode };
-            }
+                
+                context.HttpContext.Response.ContentType = "application/problem+json";
+                context.HttpContext.Response.StatusCode = statusCode;
 
-            context.HttpContext.Response.ContentType = "application/problem+json";
-            context.HttpContext.Response.StatusCode = statusCode;
-
-            context.Result = new ObjectResult(response);
+                context.Result = new ObjectResult(response);
+            }            
         }
     }
 }

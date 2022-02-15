@@ -1,4 +1,4 @@
-﻿namespace SalesAPI.Exceptions.Domain
+﻿namespace SalesAPI.Exceptions
 {
     public class IdentityNotFoundException : ExceptionWithProblemDetails
     {

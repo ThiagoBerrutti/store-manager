@@ -2,8 +2,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,7 +14,10 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using SalesAPI.Exceptions;
+using SalesAPI.Extensions;
 using SalesAPI.Filters;
+using SalesAPI.Helpers;
 using SalesAPI.Identity;
 using SalesAPI.Persistence;
 using SalesAPI.Persistence.Data;
@@ -35,11 +41,6 @@ namespace SalesAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            //services.AddControllers()
-
-
-
-
             var connectionString = Configuration["ConnectionStrings:SalesDbSQLServer"];
             services.AddDbContext<SalesDbContext>(options =>
             {
@@ -74,16 +75,15 @@ namespace SalesAPI
 
                 options.Filters.Add(new AuthorizeFilter(policy));
                 options.Filters.Add(typeof(ExceptionFilter));
-            })
-                .SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0);
+            }).SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0);
+
             //.AddFluentValidation(config =>
             //{
             //    config.RegisterValidatorsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
             //    config.DisableDataAnnotationsValidation = true;
             //});
 
-
-            // token
+           // token
 
             var appSettingsSection = Configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingsSection);
@@ -160,6 +160,7 @@ namespace SalesAPI
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             services.AddScoped<ProductSeed>();
+            services.AddTransient<ExceptionWithProblemDetails>();
 
             //services.AddScoped<IUrlHelper, UrlHelper>();
 
@@ -172,6 +173,9 @@ namespace SalesAPI
             //services.AddScoped<IUserUpdateValidator, UserUpdateValidator>();
 
             services.AddHttpContextAccessor();
+
+            services.AddTransient<ProblemDetailsFactory, CustomProblemDetailsFactory>();
+            services.AddTransient<HttpContextAccessor>();
         }
 
 
@@ -180,10 +184,13 @@ namespace SalesAPI
         {
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
                 IdentityModelEventSource.ShowPII = true;
                 Task.Run(async () => await pSeed.Seed()).Wait();
             }
+            app.ConfigureExceptionHandler();
+            
+            app.UseHsts();
+
             app.UseAuthentication();
 
             app.UseSwagger();
@@ -193,6 +200,7 @@ namespace SalesAPI
                 opt.SwaggerEndpoint("/swagger/v1/swagger.json", "School Manager API");
             }
             );
+
 
             app.UseHttpsRedirection();
 
