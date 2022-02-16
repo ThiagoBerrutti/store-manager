@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace SalesAPI.Dtos
+﻿namespace SalesAPI.Dtos
 {
     public class RoleWriteDto
     {

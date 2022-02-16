@@ -3,6 +3,7 @@ using SalesAPI.Dtos;
 using SalesAPI.Exceptions;
 using SalesAPI.Identity;
 using SalesAPI.Persistence.Repositories;
+using SalesAPI.Validations;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,10 +15,13 @@ namespace SalesAPI.Services
         private readonly IRoleRepository _roleRepository;
         private readonly IMapper _mapper;
 
+        private readonly RoleValidator _validator;
+
         public RoleService(IRoleRepository roleRepository, IMapper mapper)
         {
             _roleRepository = roleRepository;
             _mapper = mapper;
+            _validator = new RoleValidator();
         }
 
 
@@ -86,9 +90,18 @@ namespace SalesAPI.Services
         }
 
 
-        public async Task<RoleReadDto> CreateAsync(RoleWriteDto dto)
+        public async Task<RoleReadDto> CreateAsync(RoleWriteDto roleWriteDto)
         {
-            var role = _mapper.Map<Role>(dto);
+            var validationResult = _validator.Validate(roleWriteDto);
+            if (!validationResult.IsValid)
+            {
+                throw new AppValidationException()
+                    .SetTitle("Validation error")
+                    .SetDetail("Invalid role data. See 'errors' for more details")
+                    .SetErrors(validationResult.Errors.Select(e => e.ErrorMessage));
+            }
+
+            var role = _mapper.Map<Role>(roleWriteDto);
             var result = await _roleRepository.CreateAsync(role);
             if (!result.Succeeded)
             {
@@ -98,7 +111,7 @@ namespace SalesAPI.Services
                     .SetErrors(result.Errors.Select(e => e.Description));
             }
 
-            var appRole = await _roleRepository.GetByNameAsync(dto.Name);
+            var appRole = await _roleRepository.GetByNameAsync(roleWriteDto.Name);
             var roleReturn = _mapper.Map<RoleReadDto>(appRole);
 
             return roleReturn;

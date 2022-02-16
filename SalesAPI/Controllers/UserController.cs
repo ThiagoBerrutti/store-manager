@@ -91,7 +91,7 @@ namespace SalesAPI.Controllers
         [HttpPut("{id}/password")]
         public async Task<IActionResult> ChangePassword(int id, ChangePasswordDto passwords)
         {
-            await _userService.ChangePasswordAsync(id, passwords.CurrentPassword, passwords.NewPassword);
+            await _userService.ChangePasswordAsync(id, passwords);
 
             return Ok();
         }
@@ -100,7 +100,7 @@ namespace SalesAPI.Controllers
         [HttpPut("current/password")]
         public async Task<IActionResult> ChangeCurrentUserPassword(ChangePasswordDto passwords)
         {
-            await _userService.ChangeCurrentUserPasswordAsync(passwords.CurrentPassword, passwords.NewPassword);
+            await _userService.ChangeCurrentUserPasswordAsync(passwords);
 
             return Ok();
         }

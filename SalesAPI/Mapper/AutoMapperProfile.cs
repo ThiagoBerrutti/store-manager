@@ -3,7 +3,6 @@ using SalesAPI.Dtos;
 using SalesAPI.Helpers;
 using SalesAPI.Identity;
 using SalesAPI.Models;
-using System;
 
 namespace SalesAPI.Mapper
 {
@@ -18,7 +17,7 @@ namespace SalesAPI.Mapper
             CreateMap<ProductStockWriteDto, ProductStock>().ReverseMap();
 
             CreateMap<User, UserLoginDto>().ReverseMap();
-            CreateMap<UserUpdateDto, User>().ReverseMap();
+            CreateMap<User, UserUpdateDto>().ReverseMap();
             CreateMap<User, UserAuthViewModel>().ReverseMap();
             CreateMap<User, UserRegisterDto>().ReverseMap();
             CreateMap<UserRegisterDto, UserLoginDto>().ReverseMap();

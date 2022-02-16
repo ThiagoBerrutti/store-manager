@@ -1,4 +1,4 @@
-﻿namespace SalesAPI
+﻿namespace SalesAPI.Infra
 {
     public class AppConstants
     {

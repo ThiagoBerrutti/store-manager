@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SalesAPI.Identity;
+using SalesAPI.Infra;
 using System;
 using System.Collections.Generic;
 

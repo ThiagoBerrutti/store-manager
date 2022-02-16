@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SalesAPI.Identity;
+using SalesAPI.Infra;
 using System.Collections.Generic;
 
 namespace SalesAPI.Persistence.EntityConfigurations

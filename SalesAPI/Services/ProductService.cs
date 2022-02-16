@@ -1,10 +1,14 @@
 ﻿using AutoMapper;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using SalesAPI.Dtos;
 using SalesAPI.Exceptions;
+using SalesAPI.Extensions;
 using SalesAPI.Models;
 using SalesAPI.Persistence.Repositories;
+using SalesAPI.Validations;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SalesAPI.Services
@@ -15,7 +19,9 @@ namespace SalesAPI.Services
         private readonly IStockService _stockService;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ProductValidator _validator;
+
+        //private readonly IHttpContextAccessor _httpContextAccessor;
 
         public ProductService(IProductRepository productRepository, IStockService stockService, IMapper mapper, IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
         {
@@ -23,7 +29,8 @@ namespace SalesAPI.Services
             _stockService = stockService;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
-            _httpContextAccessor = httpContextAccessor;
+            _validator = new ProductValidator();
+            //_httpContextAccessor = httpContextAccessor;
         }
 
 
@@ -33,8 +40,16 @@ namespace SalesAPI.Services
             {
                 throw new AppException()
                     .SetTitle("Error creating product")
-                    .SetDetail("Amount should be greater or equal to zero");
-                    //.SetInstance(_httpContextAccessor.HttpContext.Request.Path.Value);
+                    .SetDetail("Amount should be greater or equal to zero");                    
+            }            
+            
+            var validationResult = _validator.Validate(productDto);
+            if (!validationResult.IsValid)
+            {
+                throw new AppValidationException()
+                    .SetTitle("Validation error")
+                    .SetDetail("Invalid product data. See 'errors' for more details")
+                    .SetErrors(validationResult.Errors.Select(e => e.ErrorMessage)); ;
             }
 
             var product = _mapper.Map<Product>(productDto);
@@ -93,7 +108,15 @@ namespace SalesAPI.Services
 
         public async Task<ProductReadDto> UpdateAsync(int id, ProductWriteDto productDto)
         {
-            var productOnRepo = await GetByIdAsync(id);
+            var result = _validator.Validate(productDto);
+            if (!result.IsValid)
+            {
+                throw new AppValidationException()
+                    .SetTitle("Validation error")
+                    .SetDetail("Invalid product data. See 'errors' for more details")
+                    .SetErrors(result.Errors.Select(e => e.ErrorMessage));
+            }
+            var productOnRepo = await GetByIdAsync(id);            
 
             _mapper.Map(productDto, productOnRepo);
             _productRepository.Update(productOnRepo);

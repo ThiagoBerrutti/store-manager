@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Routing;
 using SalesAPI.Dtos;
 using SalesAPI.Exceptions;
 using SalesAPI.Identity;
+using SalesAPI.Infra;
 using SalesAPI.Persistence.Repositories;
+using SalesAPI.Validations;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,14 +18,19 @@ namespace SalesAPI.Services
         private readonly IRoleService _roleService;
         private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly LinkGenerator _linkGenerator;
 
-        public UserService(IRoleService roleService, IUserRepository userRepository, IMapper mapper, IHttpContextAccessor httpContextAcessor)
+        private readonly UserUpdateValidator _userUpdateValidator;
+        private readonly ChangePasswordValidator _changePasswordValidator;
+
+        public UserService(IRoleService roleService, IUserRepository userRepository, IMapper mapper, LinkGenerator linkGenerator)
         {
             _roleService = roleService;
             _userRepository = userRepository;
             _mapper = mapper;
-            _httpContextAccessor = httpContextAcessor;
+            _linkGenerator = linkGenerator;
+            _userUpdateValidator = new UserUpdateValidator();
+            _changePasswordValidator = new ChangePasswordValidator();
         }
 
 
@@ -102,6 +109,7 @@ namespace SalesAPI.Services
         }
 
 
+        //called by AuthService only
         public async Task<IdentityResult> CreateAsync(User user, string password)
         {
             var result = await _userRepository.CreateAsync(user, password);
@@ -124,8 +132,8 @@ namespace SalesAPI.Services
                 {
                     throw new IdentityException()
                         .SetTitle("Error adding role to user")
-                        .SetDetail($"Only root {adminRoleName} [Id = {adminUserId}] can assign {adminRoleName} role")                
-                        .SetInstance(_httpContextAccessor.HttpContext.Request.Path.Value);
+                        .SetDetail($"Only root {adminRoleName} [Id = {adminUserId}] can assign {adminRoleName} role")
+                        .SetInstance(UserInstance(id));
                 }
             }
 
@@ -137,7 +145,7 @@ namespace SalesAPI.Services
                 throw new IdentityException()
                     .SetTitle("Error adding role to user")
                     .SetDetail($"User already assigned to role '{role.Name}'.")
-                    .SetInstance(_httpContextAccessor.HttpContext.Request.Path.Value);
+                    .SetInstance(UserInstance(id));
             }
 
             var result = await _userRepository.AddToRoleAsync(user, role.Name);
@@ -147,7 +155,7 @@ namespace SalesAPI.Services
                     .SetTitle("Error adding role to user")
                     .SetDetail($"User not assigned to role '{role.Name}'. See 'errors' property for more details")
                     .SetErrors(result.Errors.Select(e => e.Description))
-                    .SetInstance(_httpContextAccessor.HttpContext.Request.Path.Value);
+                    .SetInstance(UserInstance(id));
             }
 
             var userModel = _mapper.Map<UserViewModel>(user);
@@ -167,7 +175,7 @@ namespace SalesAPI.Services
                 throw new IdentityException()
                     .SetTitle("Error removing role from user")
                     .SetDetail($"Cannot remove '{adminRoleName}' role from root admin.")
-                    .SetInstance(_httpContextAccessor.HttpContext.Request.Path.Value);
+                    .SetInstance(UserInstance(id));
             }
 
             if (roleId == adminRoleId && currentUser.Id != adminUserId)
@@ -175,7 +183,7 @@ namespace SalesAPI.Services
                 throw new IdentityException()
                     .SetTitle("Error removing role from user")
                     .SetDetail($"Only root {adminRoleName} [Id = {adminUserId}] can remove {adminRoleName} role")
-                    .SetInstance(_httpContextAccessor.HttpContext.Request.Path.Value);
+                    .SetInstance(UserInstance(id));
             }
 
             var roleToRemove = await _roleService.GetByIdAsync(roleId);
@@ -187,7 +195,7 @@ namespace SalesAPI.Services
                 throw new IdentityException()
                     .SetTitle("Error removing role from user")
                     .SetDetail($"User not assigned to role '{roleToRemove.Name}'.")
-                    .SetInstance(_httpContextAccessor.HttpContext.Request.Path.Value);
+                    .SetInstance(UserInstance(id));
             }
 
             var result = await _userRepository.RemoveFromRoleAsync(userToRemoveRole, roleToRemove.Name);
@@ -197,7 +205,7 @@ namespace SalesAPI.Services
                     .SetTitle("Error removing role from user")
                     .SetDetail($"Error removing user from role '{roleToRemove.Name}'. See 'errors' property for more details")
                     .SetErrors(result.Errors.Select(e => e.Description))
-                    .SetInstance(_httpContextAccessor.HttpContext.Request.Path.Value);
+                    .SetInstance(UserInstance(id));
             }
 
             var userToReturn = await GetByIdAsync(id);
@@ -226,6 +234,14 @@ namespace SalesAPI.Services
 
         public async Task<UserViewModel> UpdateUserAsync(string userName, UserUpdateDto userUpdateDto)
         {
+            var validationResult = _userUpdateValidator.Validate(userUpdateDto);
+            if (!validationResult.IsValid)
+            {
+                throw new AppValidationException()
+                    .SetTitle("Validation error")
+                    .SetDetail("Invalid user data. See 'errors' for more details")
+                    .SetErrors(validationResult.Errors.Select(e => e.ErrorMessage));
+            }
             var user = await GetByUserNameAsync(userName);
             _mapper.Map<UserUpdateDto, User>(userUpdateDto, user);
 
@@ -236,7 +252,7 @@ namespace SalesAPI.Services
                     .SetTitle("Error updating user")
                     .SetDetail("See 'errors' property for more details")
                     .SetErrors(result.Errors.Select(e => e.Description))
-                    .SetInstance(_httpContextAccessor.HttpContext.Request.Path.Value);
+                    .SetInstance(UserInstance(user.Id));
             }
 
             var updatedUser = await GetByUserNameAsync(userName);
@@ -247,33 +263,54 @@ namespace SalesAPI.Services
         }
 
 
-        public async Task ChangePasswordAsync(int id, string currentPassword, string newPassword)
+        public async Task ChangePasswordAsync(int id, ChangePasswordDto changePasswordDto)
         {
+            var validationResult = _changePasswordValidator.Validate(changePasswordDto);
+            if (!validationResult.IsValid)
+            {
+                throw new AppValidationException()
+                    .SetTitle("Validation error")
+                    .SetDetail("Invalid passwords. See 'errors' for more details")
+                    .SetErrors(validationResult.Errors.Select(e => e.ErrorMessage));
+            }
+
             var user = await GetByIdAsync(id);
 
-            var result = await _userRepository.ChangePasswordAsync(user, currentPassword, newPassword);
+            var result = await _userRepository.ChangePasswordAsync(user, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
             if (!result.Succeeded)
             {
                 throw new IdentityException()
                     .SetTitle("Error changing password")
                     .SetDetail("See 'errors' property for more details")
                     .SetErrors(result.Errors.Select(e => e.Description))
-                    .SetInstance(_httpContextAccessor.HttpContext.Request.Path.Value);
+                    .SetInstance(UserInstance(id));
             }
         }
 
 
-        public async Task ChangeCurrentUserPasswordAsync(string currentPassword, string newPassword)
+        //public async Task ChangeCurrentUserPasswordAsync(string currentPassword, string newPassword)
+        public async Task ChangeCurrentUserPasswordAsync(ChangePasswordDto changePasswordDto)
         {
             var currentUser = await GetCurrentUserAsync();
-            var result = await _userRepository.ChangePasswordAsync(currentUser, currentPassword, newPassword);
+
+            var validationResult = _changePasswordValidator.Validate(changePasswordDto);
+            if (!validationResult.IsValid)
+            {
+                throw new AppValidationException()
+                    .SetTitle("Validation error")
+                    .SetDetail("Invalid passwords. See 'errors' for more details")
+                    .SetErrors(validationResult.Errors.Select(e => e.ErrorMessage))
+                    .SetInstance(UserInstance(currentUser.Id));
+            }
+
+            var result = await _userRepository.ChangePasswordAsync(currentUser, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
             if (!result.Succeeded)
             {
                 throw new IdentityException()
                     .SetTitle("Error changing password")
                     .SetDetail("See 'errors' property for more details")
                     .SetErrors(result.Errors.Select(e => e.Description))
-                    .SetInstance(_httpContextAccessor.HttpContext.Request.Path.Value);
+                    .SetInstance(UserInstance(currentUser.Id));
             }
         }
 
@@ -283,7 +320,7 @@ namespace SalesAPI.Services
             var user = await GetByIdAsync(id);
             if (newPassword == "")
             {
-                newPassword = user.UserName; // pra ficar mais facil, poderia ser outro método
+                newPassword = user.UserName; // for simplicity sake
             }
 
             var result = await _userRepository.ResetPasswordAsync(user, newPassword);
@@ -293,8 +330,13 @@ namespace SalesAPI.Services
                     .SetTitle("Error reseting password")
                     .SetDetail("See 'errors' property for more details")
                     .SetErrors(result.Errors.Select(e => e.Description))
-                    .SetInstance(_httpContextAccessor.HttpContext.Request.Path.Value);
+                    .SetInstance(UserInstance(id));
             }
+        }
+
+        private string UserInstance(object id)
+        {
+            return _linkGenerator.GetPathByName(nameof(Controllers.UserController.GetUserById), new { id });
         }
     }
 }

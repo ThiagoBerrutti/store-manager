@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -17,8 +16,8 @@ using Microsoft.OpenApi.Models;
 using SalesAPI.Exceptions;
 using SalesAPI.Extensions;
 using SalesAPI.Filters;
-using SalesAPI.Helpers;
 using SalesAPI.Identity;
+using SalesAPI.Infra;
 using SalesAPI.Persistence;
 using SalesAPI.Persistence.Data;
 using SalesAPI.Persistence.Repositories;
@@ -76,14 +75,8 @@ namespace SalesAPI
                 options.Filters.Add(new AuthorizeFilter(policy));
                 options.Filters.Add(typeof(ExceptionFilter));
             }).SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0);
-
-            //.AddFluentValidation(config =>
-            //{
-            //    config.RegisterValidatorsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
-            //    config.DisableDataAnnotationsValidation = true;
-            //});
-
-           // token
+            
+            // token
 
             var appSettingsSection = Configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingsSection);
@@ -162,16 +155,6 @@ namespace SalesAPI
             services.AddScoped<ProductSeed>();
             services.AddTransient<ExceptionWithProblemDetails>();
 
-            //services.AddScoped<IUrlHelper, UrlHelper>();
-
-            //services.AddScoped<IChangePasswordValidator, ChangePasswordValidator>();
-            //services.AddScoped<IProductValidator, ProductValidator>();
-            //services.AddScoped<IRoleValidator, RoleValidator>();
-            //services.AddScoped<IStockValidator, StockValidator>();
-            //services.AddScoped<IUserLoginValidator, UserLoginValidator>();
-            //services.AddScoped<IUserRegisterValidator, UserRegisterValidator>();
-            //services.AddScoped<IUserUpdateValidator, UserUpdateValidator>();
-
             services.AddHttpContextAccessor();
 
             services.AddTransient<ProblemDetailsFactory, CustomProblemDetailsFactory>();
@@ -188,7 +171,7 @@ namespace SalesAPI
                 Task.Run(async () => await pSeed.Seed()).Wait();
             }
             app.ConfigureExceptionHandler();
-            
+
             app.UseHsts();
 
             app.UseAuthentication();

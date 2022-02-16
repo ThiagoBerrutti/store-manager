@@ -5,6 +5,8 @@ using Microsoft.IdentityModel.Tokens;
 using SalesAPI.Dtos;
 using SalesAPI.Exceptions;
 using SalesAPI.Identity;
+using SalesAPI.Infra;
+using SalesAPI.Validations;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -12,6 +14,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+
 
 namespace SalesAPI.Services
 {
@@ -22,6 +25,8 @@ namespace SalesAPI.Services
         private readonly IMapper _mapper;
 
         private readonly AppSettings _appSettings;
+        private readonly UserLoginValidator _userLoginValidator;
+        private readonly UserRegisterValidator _userRegisterValidator;
 
         public AuthService(SignInManager<User> signInManager, IOptions<AppSettings> appSettings, IUserService userService, IMapper mapper)
         {
@@ -29,12 +34,24 @@ namespace SalesAPI.Services
             _appSettings = appSettings.Value;
             _userService = userService;
             _mapper = mapper;
+            _userLoginValidator = new UserLoginValidator();
+            _userRegisterValidator = new UserRegisterValidator();
         }
 
 
 
         public async Task<AuthResponse> RegisterAsync(UserRegisterDto userDto)
         {
+            var validationResult = _userRegisterValidator.Validate(userDto);
+            if (!validationResult.IsValid)
+            {
+                throw new AppValidationException()
+                    .SetTitle("Validation error")
+                    .SetDetail("Invalid user data. See 'errors' for more details")
+                //.SetErrors(validationResult.Errors.ToErrorDictionary());
+                .SetErrors(validationResult.Errors.Select(e => e.ErrorMessage));
+            }
+
             var user = _mapper.Map<User>(userDto);
 
             var result = await _userService.CreateAsync(user, userDto.Password);
@@ -42,7 +59,7 @@ namespace SalesAPI.Services
             {
                 throw new IdentityException()
                     .SetTitle("Error on user registration")
-                    .SetDetail("Registration cancelled. See 'errors' property for more details")
+                    .SetDetail("See 'errors' property for more details")
                     .SetErrors(result.Errors.Select(e => e.Description));
             }
 
@@ -57,11 +74,19 @@ namespace SalesAPI.Services
         }
 
 
-        public async Task<AuthResponse> AuthenticateAsync(UserLoginDto userLogin)
+        public async Task<AuthResponse> AuthenticateAsync(UserLoginDto userDto)
         {
-            var user = await _userService.GetByUserNameAsync(userLogin.UserName);
+            var validationResult = _userLoginValidator.Validate(userDto);
+            if (!validationResult.IsValid)
+            {
+                throw new AppValidationException()
+                    .SetTitle("Validation error")
+                    .SetDetail("Invalid user data. See 'errors' for more details")
+                    .SetErrors(validationResult.Errors.Select(e => e.ErrorMessage));
+            }
+            var user = await _userService.GetByUserNameAsync(userDto.UserName);
 
-            var signInResult = await _signInManager.CheckPasswordSignInAsync(user, userLogin.Password, false);
+            var signInResult = await _signInManager.CheckPasswordSignInAsync(user, userDto.Password, false);
             if (!signInResult.Succeeded)
             {
                 if (signInResult.IsLockedOut)
@@ -78,10 +103,10 @@ namespace SalesAPI.Services
                         .SetDetail($"User not allowed.");
                 }
 
-                throw new IdentityException().SetTitle("Error authenticating user");
+                throw new IdentityException().SetTitle("Incorrect user/password");
             }
 
-            var appUser = await _userService.GetByUserNameAsync(userLogin.UserName);
+            var appUser = await _userService.GetByUserNameAsync(userDto.UserName);
 
             var token = await GenerateJWTAsync(appUser);
             var userToReturn = _mapper.Map<UserAuthViewModel>(appUser);

@@ -14,7 +14,6 @@ namespace SalesAPI.Validations
 
             RuleFor(p => p.Price)
                 .NotNull().WithMessage("Price cannot be null")
-                .NotEmpty().WithMessage("Price cannot be empty")
                 .GreaterThanOrEqualTo(0).WithMessage("Price must be greater or equal than zero")
                 .LessThanOrEqualTo(double.MaxValue).WithMessage($"Price must be less or equal than {double.MaxValue}");
 

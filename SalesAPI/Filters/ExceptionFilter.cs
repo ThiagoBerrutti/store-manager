@@ -11,15 +11,21 @@ namespace SalesAPI.Filters
         {
             var exception = context.Exception;
             int statusCode = (int)HttpStatusCode.BadRequest;
-            object response;
+            ProblemDetails problemDetails = null;
 
             if (exception is ExceptionWithProblemDetails exceptionWithProblemDetails)
             {
-                var problemDetails = exceptionWithProblemDetails.ProblemDetails;
+                problemDetails = exceptionWithProblemDetails.ProblemDetails;
 
                 switch (exceptionWithProblemDetails)
                 {
                     case AppException _:
+                        {
+                            statusCode = problemDetails.Status ?? (int)HttpStatusCode.BadRequest;
+                            break;
+                        }
+
+                    case AppValidationException _:
                         {
                             statusCode = problemDetails.Status ?? (int)HttpStatusCode.BadRequest;
                             break;
@@ -49,20 +55,28 @@ namespace SalesAPI.Filters
                             break;
                         }
                 }
-                //problemDetails.Instance = context.HttpContext.Request.Path.Value;
 
                 if (!problemDetails.Status.HasValue)
                 {
                     exceptionWithProblemDetails.SetStatus(statusCode);
                 }
+            }
 
-                response = problemDetails;
-                
-                context.HttpContext.Response.ContentType = "application/problem+json";
-                context.HttpContext.Response.StatusCode = statusCode;
+            if (problemDetails == null)
+            {
+                problemDetails = new ProblemDetails
+                {
+                    Status = statusCode,
+                    Title = "Unexpected error",
+                    Type = exception.GetType().Name,
+                    Detail = exception.Message
+                };
+            }
 
-                context.Result = new ObjectResult(response);
-            }            
+            context.HttpContext.Response.ContentType = "application/problem+json";
+            context.HttpContext.Response.StatusCode = statusCode;
+
+            context.Result = new ObjectResult(problemDetails);
         }
     }
 }

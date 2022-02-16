@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System;
 using System.Net;
 
-namespace SalesAPI.Exceptions
+namespace SalesAPI.Infra
 {
     public class CustomProblemDetailsFactory : ProblemDetailsFactory
     {
@@ -19,7 +19,7 @@ namespace SalesAPI.Exceptions
 
             if (exceptionHandlerFeature?.Error != null)
             {
-                // implementations that set problemDetails a new value accordingly to the exception, if needed. Controller exceptions are handled on another class, ExceptionFilter.
+                // implementations that set 'problemDetails' a new value accordingly to the exception, if needed. Controller exceptions are handled on another class, ExceptionFilter.
             }
 
             if (problemDetails == null)

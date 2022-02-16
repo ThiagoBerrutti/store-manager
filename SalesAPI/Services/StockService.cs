@@ -1,43 +1,35 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
 using SalesAPI.Dtos;
 using SalesAPI.Exceptions;
-using SalesAPI.Helpers;
 using SalesAPI.Models;
 using SalesAPI.Persistence.Repositories;
 using SalesAPI.Validations;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SalesAPI.Services
 {
     public class StockService : IStockService
     {
-        private readonly string InstanceRouteName = nameof(Controllers.StockController.GetStockById);
-
         private readonly IStockRepository _stockRepository;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly LinkGenerator _linkGenerator;
 
-    
-
-
-        //private readonly IStockValidator _stockValidator;
+        private readonly StockValidator _validator;
 
         public StockService(IStockRepository productStockRepository, IMapper mapper, IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, LinkGenerator linkGenerator)
-        //, IStockValidator stockValidator)
         {
             _stockRepository = productStockRepository;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
             _httpContextAccessor = httpContextAccessor;
             _linkGenerator = linkGenerator;
+            _validator = new StockValidator();
         }
 
 
@@ -79,8 +71,8 @@ namespace SalesAPI.Services
             if (stock == null)
             {
                 throw new DomainNotFoundException()
-                                    .SetTitle("Stock not found")
-                                    .SetDetail($"Stock [Id = {id}] not found.");
+                            .SetTitle("Stock not found")
+                            .SetDetail($"Stock [Id = {id}] not found.");
             }
 
             return stock;
@@ -107,11 +99,14 @@ namespace SalesAPI.Services
 
         public async Task<ProductStockReadDto> UpdateAsync(int id, ProductStockWriteDto dto)
         {
-            //var validationResult = _stockValidator.Validate(dto);
-            //if (!validationResult.IsValid)
-            //{
-            //    validationResult.Errors
-            //}
+            var validationResult = _validator.Validate(dto);
+            if (!validationResult.IsValid)
+            {
+                throw new AppValidationException()
+                    .SetTitle("Validation error")
+                    .SetDetail("Invalid stock data. See 'errors' for more details")
+                    .SetErrors(validationResult.Errors.Select(e => e.ErrorMessage));
+            }
 
             var psOnRepo = await GetByIdAsync(id);
             _mapper.Map(dto, psOnRepo);
@@ -129,22 +124,19 @@ namespace SalesAPI.Services
         {
             if (amount <= 0)
             {
-                var instance = _linkGenerator.GetPathByName(InstanceRouteName, new { id });                
                 throw new AppException()
                     .SetTitle("Error adding amount")
                     .SetDetail("Amount should be a positive number")
-                    .SetInstance(instance);
-                    
+                    .SetInstance(StockInstancePath(id));
             }
 
             var productStock = await GetByIdAsync(id);
             if (productStock.Count >= 0 && (productStock.Count + amount < 0)) //overflow test
             {
-                var instance = _linkGenerator.GetPathByName(InstanceRouteName, new { id });
                 throw new AppException()
                     .SetTitle("Error adding amount")
                     .SetDetail("Stock's [Count] value will overflow")
-                    .SetInstance(instance);
+                    .SetInstance(StockInstancePath(id));
             }
 
             productStock.Count += amount;
@@ -159,22 +151,19 @@ namespace SalesAPI.Services
         {
             if (amount <= 0)
             {
-                var instance = _linkGenerator.GetPathByName(InstanceRouteName, new { id });
                 throw new AppException()
                     .SetTitle("Error adding amount")
                     .SetDetail("Amount should be a positive number")
-                    .SetInstance(instance);
+                    .SetInstance(StockInstancePath(id));
             }
 
             var productStock = await GetByIdAsync(id);
             if (productStock.Count - amount < 0)
             {
-                var instance = _linkGenerator.GetPathByName(InstanceRouteName, new { id });
                 throw new AppException()
                     .SetTitle($"Not enough products available")
                     .SetDetail($"Only [{productStock.Count}] on stock")
-                    .SetInstance(instance);
-
+                    .SetInstance(StockInstancePath(id));
             }
 
             productStock.Count -= amount;
@@ -182,6 +171,12 @@ namespace SalesAPI.Services
 
             var productStockDto = _mapper.Map<ProductStockReadDto>(productStock);
             return productStockDto;
+        }
+
+
+        private string StockInstancePath(object id)
+        {
+            return _linkGenerator.GetPathByName(nameof(Controllers.StockController.GetStockById), new { id });
         }
     }
 }

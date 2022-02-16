@@ -28,9 +28,9 @@ namespace SalesAPI.Services
 
         public Task<UserViewModel> UpdateUserAsync(string userName, UserUpdateDto userUpdateDto);
 
-        public Task ChangePasswordAsync(int id, string currentPassword, string newPassword);
+        public Task ChangePasswordAsync(int id, ChangePasswordDto changePasswordDto);
 
-        public Task ChangeCurrentUserPasswordAsync(string currentPassword, string newPassword);
+        public Task ChangeCurrentUserPasswordAsync(ChangePasswordDto changePasswordDto);
 
         public Task ResetPasswordAsync(int id, string newPassword);
 

@@ -3,7 +3,7 @@ using SalesAPI.Dtos;
 
 namespace SalesAPI.Validations
 {
-    public class RoleValidator : AbstractValidator<RoleWriteDto>//, IRoleValidator
+    public class RoleValidator : AbstractValidator<RoleWriteDto>
     {
         public RoleValidator()
         {
