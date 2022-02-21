@@ -32,5 +32,7 @@ namespace SalesAPI.Persistence.Repositories
         public Task<IdentityResult> AddToRoleAsync(User user, string roleName);
 
         public Task<IdentityResult> RemoveFromRoleAsync(User user, string roleName);
+
+        public Task ResetUser(User user, string password, IEnumerable<string> rolesNames);
     }
 }

@@ -28,7 +28,7 @@ namespace SalesAPI.Controllers
         }
 
 
-        [HttpGet("{id:int}", Name = "GetRoleById")]
+        [HttpGet("{id:int}", Name = nameof(GetRoleById))]
         public async Task<ActionResult<RoleReadDto>> GetRoleById(int id)
         {
             var employee = await _roleService.GetDtoByIdAsync(id);
@@ -36,7 +36,7 @@ namespace SalesAPI.Controllers
         }
 
 
-        [HttpGet("{roleName}")]
+        [HttpGet("{roleName}", Name = nameof(GetRoleByName))]
         public async Task<ActionResult<RoleReadDto>> GetRoleByName(string roleName)
         {
             var employee = await _roleService.GetDtoByNameAsync(roleName);

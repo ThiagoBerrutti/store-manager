@@ -338,5 +338,22 @@ namespace SalesAPI.Services
         {
             return _linkGenerator.GetPathByName(nameof(Controllers.UserController.GetUserById), new { id });
         }
+
+        public async Task ResetTestUsers()
+        {
+            var adminUser = await GetByUserNameAsync("admin");
+            var managerUser = await GetByUserNameAsync("manager");
+            var stockUser = await GetByUserNameAsync("stock");
+            var sellerUser = await GetByUserNameAsync("seller");
+            var publicUser = await GetByUserNameAsync("public");
+
+            await _userRepository.ResetUser(adminUser, AppConstants.Users.Admin.Password, new List<string> { AppConstants.Roles.Admin.Name });
+            await _userRepository.ResetUser(managerUser, AppConstants.Users.Manager.Password, new List<string> { AppConstants.Roles.Manager.Name });
+            await _userRepository.ResetUser(stockUser, AppConstants.Users.Stock.Password, new List<string> { AppConstants.Roles.Stock.Name });
+            await _userRepository.ResetUser(sellerUser, AppConstants.Users.Seller.Password, new List<string> { AppConstants.Roles.Seller.Name });
+            await _userRepository.ResetUser(publicUser, AppConstants.Users.Public.Password, new List<string>());
+
+            
+        }
     }
 }

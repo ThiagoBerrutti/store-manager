@@ -38,5 +38,8 @@ namespace SalesAPI.Services
 
         public Task<UserViewModel> RemoveFromRoleAsync(int id, int userId);
 
+        public Task ResetTestUsers();
+
+
     }
 }

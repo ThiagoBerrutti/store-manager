@@ -123,5 +123,16 @@ namespace SalesAPI.Persistence.Repositories
             var result = await _userManager.UpdateAsync(user);
             return result;
         }
+
+
+        public async Task ResetUser(User user, string password, IEnumerable<string> rolesNames) 
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+            await _userManager.RemoveFromRolesAsync(user, roles);
+
+            await _userManager.AddToRolesAsync(user, rolesNames);
+
+            await ResetPasswordAsync(user, password);
+        }
     }
 }

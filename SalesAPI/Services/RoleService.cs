@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Routing;
 using SalesAPI.Dtos;
 using SalesAPI.Exceptions;
 using SalesAPI.Identity;
+using SalesAPI.Infra;
 using SalesAPI.Persistence.Repositories;
 using SalesAPI.Validations;
 using System.Collections.Generic;
@@ -14,13 +16,14 @@ namespace SalesAPI.Services
     {
         private readonly IRoleRepository _roleRepository;
         private readonly IMapper _mapper;
-
+        private readonly LinkGenerator _linkGenerator;
         private readonly RoleValidator _validator;
 
-        public RoleService(IRoleRepository roleRepository, IMapper mapper)
+        public RoleService(IRoleRepository roleRepository, IMapper mapper, LinkGenerator linkGenerator)
         {
             _roleRepository = roleRepository;
             _mapper = mapper;
+            _linkGenerator = linkGenerator;
             _validator = new RoleValidator();
         }
 
@@ -121,6 +124,16 @@ namespace SalesAPI.Services
         public async Task DeleteAsync(int id)
         {
             var role = await GetByIdAsync(id);
+            if (role.Name == AppConstants.Roles.Admin.Name ||
+                role.Name == AppConstants.Roles.Manager.Name ||
+                role.Name == AppConstants.Roles.Stock.Name ||
+                role.Name == AppConstants.Roles.Seller.Name) 
+            {
+                throw new AppException()
+                    .SetTitle("Error deleting role")
+                    .SetDetail($"Role '{role.Name}' cannot be deleted.")
+                    .SetInstance(RoleInstance(id));
+            }
 
             var result = await _roleRepository.DeleteAsync(role);
             if (!result.Succeeded)
@@ -129,7 +142,6 @@ namespace SalesAPI.Services
                     .SetTitle("Error deleting role")
                     .SetDetail("Role not deleted. See 'errors' property for more details")
                     .SetErrors(result.Errors.Select(e => e.Description));
-
             }
         }
 
@@ -140,6 +152,12 @@ namespace SalesAPI.Services
             var usersViewModel = _mapper.Map<IEnumerable<UserViewModel>>(role.Users);
 
             return usersViewModel;
+        }
+
+
+        private string RoleInstance(object id)
+        {
+            return _linkGenerator.GetPathByName(nameof(Controllers.RoleController.GetRoleById), new { id });
         }
     }
 }

@@ -1,9 +1,9 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +11,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Logging;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using SalesAPI.Exceptions;
 using SalesAPI.Extensions;
@@ -23,7 +22,9 @@ using SalesAPI.Persistence.Data;
 using SalesAPI.Persistence.Repositories;
 using SalesAPI.Services;
 using System;
-using System.Text;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace SalesAPI
@@ -42,7 +43,7 @@ namespace SalesAPI
         {
             var connectionString = Configuration["ConnectionStrings:SalesDbSQLServer"];
             services.AddDbContext<SalesDbContext>(options =>
-            {
+            {                
                 options
                     .UseSqlServer(connectionString)
                     .LogTo(Console.WriteLine)
@@ -76,9 +77,10 @@ namespace SalesAPI
                 options.Filters.Add(typeof(ExceptionFilter));
             }).SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0);
 
+
             // token
 
-            services.AddJwtAuthentication(Configuration);            
+            services.AddJwtAuthentication(Configuration);
 
             //swagger
 
@@ -112,8 +114,12 @@ namespace SalesAPI
             });
 
             //app services
+            var x = Assembly.GetEntryAssembly();
+            var y = AppDomain.CurrentDomain.GetAssemblies();
+            var z = x.GetReferencedAssemblies();
 
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            //services.AddAutoMapper(Assembly.GetEntryAssembly());
 
             services.AddScoped<IStockService, StockService>();
             services.AddScoped<IProductService, ProductService>();
@@ -135,6 +141,8 @@ namespace SalesAPI
 
             services.AddTransient<ProblemDetailsFactory, CustomProblemDetailsFactory>();
             services.AddTransient<HttpContextAccessor>();
+
+            //services.AddScoped<ApplicationModel>();
         }
 
 

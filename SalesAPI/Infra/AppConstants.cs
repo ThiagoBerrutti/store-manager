@@ -1,4 +1,6 @@
-﻿namespace SalesAPI.Infra
+﻿using System.Collections.Generic;
+
+namespace SalesAPI.Infra
 {
     public class AppConstants
     {
@@ -42,6 +44,7 @@
                 public const string NormalizedUserName = "ADMIN";
                 public const string FirstName = "Admin";
                 public const string LastName = "Istrator";
+                public const string Password = "string";
             };
 
             public struct Manager
@@ -51,6 +54,7 @@
                 public const string NormalizedUserName = "MANAGER";
                 public const string FirstName = "Manager";
                 public const string LastName = "Test Acc";
+                public const string Password = "string";
             };
 
             public struct Stock
@@ -60,6 +64,7 @@
                 public const string NormalizedUserName = "STOCK";
                 public const string FirstName = "Stock";
                 public const string LastName = "Test Acc";
+                public const string Password = "string";
             };
 
             public struct Seller
@@ -69,7 +74,20 @@
                 public const string NormalizedUserName = "SELLER";
                 public const string FirstName = "Seller";
                 public const string LastName = "Test Acc";
+                public const string Password = "string";
             };
+
+            public struct Public
+            {
+                public const int Id = 5;
+                public const string UserName = "public";
+                public const string NormalizedUserName = "PUBLIC";
+                public const string FirstName = "Public";
+                public const string LastName = "Test Acc";
+                public const string Password = "string";
+            };
+
+
         }
     }
 }

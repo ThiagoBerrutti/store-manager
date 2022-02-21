@@ -10,7 +10,7 @@ namespace SalesAPI.Extensions
 {
     public static class ApplicationBuilderExtensions
     {
-        //global exception handler. Mvc exceptions are handled on ExceptionFilter
+        //global exception handler, for exceptions outside the controller. Mvc exceptions are handled on ExceptionFilter
         //if exceptions inside controllers are handled here, the exception leaks outside the controller, which may lead to errors.
 
         public static IApplicationBuilder ConfigureExceptionHandler(this IApplicationBuilder app)

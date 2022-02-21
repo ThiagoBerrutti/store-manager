@@ -23,7 +23,8 @@ namespace SalesAPI.Services
 
         //private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public ProductService(IProductRepository productRepository, IStockService stockService, IMapper mapper, IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
+        public ProductService(IProductRepository productRepository, IStockService stockService, IMapper mapper, IUnitOfWork unitOfWork)
+            //, IHttpContextAccessor httpContextAccessor)
         {
             _productRepository = productRepository;
             _stockService = stockService;
@@ -58,9 +59,9 @@ namespace SalesAPI.Services
             _stockService.CreateProductStock(product, amount);
             await _unitOfWork.CompleteAsync();
 
-            var stockDto = _mapper.Map<ProductReadDto>(product);
+            var productReadDto = _mapper.Map<ProductReadDto>(product);
 
-            return stockDto;
+            return productReadDto;
         }
 
 
