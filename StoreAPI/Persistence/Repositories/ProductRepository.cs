@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StoreAPI.Domain;
 using StoreAPI.Dtos;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace StoreAPI.Persistence.Repositories
@@ -25,11 +27,37 @@ namespace StoreAPI.Persistence.Repositories
                                 .ToListAsync();
         }
 
+        //private async IEnumerable<Product> GetAllWhere(int minPrice, int maxPrice, string name, string description, bool onStock)
+        private IQueryable<Product> GetAllWhereQueryable(Expression<Func<Product, bool>> expression)
+        {
+            return _context.Products
+                 .Include(p => p.ProductStock)
+                 //.OrderBy(p => p.Name)
+                 //.ThenBy(p => p.Id)
+                 .Where(expression);
+        }
+
+        public async Task<PagedList<Product>> GetAllWithParameters(int pageNumber, int pageSize, int minPrice, int maxPrice, string name, string description, bool onStock)
+        {
+            var queryable = GetAllWhereQueryable(
+                p =>
+                    p.Price >= minPrice &&
+                    p.Price <= maxPrice &&
+                    p.Name.ToLower().Contains(name.ToLower()) &&
+                    p.Description.ToLower().Contains(description.ToLower()) 
+                    
+                    );
+
+            var result = await PagedList<Product>.ToPagedListAsync(queryable, pageNumber, pageSize);
+
+            return result;
+
+        }
 
         public async Task<PagedList<Product>> GetAllPaginatedAsync(int pageNumber, int pageSize)
         {
             var items = _context.Products
-                .Include(p=> p.ProductStock)
+                .Include(p => p.ProductStock)
                 .OrderBy(p => p.Name)
                 .ThenBy(p => p.Id);
 

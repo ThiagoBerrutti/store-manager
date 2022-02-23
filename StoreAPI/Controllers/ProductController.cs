@@ -27,11 +27,23 @@ namespace StoreAPI.Controllers
         //    return Ok(result);
         //}
 
+        //[AllowAnonymous]
+        //[HttpGet]
+        //public async Task<ActionResult<PagedList<ProductReadDto>>> GetAllProductsPaginated([FromQuery] ProductParametersDto parameters)
+        //{
+        //    var result = await _productService.GetAllDtoPaginatedAsync(parameters);
+        //    var metadata = result.GetMetadata();
+
+        //    Response.Headers.Add("X-Pagination", metadata);
+
+        //    return Ok(result);
+        //}
+
         [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<PagedList<ProductReadDto>>> GetAllProductsPaginated([FromQuery] ProductParametersDto parameters)
         {
-            var result = await _productService.GetAllDtoPaginatedAsync(parameters);
+            var result = await _productService.GetAllDtoPaginatedWithParameters(parameters);
             var metadata = result.GetMetadata();
 
             Response.Headers.Add("X-Pagination", metadata);

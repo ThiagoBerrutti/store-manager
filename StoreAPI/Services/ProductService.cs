@@ -69,6 +69,23 @@ namespace StoreAPI.Services
             return productsDto;
         }
 
+        public async Task<PagedList<ProductReadDto>> GetAllDtoPaginatedWithParameters(ProductParametersDto parameters)
+        {
+            var result = await _productRepository.GetAllWithParameters(
+                parameters.PageNumber,
+                parameters.PageSize,
+                parameters.MinPrice,
+                parameters.MaxPrice,
+                parameters.Name,
+                parameters.Description,
+                parameters.OnStock
+                );
+
+            var dto = _mapper.Map<PagedList<Product>, PagedList<ProductReadDto>>(result);
+
+            return dto;
+        }
+
 
         public async Task<PagedList<ProductReadDto>> GetAllDtoPaginatedAsync(ProductParametersDto parameters)
         {
