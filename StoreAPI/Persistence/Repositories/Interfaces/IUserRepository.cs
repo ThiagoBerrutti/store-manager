@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using StoreAPI.Identity;
-using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace StoreAPI.Persistence.Repositories

@@ -30,7 +30,7 @@ namespace StoreAPI.Infra
                     Instance = instance,
                     Status = statusCode,
                     Title = title,
-                    Type = type
+                    Type = "custom factory"
                 };
             }
 

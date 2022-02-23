@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using StoreAPI.Models;
+using StoreAPI.Domain;
+using StoreAPI.Dtos;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,6 +23,19 @@ namespace StoreAPI.Persistence.Repositories
                                 .OrderBy(p => p.Name)
                                 .Include(p => p.ProductStock)
                                 .ToListAsync();
+        }
+
+
+        public async Task<PagedList<Product>> GetAllPaginatedAsync(int pageNumber, int pageSize)
+        {
+            var items = _context.Products
+                .Include(p=> p.ProductStock)
+                .OrderBy(p => p.Name)
+                .ThenBy(p => p.Id);
+
+            var result = await PagedList<Product>.ToPagedListAsync(items, pageNumber, pageSize);
+
+            return result;
         }
 
 

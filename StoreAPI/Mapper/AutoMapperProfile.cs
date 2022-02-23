@@ -2,7 +2,7 @@
 using StoreAPI.Dtos;
 using StoreAPI.Helpers;
 using StoreAPI.Identity;
-using StoreAPI.Models;
+using StoreAPI.Domain;
 
 namespace StoreAPI.Mapper
 {
@@ -11,17 +11,19 @@ namespace StoreAPI.Mapper
         public AutoMapperProfile()
         {
             CreateMap<ProductWriteDto, Product>().ReverseMap();
-            CreateMap<ProductReadDto, Product>().ReverseMap();
-            CreateMap<Product, ProductWithStockDto>()
-                .ForMember(dto => dto.ProductStock, o => o.MapFrom(src => src.ProductStock));
+            CreateMap<ProductReadDto, Product>()
+                .ReverseMap();
+            CreateMap<Product, ProductWithStockDto>().ReverseMap();
 
+            CreateMap<PagedList<Product>, PagedList<ProductReadDto>>()
+                .ConvertUsing<PagedListConverter<Product, ProductReadDto>>();
 
             CreateMap<ProductStockReadDto, ProductStock>().ReverseMap();
             CreateMap<ProductStockWriteDto, ProductStock>().ReverseMap();
 
             CreateMap<User, UserLoginDto>().ReverseMap();
             CreateMap<User, UserUpdateDto>().ReverseMap();
-            CreateMap<User, UserAuthViewModel>().ReverseMap();
+            CreateMap<User, UserAuthDto>().ReverseMap();
             CreateMap<User, UserRegisterDto>().ReverseMap();
             CreateMap<UserRegisterDto, UserLoginDto>().ReverseMap();
             CreateMap<User, UserReadDto>()

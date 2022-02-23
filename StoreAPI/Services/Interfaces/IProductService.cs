@@ -10,6 +10,8 @@ namespace StoreAPI.Services
 
         public Task<IEnumerable<ProductReadDto>> GetAllDtoAsync();
 
+        public Task<PagedList<ProductReadDto>> GetAllDtoPaginatedAsync(ProductParametersDto parameters);
+
         public Task<IEnumerable<ProductReadDto>> SearchDtosAsync(string search);
 
         public Task<ProductReadDto> GetDtoByIdAsync(int id);

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using StoreAPI.Identity;
-using StoreAPI.Models;
+using StoreAPI.Domain;
 
 namespace StoreAPI.Persistence
 {

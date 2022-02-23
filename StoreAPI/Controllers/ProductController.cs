@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using StoreAPI.Dtos;
 using StoreAPI.Services;
 using System.Collections.Generic;
@@ -19,10 +20,22 @@ namespace StoreAPI.Controllers
         }
 
 
+        //[HttpGet]
+        //public async Task<ActionResult<IEnumerable<ProductReadDto>>> GetAllProducts()
+        //{
+        //    var result = await _productService.GetAllDtoAsync();
+        //    return Ok(result);
+        //}
+
+        [AllowAnonymous]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProductReadDto>>> GetAllProducts()
+        public async Task<ActionResult<PagedList<ProductReadDto>>> GetAllProductsPaginated([FromQuery] ProductParametersDto parameters)
         {
-            var result = await _productService.GetAllDtoAsync();
+            var result = await _productService.GetAllDtoPaginatedAsync(parameters);
+            var metadata = result.GetMetadata();
+
+            Response.Headers.Add("X-Pagination", metadata);
+
             return Ok(result);
         }
 

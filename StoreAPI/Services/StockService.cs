@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using StoreAPI.Dtos;
 using StoreAPI.Exceptions;
-using StoreAPI.Models;
+using StoreAPI.Domain;
 using StoreAPI.Persistence.Repositories;
 using StoreAPI.Validations;
 using System.Collections.Generic;

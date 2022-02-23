@@ -1,10 +1,8 @@
 ﻿using AutoMapper;
 using FluentValidation;
-using Microsoft.AspNetCore.Http;
+using StoreAPI.Domain;
 using StoreAPI.Dtos;
 using StoreAPI.Exceptions;
-using StoreAPI.Extensions;
-using StoreAPI.Models;
 using StoreAPI.Persistence.Repositories;
 using StoreAPI.Validations;
 using System.Collections.Generic;
@@ -19,7 +17,8 @@ namespace StoreAPI.Services
         private readonly IStockService _stockService;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ProductValidator _validator;
+        private readonly ProductValidator _productValidator;
+        private readonly QueryStringParameterValidator _queryStringValidator;
 
         public ProductService(IProductRepository productRepository, IStockService stockService, IMapper mapper, IUnitOfWork unitOfWork)
         {
@@ -27,7 +26,8 @@ namespace StoreAPI.Services
             _stockService = stockService;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
-            _validator = new ProductValidator();
+            _productValidator = new ProductValidator();
+            _queryStringValidator = new QueryStringParameterValidator();
         }
 
 
@@ -40,7 +40,7 @@ namespace StoreAPI.Services
                     .SetDetail("Amount should be greater or equal to zero");
             }
 
-            var validationResult = _validator.Validate(productDto);
+            var validationResult = _productValidator.Validate(productDto);
             if (!validationResult.IsValid)
             {
                 throw new AppValidationException()
@@ -70,6 +70,31 @@ namespace StoreAPI.Services
         }
 
 
+        public async Task<PagedList<ProductReadDto>> GetAllDtoPaginatedAsync(ProductParametersDto parameters)
+        {
+            var validationResult = _queryStringValidator.Validate(parameters);
+            if (!validationResult.IsValid)
+            {
+                throw new AppValidationException()
+                    .SetTitle("Validation error")
+                    .SetDetail("Error validating pagination parameters. See 'errors' for more details")
+                    .SetErrors(validationResult.Errors.Select(e => e.ErrorMessage));
+            }
+
+            var pageSize = parameters.PageSize;
+            var pageNumber = parameters.PageNumber;
+
+            var result = await _productRepository.GetAllPaginatedAsync(pageNumber, pageSize);
+
+            var productsDto = _mapper.Map<PagedList<Product>, PagedList<ProductReadDto>>(result);
+
+            return productsDto;
+        }
+
+
+
+
+
         public async Task<ProductReadDto> GetDtoByIdAsync(int id)
         {
             var product = await GetByIdAsync(id);
@@ -94,7 +119,7 @@ namespace StoreAPI.Services
 
 
         public async Task<IEnumerable<ProductReadDto>> SearchDtosAsync(string search)
-        {            
+        {
             var products = await _productRepository.GetAllAsync();
             var nameRes = products
                 .Where(p => p.Name.ToLower().Contains(search))
@@ -116,7 +141,7 @@ namespace StoreAPI.Services
 
         public async Task<ProductReadDto> UpdateAsync(int id, ProductWriteDto productDto)
         {
-            var result = _validator.Validate(productDto);
+            var result = _productValidator.Validate(productDto);
             if (!result.IsValid)
             {
                 throw new AppValidationException()

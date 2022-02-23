@@ -1,5 +1,5 @@
 ﻿using StoreAPI.Dtos;
-using StoreAPI.Models;
+using StoreAPI.Domain;
 using StoreAPI.Services;
 using System.Linq;
 using System.Threading.Tasks;

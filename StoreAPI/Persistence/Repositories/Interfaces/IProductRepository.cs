@@ -1,7 +1,6 @@
-﻿using StoreAPI.Models;
-using System;
+﻿using StoreAPI.Domain;
+using StoreAPI.Dtos;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace StoreAPI.Persistence.Repositories
@@ -9,6 +8,8 @@ namespace StoreAPI.Persistence.Repositories
     public interface IProductRepository
     {
         public Task<IEnumerable<Product>> GetAllAsync();
+
+        public Task<PagedList<Product>> GetAllPaginatedAsync(int pageNumber, int pageSize);
 
         public Task<Product> GetByIdAsync(int id);
 

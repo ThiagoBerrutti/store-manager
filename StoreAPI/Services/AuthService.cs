@@ -67,7 +67,7 @@ namespace StoreAPI.Services
             userLogin.Password = userDto.Password;
 
             var loginResult = await AuthenticateAsync(userLogin);
-            var userModel = _mapper.Map<UserAuthViewModel>(appUser);
+            var userModel = _mapper.Map<UserAuthDto>(appUser);
 
             return new AuthResponse(userModel, loginResult.Token);
         }
@@ -108,7 +108,7 @@ namespace StoreAPI.Services
             var appUser = await _userService.GetByUserNameAsync(userDto.UserName);
 
             var token = await GenerateJWTAsync(appUser);
-            var userToReturn = _mapper.Map<UserAuthViewModel>(appUser);
+            var userToReturn = _mapper.Map<UserAuthDto>(appUser);
 
             return new AuthResponse(userToReturn, token);
         }

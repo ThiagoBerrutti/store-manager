@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using StoreAPI.Models;
+using StoreAPI.Domain;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

@@ -95,10 +95,13 @@ namespace StoreAPI.Infra
                 public const string LastName = "Test Acc";
                 public const string Password = "public";
                 public const string DateOfBirth = "2002-1-1";
-
             };
+        }
 
-
+        public struct QueryString
+        {
+            public const int MaxPageSize = 50;
+            public const int DefaultPageSize = 10;
         }
     }
 }
