@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using StoreAPI.Dtos;
+using StoreAPI.Infra;
 
 namespace StoreAPI.Validations
 {
@@ -10,7 +11,7 @@ namespace StoreAPI.Validations
             RuleFor(r => r.Name)
                 .NotNull().WithMessage("Name cannot be null")
                 .NotEmpty().WithMessage("Name cannot be empty")
-                .MaximumLength(50).WithMessage("Name maximum lenght is 50");
+                .MaximumLength(AppConstants.Validations.Role.NameMaxLength).WithMessage("Name maximum lenght is {MaxLength}");
         }
     }
 }

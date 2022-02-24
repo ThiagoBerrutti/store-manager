@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using StoreAPI.Dtos;
+using StoreAPI.Infra;
 
 namespace StoreAPI.Validations
 {
@@ -8,9 +9,10 @@ namespace StoreAPI.Validations
         public StockValidator()
         {
             RuleFor(s => s.Count)
-                .NotNull().WithMessage("Count cannot be null")
-                .GreaterThanOrEqualTo(0).WithMessage("Count must be greater or equal to zero")
-                .LessThanOrEqualTo(int.MaxValue).WithMessage($"Count must be less or equal to {int.MaxValue}");
+                .NotNull()
+                    .WithMessage("Count cannot be null")
+                .InclusiveBetween(AppConstants.Validations.Stock.CountMinValue, AppConstants.Validations.Stock.CountMaxValue)
+                    .WithMessage("Count must be between {From} and {To}");
         }
     }
 }

@@ -5,8 +5,10 @@ using StoreAPI.Dtos;
 using StoreAPI.Exceptions;
 using StoreAPI.Persistence.Repositories;
 using StoreAPI.Validations;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace StoreAPI.Services
@@ -18,7 +20,7 @@ namespace StoreAPI.Services
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ProductValidator _productValidator;
-        private readonly QueryStringParameterValidator _queryStringValidator;
+        private readonly ProductParametersValidator _productParametersValidator;
 
         public ProductService(IProductRepository productRepository, IStockService stockService, IMapper mapper, IUnitOfWork unitOfWork)
         {
@@ -27,7 +29,7 @@ namespace StoreAPI.Services
             _mapper = mapper;
             _unitOfWork = unitOfWork;
             _productValidator = new ProductValidator();
-            _queryStringValidator = new QueryStringParameterValidator();
+            _productParametersValidator = new ProductParametersValidator();
         }
 
 
@@ -61,25 +63,35 @@ namespace StoreAPI.Services
         }
 
 
-        public async Task<IEnumerable<ProductReadDto>> GetAllDtoAsync()
-        {
-            var products = await _productRepository.GetAllAsync();
-            var productsDto = _mapper.Map<IEnumerable<Product>, IEnumerable<ProductReadDto>>(products);
+        //public async Task<IEnumerable<ProductReadDto>> GetAllDtoAsync()
+        //{
+        //    var products = await _productRepository.GetAllAsync();
+        //    var productsDto = _mapper.Map<IEnumerable<Product>, IEnumerable<ProductReadDto>>(products);
 
-            return productsDto;
-        }
+        //    return productsDto;
+        //}
 
-        public async Task<PagedList<ProductReadDto>> GetAllDtoPaginatedWithParameters(ProductParametersDto parameters)
+
+        public async Task<PagedList<ProductReadDto>> GetAllDtoPagedAsync(ProductParametersDto parameters)
         {
-            var result = await _productRepository.GetAllWithParameters(
-                parameters.PageNumber,
-                parameters.PageSize,
-                parameters.MinPrice,
-                parameters.MaxPrice,
-                parameters.Name,
-                parameters.Description,
-                parameters.OnStock
-                );
+            var validationResult = _productParametersValidator.Validate(parameters);
+            if (!validationResult.IsValid)
+            {
+                throw new AppValidationException()
+                    .SetTitle("Validation error")
+                    .SetDetail("Invalid query string parameters. Check 'errors' for more details")
+                    .SetErrors(validationResult.Errors.Select(e => e.ErrorMessage));
+            }
+
+            Expression<Func<Product, bool>> expression = 
+                p =>
+                    p.Price >= parameters.MinPrice &&
+                    p.Price <= parameters.MaxPrice &&
+                    p.Name.ToLower().Contains(parameters.Name.ToLower()) &&
+                    p.Description.ToLower().Contains(parameters.Description.ToLower()) &&
+                    p.ProductStock.Count > 0 == parameters.OnStock;
+
+            var result = await _productRepository.GetAllWherePagedAsync(parameters.PageNumber, parameters.PageSize, expression);                
 
             var dto = _mapper.Map<PagedList<Product>, PagedList<ProductReadDto>>(result);
 
@@ -87,26 +99,26 @@ namespace StoreAPI.Services
         }
 
 
-        public async Task<PagedList<ProductReadDto>> GetAllDtoPaginatedAsync(ProductParametersDto parameters)
-        {
-            var validationResult = _queryStringValidator.Validate(parameters);
-            if (!validationResult.IsValid)
-            {
-                throw new AppValidationException()
-                    .SetTitle("Validation error")
-                    .SetDetail("Error validating pagination parameters. See 'errors' for more details")
-                    .SetErrors(validationResult.Errors.Select(e => e.ErrorMessage));
-            }
+        //public async Task<PagedList<ProductReadDto>> GetAllDtoPaginatedAsync(ProductParametersDto parameters)
+        //{
+        //    var validationResult = _queryStringValidator.Validate(parameters);
+        //    if (!validationResult.IsValid)
+        //    {
+        //        throw new AppValidationException()
+        //            .SetTitle("Validation error")
+        //            .SetDetail("Error validating pagination parameters. See 'errors' for more details")
+        //            .SetErrors(validationResult.Errors.Select(e => e.ErrorMessage));
+        //    }
 
-            var pageSize = parameters.PageSize;
-            var pageNumber = parameters.PageNumber;
+        //    var pageSize = parameters.PageSize;
+        //    var pageNumber = parameters.PageNumber;
 
-            var result = await _productRepository.GetAllPaginatedAsync(pageNumber, pageSize);
+        //    var result = await _productRepository.GetAllPaginatedAsync(pageNumber, pageSize);
 
-            var productsDto = _mapper.Map<PagedList<Product>, PagedList<ProductReadDto>>(result);
+        //    var productsDto = _mapper.Map<PagedList<Product>, PagedList<ProductReadDto>>(result);
 
-            return productsDto;
-        }
+        //    return productsDto;
+        //}
 
 
 
@@ -135,24 +147,24 @@ namespace StoreAPI.Services
         }
 
 
-        public async Task<IEnumerable<ProductReadDto>> SearchDtosAsync(string search)
-        {
-            var products = await _productRepository.GetAllAsync();
-            var nameRes = products
-                .Where(p => p.Name.ToLower().Contains(search))
-                .OrderBy(p => p.Name)
-                .ThenBy(p => p.Id);
+        //public async Task<IEnumerable<ProductReadDto>> SearchDtosAsync(string search)
+        //{
+        //    var products = await _productRepository.GetAllAsync();
+        //    var nameRes = products
+        //        .Where(p => p.Name.ToLower().Contains(search))
+        //        .OrderBy(p => p.Name)
+        //        .ThenBy(p => p.Id);
 
-            var descriptionRes = products
-                .Where(p => p.Description.ToLower().Contains(search) && !nameRes.Contains(p))
-                .OrderBy(p => p.Name)
-                .ThenBy(p => p.Id);
+        //    var descriptionRes = products
+        //        .Where(p => p.Description.ToLower().Contains(search) && !nameRes.Contains(p))
+        //        .OrderBy(p => p.Name)
+        //        .ThenBy(p => p.Id);
 
-            var results = nameRes.Concat(descriptionRes);
-            var productsDto = _mapper.Map<IEnumerable<ProductReadDto>>(results);
+        //    var results = nameRes.Concat(descriptionRes);
+        //    var productsDto = _mapper.Map<IEnumerable<ProductReadDto>>(results);
 
-            return productsDto;
-        }
+        //    return productsDto;
+        //}
 
 
 

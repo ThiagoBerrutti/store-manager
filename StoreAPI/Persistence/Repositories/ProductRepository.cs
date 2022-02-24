@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StoreAPI.Domain;
 using StoreAPI.Dtos;
+using StoreAPI.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,25 +29,32 @@ namespace StoreAPI.Persistence.Repositories
         }
 
         //private async IEnumerable<Product> GetAllWhere(int minPrice, int maxPrice, string name, string description, bool onStock)
-        private IQueryable<Product> GetAllWhereQueryable(Expression<Func<Product, bool>> expression)
+        public async Task<PagedList<Product>> GetAllWherePagedAsync(int pageNumber, int pageSize, Expression<Func<Product, bool>> expression)
         {
-            return _context.Products
+            var result = await _context.Products
                  .Include(p => p.ProductStock)
-                 //.OrderBy(p => p.Name)
-                 //.ThenBy(p => p.Id)
-                 .Where(expression);
+                 .OrderBy(p => p.Name)
+                 .ThenBy(p => p.Id)
+                 .Where(expression)
+                 .ToPagedListAsync(pageNumber, pageSize);
+
+            return result;
         }
+        //private IQueryable<Product> GetAllWhereQueryable(Expression<Func<Product, bool>> expression)
+        //{
+        //    return _context.Products
+        //         .Include(p => p.ProductStock)
+        //         //.OrderBy(p => p.Name)
+        //         //.ThenBy(p => p.Id)
+        //         .Where(expression);
+        //}
 
         public async Task<PagedList<Product>> GetAllWithParameters(int pageNumber, int pageSize, int minPrice, int maxPrice, string name, string description, bool onStock)
         {
-            var queryable = GetAllWhereQueryable(
-                p =>
-                    p.Price >= minPrice &&
-                    p.Price <= maxPrice &&
-                    p.Name.ToLower().Contains(name.ToLower()) &&
-                    p.Description.ToLower().Contains(description.ToLower()) 
-                    
-                    );
+            var queryable = _context.Products
+                .Include(p => p.ProductStock)
+                .OrderBy(p => p.Name)
+                .ThenBy(p => p.Id);
 
             var result = await PagedList<Product>.ToPagedListAsync(queryable, pageNumber, pageSize);
 

@@ -9,11 +9,7 @@ namespace StoreAPI.Validations
         public QueryStringParameterValidator()
         {
             RuleFor(q => q.PageSize)
-                .GreaterThan(0)
-                .LessThanOrEqualTo(AppConstants.QueryString.MaxPageSize)
-                .WithMessage($"PageSize must be between 1 and {AppConstants.QueryString.MaxPageSize}");
-
-
+                .InclusiveBetween(1, AppConstants.Pagination.MaxPageSize).WithMessage("PageSize must be between {From} and {To}");
 
             RuleFor(q => q.PageNumber)
                 .GreaterThan(0).WithMessage("PageNumber must be greater than zero");

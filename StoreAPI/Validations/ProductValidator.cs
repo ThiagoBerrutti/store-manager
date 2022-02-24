@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using StoreAPI.Dtos;
+using StoreAPI.Infra;
 
 namespace StoreAPI.Validations
 {
@@ -10,16 +11,16 @@ namespace StoreAPI.Validations
             RuleFor(p => p.Name)
                 .NotNull().WithMessage("Name cannot be null")
                 .NotEmpty().WithMessage("Name cannot be empty")
-                .MaximumLength(50).WithMessage("Name maximum lenght is 50");
+                .MaximumLength(AppConstants.Validations.Product.NameMaxLength).WithMessage("Name maximum lenght is {MaxLength} chars");
 
             RuleFor(p => p.Price)
                 .NotNull().WithMessage("Price cannot be null")
-                .GreaterThanOrEqualTo(0).WithMessage("Price must be greater or equal than zero")
-                .LessThanOrEqualTo(double.MaxValue).WithMessage($"Price must be less or equal than {double.MaxValue}");
+                .InclusiveBetween(AppConstants.Validations.Product.PriceMinValue, AppConstants.Validations.Product.PriceMaxValue)
+                .WithMessage("Price must be between {From} and {To}");
 
             RuleFor(p => p.Description)
                 .NotNull().WithMessage("Description cannot be null")
-                .MaximumLength(50).WithMessage("Description maximum length is 50");
+                .MaximumLength(AppConstants.Validations.Product.DescriptionMaxLength).WithMessage("Description maximum length is {MaxLength} chars");
         }
     }
 }

@@ -43,12 +43,12 @@ namespace StoreAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<PagedList<ProductReadDto>>> GetAllProductsPaginated([FromQuery] ProductParametersDto parameters)
         {
-            var result = await _productService.GetAllDtoPaginatedWithParameters(parameters);
+            var result = await _productService.GetAllDtoPagedAsync(parameters);
             var metadata = result.GetMetadata();
 
             Response.Headers.Add("X-Pagination", metadata);
 
-            return Ok(result);
+            return Ok(result.Items);
         }
 
 
@@ -60,12 +60,12 @@ namespace StoreAPI.Controllers
         }
 
 
-        [HttpGet("search")]
-        public async Task<ActionResult<ProductReadDto>> SearchProduct(string search)
-        {
-            var result = await _productService.SearchDtosAsync(search);
-            return Ok(result);
-        }
+        //[HttpGet("search")]
+        //public async Task<ActionResult<ProductReadDto>> SearchProduct(string search)
+        //{
+        //    var result = await _productService.SearchDtosAsync(search);
+        //    return Ok(result);
+        //}
 
 
         [Authorize(Roles = "Administrator,Manager")]

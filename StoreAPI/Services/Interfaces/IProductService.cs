@@ -8,13 +8,13 @@ namespace StoreAPI.Services
     {
         public Task<ProductWithStockDto> CreateAsync(ProductWriteDto productDto, int amount = 0);
 
-        public Task<IEnumerable<ProductReadDto>> GetAllDtoAsync();
+        //public Task<IEnumerable<ProductReadDto>> GetAllDtoAsync();
 
-        public Task<PagedList<ProductReadDto>> GetAllDtoPaginatedAsync(ProductParametersDto parameters);
+        //public Task<PagedList<ProductReadDto>> GetAllDtoPaginatedAsync(ProductParametersDto parameters);
 
-        public Task<PagedList<ProductReadDto>> GetAllDtoPaginatedWithParameters(ProductParametersDto parameters);
+        public Task<PagedList<ProductReadDto>> GetAllDtoPagedAsync(ProductParametersDto parameters);
 
-        public Task<IEnumerable<ProductReadDto>> SearchDtosAsync(string search);
+        //public Task<IEnumerable<ProductReadDto>> SearchDtosAsync(string search);
 
         public Task<ProductReadDto> GetDtoByIdAsync(int id);
 

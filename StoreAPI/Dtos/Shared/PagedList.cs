@@ -7,8 +7,9 @@ using System.Threading.Tasks;
 
 namespace StoreAPI.Dtos
 {
-    public class PagedList<T> : List<T>
+    public class PagedList<T> 
     {
+        public List<T> Items { get; set; }
         public int CurrentPage { get; set; }
         public int PageSize { get; set; }
         public int TotalPages { get; set; }
@@ -17,9 +18,9 @@ namespace StoreAPI.Dtos
         public bool HasPrevious => CurrentPage > 1;
         public bool HasNext => CurrentPage < TotalPages;
 
-        public PagedList(List<T> items, int currentPage, int pageSize, int totalCount) : base(items)
+        public PagedList(List<T> items, int currentPage, int pageSize, int totalCount) 
         {
-
+            Items = items;
             CurrentPage = currentPage;
             PageSize = pageSize;
             TotalPages = (int)Math.Ceiling(1.0 * totalCount / pageSize);

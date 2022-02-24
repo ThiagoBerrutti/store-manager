@@ -37,9 +37,11 @@ namespace StoreAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var connectionStringBuilder = new SqlConnectionStringBuilder(Configuration.GetConnectionString("SomeeDbSQLServer"));
-            connectionStringBuilder.UserID = Configuration["SomeeDbSQLServer:UserId"];
-            connectionStringBuilder.Password = Configuration["SomeeDbSQLServer:DbPassword"];
+            var connectionStringBuilder = new SqlConnectionStringBuilder(Configuration.GetConnectionString("SomeeDbSQLServer"))
+            {
+                UserID = Configuration["SomeeDbSQLServer:UserId"],
+                Password = Configuration["SomeeDbSQLServer:DbPassword"]
+            };
             var connectionString = connectionStringBuilder.ConnectionString;
 
             services.AddDbContext<StoreDbContext>(options =>
@@ -54,7 +56,7 @@ namespace StoreAPI
             {
                 options.Password.RequireDigit = false;
                 options.Password.RequireLowercase = false;
-                options.Password.RequiredLength = 4;
+                options.Password.RequiredLength = AppConstants.Validations.User.PasswordMinLength;
                 options.Password.RequiredUniqueChars = 0;
                 options.Password.RequireUppercase = false;
                 options.Password.RequireNonAlphanumeric = false;

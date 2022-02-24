@@ -2,8 +2,8 @@
 {
     public class ProductParametersDto : QueryStringParameterDto
     {
-        public int MinPrice { get; set; } = 0;
-        public int MaxPrice { get; set; } = int.MaxValue;
+        public double MinPrice { get; set; } = 0;
+        public double MaxPrice { get; set; } = double.MaxValue;
         public string Name { get; set; } = "";
         public string Description { get; set; } = "";
         public bool OnStock { get; set; } = true;

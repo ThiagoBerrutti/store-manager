@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using StoreAPI.Dtos;
+using StoreAPI.Infra;
 
 namespace StoreAPI.Validations
 {
@@ -8,14 +9,16 @@ namespace StoreAPI.Validations
         public UserLoginValidator()
         {
             RuleFor(ur => ur.Password)
-                .NotNull().WithMessage("'Password' should not be null")
-                .MinimumLength(4).WithMessage("'Password' minimum length is 4")
-                .MaximumLength(80).WithMessage("'Password' maximum length is 80");
+                .NotNull()
+                    .WithMessage("Password should not be null")
+                .Length(AppConstants.Validations.User.PasswordMinLength, AppConstants.Validations.User.PasswordMaxLength)
+                    .WithMessage("Password length must be between {MinLength} and {MaxLength} chars");
 
             RuleFor(ur => ur.UserName)
-                .NotNull().WithMessage("'UserName' should not be null")
-                .MinimumLength(4).WithMessage("'UserName' minimum length is 4")
-                .MaximumLength(80).WithMessage("'UserName' maximum length is 80");
+                .NotNull()
+                    .WithMessage("UserName should not be null")
+                .Length(AppConstants.Validations.User.UsernameMinLength, AppConstants.Validations.User.UsernameMaxLength)
+                    .WithMessage("UserName length must be between {MinLength} and {MaxLength} chars");
         }
     }
 }

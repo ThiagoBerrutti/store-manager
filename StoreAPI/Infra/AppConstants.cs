@@ -37,7 +37,7 @@ namespace StoreAPI.Infra
         }
 
         public struct Users
-        {
+        {            
             public struct Admin
             {
                 public const int Id = 1;
@@ -98,10 +98,44 @@ namespace StoreAPI.Infra
             };
         }
 
-        public struct QueryString
+        public struct Pagination
         {
             public const int MaxPageSize = 50;
             public const int DefaultPageSize = 10;
+        }
+
+        public struct Validations
+        {
+            public struct User 
+            {
+                public const int UsernameMaxLength = 50;
+                public const int UsernameMinLength = 4;
+                public const int PasswordMinLength = 4;
+                public const int PasswordMaxLength = 50;
+                public const int FirstNameMaxLength = 50;
+                public const int LastNameMaxLength = 50;
+                public const int MinimumAge = 18;
+            }
+
+            public struct Product
+            {
+                public const int NameMaxLength = 50;
+                public const double PriceMinValue = 0;
+                public const double PriceMaxValue = double.MaxValue;
+                public const int DescriptionMaxLength = 50;
+            }
+
+            public struct Role
+            {
+                public const int NameMaxLength = 50;
+            }
+
+            public struct Stock
+            {
+                public const int CountMinValue = 0;
+                public const int CountMaxValue = int.MaxValue;
+            }
+            
         }
     }
 }
