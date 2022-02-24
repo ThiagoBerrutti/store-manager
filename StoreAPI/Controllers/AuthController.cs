@@ -131,7 +131,5 @@ namespace StoreAPI.Controllers
 
             return Ok(authResponse);
         }
-
-
     }
 }

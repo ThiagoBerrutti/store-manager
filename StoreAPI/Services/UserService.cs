@@ -153,10 +153,9 @@ namespace StoreAPI.Services
             var result = await _userRepository.AddToRoleAsync(user, role.Name);
             if (!result.Succeeded)
             {
-                throw new IdentityException()
+                throw new IdentityException(result)
                     .SetTitle("Error adding role to user")
-                    .SetDetail($"User not assigned to role '{role.Name}'. See 'errors' property for more details")
-                    .SetErrors(result.Errors.Select(e => e.Description))
+                    .SetDetail($"User not assigned to role '{role.Name}'. See '{ExceptionWithProblemDetails.ErrorKey}' property for more details")
                     .SetInstance(UserInstance(id));
             }
 
@@ -203,10 +202,9 @@ namespace StoreAPI.Services
             var result = await _userRepository.RemoveFromRoleAsync(userToRemoveRole, roleToRemove.Name);
             if (!result.Succeeded)
             {
-                throw new IdentityException()
+                throw new IdentityException(result)
                     .SetTitle("Error removing role from user")
-                    .SetDetail($"Error removing user from role '{roleToRemove.Name}'. See 'errors' property for more details")
-                    .SetErrors(result.Errors.Select(e => e.Description))
+                    .SetDetail($"Error removing user from role '{roleToRemove.Name}'. See '{ExceptionWithProblemDetails.ErrorKey}' property for more details")
                     .SetInstance(UserInstance(id));
             }
 
@@ -239,10 +237,9 @@ namespace StoreAPI.Services
             var validationResult = _userUpdateValidator.Validate(userUpdateDto);
             if (!validationResult.IsValid)
             {
-                throw new AppValidationException()
+                throw new AppValidationException(validationResult)
                     .SetTitle("Validation error")
-                    .SetDetail("Invalid user data. See 'errors' for more details")
-                    .SetErrors(validationResult.Errors.Select(e => e.ErrorMessage));
+                    .SetDetail($"Invalid user data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
             var user = await GetByUserNameAsync(userName);
             _mapper.Map<UserUpdateDto, User>(userUpdateDto, user);
@@ -250,10 +247,9 @@ namespace StoreAPI.Services
             var result = await _userRepository.UpdateUserAsync(user);
             if (!result.Succeeded)
             {
-                throw new IdentityException()
+                throw new IdentityException(result)
                     .SetTitle("Error updating user")
-                    .SetDetail("See 'errors' property for more details")
-                    .SetErrors(result.Errors.Select(e => e.Description))
+                    .SetDetail($"See '{ExceptionWithProblemDetails.ErrorKey}' property for more details")
                     .SetInstance(UserInstance(user.Id));
             }
 
@@ -271,7 +267,7 @@ namespace StoreAPI.Services
             {
                 throw new AppValidationException()
                     .SetTitle("Validation error")
-                    .SetDetail("Invalid passwords. See 'errors' for more details")
+                    .SetDetail($"Invalid passwords. See '{ExceptionWithProblemDetails.ErrorKey}' for more details")
                     .SetErrors(validationResult.Errors.Select(e => e.ErrorMessage));
             }
 
@@ -280,10 +276,9 @@ namespace StoreAPI.Services
             var result = await _userRepository.ChangePasswordAsync(user, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
             if (!result.Succeeded)
             {
-                throw new IdentityException()
+                throw new IdentityException(result)
                     .SetTitle("Error changing password")
-                    .SetDetail("See 'errors' property for more details")
-                    .SetErrors(result.Errors.Select(e => e.Description))
+                    .SetDetail($"See '{ExceptionWithProblemDetails.ErrorKey}' property for more details")
                     .SetInstance(UserInstance(id));
             }
         }
@@ -297,20 +292,18 @@ namespace StoreAPI.Services
             var validationResult = _changePasswordValidator.Validate(changePasswordDto);
             if (!validationResult.IsValid)
             {
-                throw new AppValidationException()
+                throw new AppValidationException(validationResult)
                     .SetTitle("Validation error")
-                    .SetDetail("Invalid passwords. See 'errors' for more details")
-                    .SetErrors(validationResult.Errors.Select(e => e.ErrorMessage))
+                    .SetDetail($"Invalid passwords. See '{ExceptionWithProblemDetails.ErrorKey}' for more details")
                     .SetInstance(UserInstance(currentUser.Id));
             }
 
             var result = await _userRepository.ChangePasswordAsync(currentUser, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
             if (!result.Succeeded)
             {
-                throw new IdentityException()
+                throw new IdentityException(result)
                     .SetTitle("Error changing password")
-                    .SetDetail("See 'errors' property for more details")
-                    .SetErrors(result.Errors.Select(e => e.Description))
+                    .SetDetail($"See '{ExceptionWithProblemDetails.ErrorKey}' property for more details")
                     .SetInstance(UserInstance(currentUser.Id));
             }
         }
@@ -327,10 +320,9 @@ namespace StoreAPI.Services
             var result = await _userRepository.ResetPasswordAsync(user, newPassword);
             if (!result.Succeeded)
             {
-                throw new IdentityException()
+                throw new IdentityException(result)
                     .SetTitle("Error reseting password")
-                    .SetDetail("See 'errors' property for more details")
-                    .SetErrors(result.Errors.Select(e => e.Description))
+                    .SetDetail($"See '{ExceptionWithProblemDetails.ErrorKey}' property for more details")
                     .SetInstance(UserInstance(id));
             }
         }

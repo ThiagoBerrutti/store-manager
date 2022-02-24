@@ -98,20 +98,18 @@ namespace StoreAPI.Services
             var validationResult = _validator.Validate(roleWriteDto);
             if (!validationResult.IsValid)
             {
-                throw new AppValidationException()
+                throw new AppValidationException(validationResult)
                     .SetTitle("Validation error")
-                    .SetDetail("Invalid role data. See 'errors' for more details")
-                    .SetErrors(validationResult.Errors.Select(e => e.ErrorMessage));
+                    .SetDetail($"Invalid role data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
 
             var role = _mapper.Map<Role>(roleWriteDto);
             var result = await _roleRepository.CreateAsync(role);
             if (!result.Succeeded)
             {
-                throw new IdentityException()
+                throw new IdentityException(result)
                     .SetTitle("Error creating role")
-                    .SetDetail("Role not created. See 'errors' property for more details")
-                    .SetErrors(result.Errors.Select(e => e.Description));
+                    .SetDetail($"Role not created. See '{ExceptionWithProblemDetails.ErrorKey}' property for more details");
             }
 
             var appRole = await _roleRepository.GetByNameAsync(roleWriteDto.Name);
@@ -138,10 +136,9 @@ namespace StoreAPI.Services
             var result = await _roleRepository.DeleteAsync(role);
             if (!result.Succeeded)
             {
-                throw new IdentityException()
+                throw new IdentityException(result)
                     .SetTitle("Error deleting role")
-                    .SetDetail("Role not deleted. See 'errors' property for more details")
-                    .SetErrors(result.Errors.Select(e => e.Description));
+                    .SetDetail($"Role not deleted. See '{ExceptionWithProblemDetails.ErrorKey}' property for more details");
             }
         }
 

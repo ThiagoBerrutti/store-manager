@@ -1,19 +1,26 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
 
 namespace StoreAPI.Exceptions
 {
     public class ExceptionWithProblemDetails : Exception
     {
         public const string ErrorKey = "errors";
-
         public ProblemDetails ProblemDetails { get; }
 
         public ExceptionWithProblemDetails()
         {
             ProblemDetails = new ProblemDetails();
+        }
+
+        public ExceptionWithProblemDetails(ProblemDetails problemDetails)
+        {
+            ProblemDetails = problemDetails;
+
+            if (problemDetails is ValidationProblemDetails validationProblemDetails)
+            {
+                SetErrors(validationProblemDetails.Errors);
+            }
         }
 
 

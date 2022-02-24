@@ -26,8 +26,8 @@ namespace StoreAPI.Validations
             RuleFor(p => p.MaxPrice)
                 .InclusiveBetween(AppConstants.Validations.Product.PriceMinValue, AppConstants.Validations.Product.PriceMaxValue)
                     .WithMessage("Price must be between {From} and {To}")
-                .LessThanOrEqualTo(p => p.MinPrice)
-                    .WithMessage("MaxPrice must be less or equal to MinPrice");
+                .GreaterThanOrEqualTo(p => p.MinPrice)
+                    .WithMessage("MaxPrice must be greater or equal to MinPrice");
 
             RuleFor(p => p.Description)
                 .MaximumLength(AppConstants.Validations.Product.DescriptionMaxLength)

@@ -11,9 +11,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using StoreAPI.Exceptions;
 using StoreAPI.Extensions;
-using StoreAPI.Filters;
 using StoreAPI.Identity;
 using StoreAPI.Infra;
 using StoreAPI.Persistence;
@@ -21,6 +22,8 @@ using StoreAPI.Persistence.Data;
 using StoreAPI.Persistence.Repositories;
 using StoreAPI.Services;
 using System;
+using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace StoreAPI
@@ -76,8 +79,16 @@ namespace StoreAPI
                     .Build();
 
                 options.Filters.Add(new AuthorizeFilter(policy));
-                options.Filters.Add(typeof(ExceptionFilter));
-            }).SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0);
+            })
+                .ConfigureApiBehaviorOptions(o => o.InvalidModelStateResponseFactory = m =>  throw new ModelValidationException(m.ModelState)) 
+                .AddJsonOptions(o => 
+                {
+                    o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                    o.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+                })
+                .SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0);
+                
+
 
 
             // token
@@ -134,7 +145,8 @@ namespace StoreAPI
 
             services.AddScoped<ProductSeed>();
             services.AddTransient<ExceptionWithProblemDetails>();
-            services.AddTransient<ProblemDetailsFactory, CustomProblemDetailsFactory>();
+            services.AddTransient<ExceptionHandlerMiddleware>();
+            //services.AddTransient<ProblemDetailsFactory, CustomProblemDetailsFactory>();
 
             services.AddHttpContextAccessor();
         }
@@ -147,7 +159,8 @@ namespace StoreAPI
             {
                 IdentityModelEventSource.ShowPII = true;
             }
-            app.ConfigureExceptionHandler();
+
+            app.UseMiddleware<ExceptionHandlerMiddleware>();
 
             app.UseHsts();
 

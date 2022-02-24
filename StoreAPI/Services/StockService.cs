@@ -102,10 +102,9 @@ namespace StoreAPI.Services
             var validationResult = _validator.Validate(dto);
             if (!validationResult.IsValid)
             {
-                throw new AppValidationException()
+                throw new AppValidationException(validationResult)
                     .SetTitle("Validation error")
-                    .SetDetail("Invalid stock data. See 'errors' for more details")
-                    .SetErrors(validationResult.Errors.Select(e => e.ErrorMessage));
+                    .SetDetail($"Invalid stock data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
 
             var psOnRepo = await GetByIdAsync(id);

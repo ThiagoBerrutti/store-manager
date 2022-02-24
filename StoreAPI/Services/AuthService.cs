@@ -39,16 +39,14 @@ namespace StoreAPI.Services
         }
 
 
-
         public async Task<AuthResponse> RegisterAsync(UserRegisterDto userDto)
-        {
+        {           
             var validationResult = _userRegisterValidator.Validate(userDto);
             if (!validationResult.IsValid)
             {
-                throw new AppValidationException()
+                throw new AppValidationException(validationResult)
                     .SetTitle("Validation error")
-                    .SetDetail("Invalid user data. See 'errors' for more details")
-                    .SetErrors(validationResult.Errors.Select(e => e.ErrorMessage));
+                    .SetDetail($"Invalid user data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
 
             var user = _mapper.Map<User>(userDto);
@@ -56,10 +54,9 @@ namespace StoreAPI.Services
             var result = await _userService.CreateAsync(user, userDto.Password);
             if (!result.Succeeded)
             {
-                throw new IdentityException()
+                throw new IdentityException(result)
                     .SetTitle("Error on user registration")
-                    .SetDetail("See 'errors' property for more details")
-                    .SetErrors(result.Errors.Select(e => e.Description));
+                    .SetDetail($"See '{ExceptionWithProblemDetails.ErrorKey}' property for more details");
             }
 
             var appUser = await _userService.GetByUserNameAsync(user.UserName);
@@ -78,10 +75,9 @@ namespace StoreAPI.Services
             var validationResult = _userLoginValidator.Validate(userDto);
             if (!validationResult.IsValid)
             {
-                throw new AppValidationException()
+                throw new AppValidationException(validationResult)
                     .SetTitle("Validation error")
-                    .SetDetail("Invalid user data. See 'errors' for more details")
-                    .SetErrors(validationResult.Errors.Select(e => e.ErrorMessage));
+                    .SetDetail($"Invalid user data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
             var user = await _userService.GetByUserNameAsync(userDto.UserName);
 

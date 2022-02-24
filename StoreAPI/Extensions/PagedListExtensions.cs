@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace StoreAPI.Extensions
 {
-    public static class IQueryableExtensions
+    public static class PagedListExtensions
     {
         public static async Task<PagedList<T>> ToPagedListAsync<T>(this IQueryable<T> source, int pageNumber, int pageSize)
         {

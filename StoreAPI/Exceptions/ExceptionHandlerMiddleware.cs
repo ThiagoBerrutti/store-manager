@@ -1,18 +1,32 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
-using StoreAPI.Exceptions;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Net;
+using System.Text.Json;
+using System.Threading.Tasks;
 
-namespace StoreAPI.Filters
+namespace StoreAPI.Exceptions
 {
-    public class ExceptionFilter : IExceptionFilter
+    public class ExceptionHandlerMiddleware : IMiddleware
     {
-        public void OnException(ExceptionContext context)
+        public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
-            var exception = context.Exception;
-            int statusCode = (int)HttpStatusCode.BadRequest;
-            ProblemDetails problemDetails = null;
+            try
+            {
+                await next(context);
+            }
+            catch (Exception e)
+            {
+                await HandleException(context, e);
+            }
+        }
 
+
+        public Task HandleException(HttpContext context, Exception exception)
+        {
+            var statusCode = (int)HttpStatusCode.BadRequest;
+            ProblemDetails problemDetails = null;
+                        
             if (exception is ExceptionWithProblemDetails exceptionWithProblemDetails)
             {
                 problemDetails = exceptionWithProblemDetails.ProblemDetails;
@@ -54,6 +68,13 @@ namespace StoreAPI.Filters
                             statusCode = problemDetails.Status ?? (int)HttpStatusCode.InternalServerError;
                             break;
                         }
+
+                    case ModelValidationException modelValidationException:
+                        {
+                            modelValidationException.SetTitle(problemDetails.Title ?? "Model validation error");
+                            statusCode = problemDetails.Status ?? (int)HttpStatusCode.BadRequest;
+                            break;
+                        }
                 }
 
                 if (!problemDetails.Status.HasValue)
@@ -66,17 +87,20 @@ namespace StoreAPI.Filters
             {
                 problemDetails = new ProblemDetails
                 {
+                    Detail = exception.Message,
+                    Instance = context.Request.Path,
                     Status = statusCode,
                     Title = "Unexpected error",
-                    Type = exception.GetType().Name,
-                    Detail = exception.Message
+                    Type = exception.GetType().Name
                 };
             }
 
-            context.HttpContext.Response.ContentType = "application/problem+json";
-            context.HttpContext.Response.StatusCode = statusCode;
+            context.Response.ContentType = "application/problem+json";
+            context.Response.StatusCode = statusCode;
 
-            context.Result = new ObjectResult(problemDetails);
+            var jsonResponse = JsonSerializer.Serialize(problemDetails, new JsonSerializerOptions { DictionaryKeyPolicy = JsonNamingPolicy.CamelCase, PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+
+            return context.Response.WriteAsync(jsonResponse);
         }
     }
 }

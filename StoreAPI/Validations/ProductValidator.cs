@@ -7,7 +7,7 @@ namespace StoreAPI.Validations
     public class ProductValidator : AbstractValidator<ProductWriteDto>
     {
         public ProductValidator()
-        {
+        {               
             RuleFor(p => p.Name)
                 .NotNull().WithMessage("Name cannot be null")
                 .NotEmpty().WithMessage("Name cannot be empty")
