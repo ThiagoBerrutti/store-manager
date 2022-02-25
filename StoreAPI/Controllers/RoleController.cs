@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StoreAPI.Dtos;
+using StoreAPI.Dtos.Shared;
 using StoreAPI.Services;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -20,11 +22,21 @@ namespace StoreAPI.Controllers
         }
 
 
+        //[HttpGet]
+        //public async Task<ActionResult<IEnumerable<RoleReadDto>>> GetAllRoles()
+        //{
+        //    var roles = await _roleService.GetAllDtoAsync();
+        //    return Ok(roles);
+        //}
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<RoleReadDto>>> GetAllRoles()
+        public async Task<ActionResult<PagedList<RoleReadDto>>> GetAllRoles([FromQuery] RoleParametersDto parameters)
         {
-            var roles = await _roleService.GetAllDtoAsync();
-            return Ok(roles);
+            var result = await _roleService.GetAllPagedAsync(parameters);
+
+            var metadata = result.GetMetadata();
+            Response.Headers.Add("X-Pagination", metadata);
+
+            return Ok(result);
         }
 
 
@@ -49,14 +61,6 @@ namespace StoreAPI.Controllers
         {
             var users = await _roleService.GetAllUsersOnRole(id);
             return Ok(users);
-        }
-
-
-        [HttpGet("search")]
-        public async Task<ActionResult<IEnumerable<RoleReadDto>>> SearchRole(string name)
-        {
-            var employees = await _roleService.SearchByNameAsync(name);
-            return Ok(employees);
         }
 
 

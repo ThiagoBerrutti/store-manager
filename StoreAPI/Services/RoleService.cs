@@ -1,13 +1,15 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Routing;
 using StoreAPI.Dtos;
+using StoreAPI.Dtos.Shared;
 using StoreAPI.Exceptions;
 using StoreAPI.Identity;
 using StoreAPI.Infra;
 using StoreAPI.Persistence.Repositories;
 using StoreAPI.Validations;
+using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace StoreAPI.Services
@@ -18,6 +20,7 @@ namespace StoreAPI.Services
         private readonly IMapper _mapper;
         private readonly LinkGenerator _linkGenerator;
         private readonly RoleValidator _validator;
+        private readonly RoleParametersValidator _roleParametersValidator;
 
         public RoleService(IRoleRepository roleRepository, IMapper mapper, LinkGenerator linkGenerator)
         {
@@ -25,6 +28,7 @@ namespace StoreAPI.Services
             _mapper = mapper;
             _linkGenerator = linkGenerator;
             _validator = new RoleValidator();
+            _roleParametersValidator = new RoleParametersValidator();
         }
 
 
@@ -35,6 +39,27 @@ namespace StoreAPI.Services
             var rolesDto = _mapper.Map<IEnumerable<RoleReadDto>>(roles);
 
             return rolesDto;
+        }
+
+
+        public async Task<PagedList<RoleReadDto>> GetAllPagedAsync(RoleParametersDto parameters)
+        {
+            var validationResult = _roleParametersValidator.Validate(parameters);
+            if (!validationResult.IsValid)
+            {
+                throw new AppValidationException(validationResult)
+                    .SetTitle("Validation error")
+                    .SetDetail($"Invalid query string parameters. Check '{ExceptionWithProblemDetails.ErrorKey}' for more details");
+            }
+
+            Expression<Func<Role, bool>> expression =
+                r => r.Name.ToLower().Contains(parameters.Name.ToLower());
+
+            var result = await _roleRepository.GetAllWherePagedAsync(parameters.PageNumber, parameters.PageSize, expression);
+
+            var dto = _mapper.Map<PagedList<Role>, PagedList<RoleReadDto>>(result);
+
+            return dto;
         }
 
 
@@ -84,15 +109,6 @@ namespace StoreAPI.Services
         }
 
 
-        public async Task<IEnumerable<RoleReadDto>> SearchByNameAsync(string name)
-        {
-            var roles = await _roleRepository.SearchByNameAsync(name);
-            var rolesDto = _mapper.Map<IEnumerable<RoleReadDto>>(roles);
-
-            return rolesDto;
-        }
-
-
         public async Task<RoleReadDto> CreateAsync(RoleWriteDto roleWriteDto)
         {
             var validationResult = _validator.Validate(roleWriteDto);
@@ -125,7 +141,7 @@ namespace StoreAPI.Services
             if (role.Name == AppConstants.Roles.Admin.Name ||
                 role.Name == AppConstants.Roles.Manager.Name ||
                 role.Name == AppConstants.Roles.Stock.Name ||
-                role.Name == AppConstants.Roles.Seller.Name) 
+                role.Name == AppConstants.Roles.Seller.Name)
             {
                 throw new AppException()
                     .SetTitle("Error deleting role")

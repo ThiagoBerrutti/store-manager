@@ -28,7 +28,7 @@ namespace StoreAPI.Persistence.Repositories
                                 .ToListAsync();
         }
 
-        //private async IEnumerable<Product> GetAllWhere(int minPrice, int maxPrice, string name, string description, bool onStock)
+        
         public async Task<PagedList<Product>> GetAllWherePagedAsync(int pageNumber, int pageSize, Expression<Func<Product, bool>> expression)
         {
             var result = await _context.Products
@@ -40,15 +40,8 @@ namespace StoreAPI.Persistence.Repositories
 
             return result;
         }
-        //private IQueryable<Product> GetAllWhereQueryable(Expression<Func<Product, bool>> expression)
-        //{
-        //    return _context.Products
-        //         .Include(p => p.ProductStock)
-        //         //.OrderBy(p => p.Name)
-        //         //.ThenBy(p => p.Id)
-        //         .Where(expression);
-        //}
 
+        
         public async Task<PagedList<Product>> GetAllWithParameters(int pageNumber, int pageSize, int minPrice, int maxPrice, string name, string description, bool onStock)
         {
             var queryable = _context.Products

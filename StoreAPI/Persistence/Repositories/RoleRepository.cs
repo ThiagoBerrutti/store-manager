@@ -1,8 +1,12 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using StoreAPI.Dtos;
+using StoreAPI.Extensions;
 using StoreAPI.Identity;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace StoreAPI.Persistence.Repositories
@@ -10,10 +14,12 @@ namespace StoreAPI.Persistence.Repositories
     public class RoleRepository : IRoleRepository
     {
         private readonly RoleManager<Role> _roleManager;
+        private readonly StoreDbContext _context;
 
-        public RoleRepository(RoleManager<Role> roleManager)
+        public RoleRepository(StoreDbContext context, RoleManager<Role> roleManager)
         {
             _roleManager = roleManager;
+            _context = context;
         }
 
 
@@ -24,6 +30,18 @@ namespace StoreAPI.Persistence.Repositories
                                 .Include(r => r.Users)
                                 .ToListAsync();
             return roles;
+        }
+
+
+        public async Task<PagedList<Role>> GetAllWherePagedAsync(int pageNumber, int pageSize, Expression<Func<Role, bool>> expression)
+        {
+            var result = await _context.Roles
+                 .Include(r => r.Users)
+                 .OrderBy(r => r.Name)
+                 .Where(expression)
+                 .ToPagedListAsync(pageNumber, pageSize);
+
+            return result;
         }
 
 
@@ -43,17 +61,6 @@ namespace StoreAPI.Persistence.Repositories
                                 .FirstOrDefaultAsync(r => r.Id == id);
 
             return role;
-        }
-
-
-        public async Task<IEnumerable<Role>> SearchByNameAsync(string name)
-        {
-            var roles = await _roleManager.Roles
-                .Where(r => r.NormalizedName.Contains(name.ToUpper()))
-                .Include(r => r.Users)
-                .ToListAsync();
-
-            return roles;
         }
 
 

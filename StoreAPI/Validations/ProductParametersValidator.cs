@@ -8,14 +8,8 @@ namespace StoreAPI.Validations
     {
         public ProductParametersValidator()
         {
-            RuleFor(q => q.PageSize)
-                .InclusiveBetween(1, AppConstants.Pagination.MaxPageSize)
-                    .WithMessage("PageSize must be between {From} and {To}");
-
-            RuleFor(q => q.PageNumber)
-                .GreaterThanOrEqualTo(1)
-                    .WithMessage("PageNumber must be greater or equal to {ComparisonValue}");
-
+            Include(new QueryStringParameterValidator());
+                       
             RuleFor(p => p.Name)
                 .MaximumLength(AppConstants.Validations.Product.NameMaxLength).WithMessage("Name maximum lenght is {MaxLength} chars");
 

@@ -16,7 +16,9 @@ namespace StoreAPI.Mapper
             CreateMap<Product, ProductWithStockDto>().ReverseMap();
 
             CreateMap<PagedList<Product>, PagedList<ProductReadDto>>();
-                //.ConvertUsing<PagedListConverter<Product, ProductReadDto>>();
+            CreateMap<PagedList<Role>, PagedList<RoleReadDto>>();
+            CreateMap<PagedList<User>, PagedList<UserReadDto>>();
+            CreateMap<PagedList<ProductStock>, PagedList<ProductStockReadDto>>();
 
             CreateMap<ProductStockReadDto, ProductStock>().ReverseMap();
             CreateMap<ProductStockWriteDto, ProductStock>().ReverseMap();
