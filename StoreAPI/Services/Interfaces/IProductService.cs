@@ -1,5 +1,4 @@
 ﻿using StoreAPI.Dtos;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace StoreAPI.Services
@@ -8,13 +7,7 @@ namespace StoreAPI.Services
     {
         public Task<ProductWithStockDto> CreateAsync(ProductWriteDto productDto, int amount = 0);
 
-        //public Task<IEnumerable<ProductReadDto>> GetAllDtoAsync();
-
-        //public Task<PagedList<ProductReadDto>> GetAllDtoPaginatedAsync(ProductParametersDto parameters);
-
         public Task<PagedList<ProductReadDto>> GetAllDtoPagedAsync(ProductParametersDto parameters);
-
-        //public Task<IEnumerable<ProductReadDto>> SearchDtosAsync(string search);
 
         public Task<ProductReadDto> GetDtoByIdAsync(int id);
 

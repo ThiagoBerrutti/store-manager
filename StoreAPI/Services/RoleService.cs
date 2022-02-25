@@ -31,18 +31,8 @@ namespace StoreAPI.Services
             _roleParametersValidator = new RoleParametersValidator();
         }
 
-
-
-        public async Task<IEnumerable<RoleReadDto>> GetAllDtoAsync()
-        {
-            var roles = await _roleRepository.GetAllAsync();
-            var rolesDto = _mapper.Map<IEnumerable<RoleReadDto>>(roles);
-
-            return rolesDto;
-        }
-
-
-        public async Task<PagedList<RoleReadDto>> GetAllPagedAsync(RoleParametersDto parameters)
+        
+        public async Task<PagedList<RoleReadDto>> GetAllDtoPagedAsync(RoleParametersDto parameters)
         {
             var validationResult = _roleParametersValidator.Validate(parameters);
             if (!validationResult.IsValid)

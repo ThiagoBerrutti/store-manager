@@ -2,7 +2,6 @@
 using StoreAPI.Dtos;
 using StoreAPI.Identity;
 using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
@@ -10,8 +9,6 @@ namespace StoreAPI.Persistence.Repositories
 {
     public interface IRoleRepository
     {
-        public Task<IEnumerable<Role>> GetAllAsync();
-
         public Task<PagedList<Role>> GetAllWherePagedAsync(int pageNumber, int pageSize, Expression<Func<Role, bool>> expression);
 
         public Task<Role> GetByNameAsync(string roleName);

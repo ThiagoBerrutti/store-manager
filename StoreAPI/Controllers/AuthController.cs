@@ -23,7 +23,6 @@ namespace StoreAPI.Controllers
         }
 
 
-        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<ActionResult<AuthResponse>> Register(UserRegisterDto userDto)
         {
@@ -34,7 +33,6 @@ namespace StoreAPI.Controllers
         }
 
 
-        [AllowAnonymous]
         [HttpPost("authenticate")]
         public async Task<ActionResult<AuthResponse>> Authenticate(UserLoginDto userLogin)
         {
@@ -44,7 +42,6 @@ namespace StoreAPI.Controllers
         }
 
 
-        [AllowAnonymous]
         [HttpPost("authenticate/testadmin")]
         public async Task<ActionResult<AuthResponse>> AuthenticateTestAdminUser()
         {
@@ -62,7 +59,6 @@ namespace StoreAPI.Controllers
         }
 
 
-        [AllowAnonymous]
         [HttpPost("authenticate/testmanager")]
         public async Task<ActionResult<AuthResponse>> AuthenticateTestManagerUser()
         {
@@ -80,7 +76,6 @@ namespace StoreAPI.Controllers
         }
 
 
-        [AllowAnonymous]
         [HttpPost("authenticate/teststock")]
         public async Task<ActionResult<AuthResponse>> AuthenticateTestStockUser()
         {
@@ -98,7 +93,6 @@ namespace StoreAPI.Controllers
         }
 
 
-        [AllowAnonymous]
         [HttpPost("authenticate/testseller")]
         public async Task<ActionResult<AuthResponse>> AuthenticateTestSellerUser()
         {

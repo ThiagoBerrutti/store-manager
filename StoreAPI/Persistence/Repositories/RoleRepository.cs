@@ -24,15 +24,6 @@ namespace StoreAPI.Persistence.Repositories
 
 
 
-        public async Task<IEnumerable<Role>> GetAllAsync()
-        {
-            var roles = await _roleManager.Roles
-                                .Include(r => r.Users)
-                                .ToListAsync();
-            return roles;
-        }
-
-
         public async Task<PagedList<Role>> GetAllWherePagedAsync(int pageNumber, int pageSize, Expression<Func<Role, bool>> expression)
         {
             var result = await _context.Roles

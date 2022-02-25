@@ -1,13 +1,13 @@
-﻿using StoreAPI.Dtos;
-using StoreAPI.Domain;
-using System.Collections.Generic;
+﻿using StoreAPI.Domain;
+using StoreAPI.Dtos;
+using StoreAPI.Dtos.Shared;
 using System.Threading.Tasks;
 
 namespace StoreAPI.Services
 {
     public interface IStockService
     {
-        public Task<IEnumerable<ProductStockReadDto>> GetAllDtoAsync();
+        public Task<PagedList<ProductStockReadDto>> GetAllDtoPagedAsync(StockParametersDto parameters);
 
         public Task<ProductStockReadDto> GetDtoByProductIdAsync(int productId);
 

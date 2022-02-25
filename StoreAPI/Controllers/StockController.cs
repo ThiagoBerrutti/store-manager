@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StoreAPI.Dtos;
+using StoreAPI.Dtos.Shared;
 using StoreAPI.Services;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace StoreAPI.Controllers
@@ -22,11 +22,14 @@ namespace StoreAPI.Controllers
 
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProductStockReadDto>>> GetAllStocks()
+        public async Task<ActionResult<PagedList<ProductStockReadDto>>> GetAllStocksPaged([FromQuery] StockParametersDto parameters)
         {
-            var result = await _stockService.GetAllDtoAsync();
+            var result = await _stockService.GetAllDtoPagedAsync(parameters);
+            var metadata = result.GetMetadata();
 
-            return Ok(result);
+            Response.Headers.Add("X-Pagination", metadata);
+
+            return Ok(result.Items);
         }
 
 

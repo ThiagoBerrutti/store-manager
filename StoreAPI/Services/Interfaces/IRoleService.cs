@@ -8,9 +8,7 @@ namespace StoreAPI.Services
 {
     public interface IRoleService
     {
-        public Task<IEnumerable<RoleReadDto>> GetAllDtoAsync();
-
-        public Task<PagedList<RoleReadDto>> GetAllPagedAsync(RoleParametersDto parameters);
+        public Task<PagedList<RoleReadDto>> GetAllDtoPagedAsync(RoleParametersDto parameters);
 
         public Task<Role> GetByIdAsync(int id);
 

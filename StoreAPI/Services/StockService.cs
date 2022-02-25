@@ -9,6 +9,9 @@ using StoreAPI.Validations;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using StoreAPI.Dtos.Shared;
+using System;
+using System.Linq.Expressions;
 
 namespace StoreAPI.Services
 {
@@ -21,6 +24,7 @@ namespace StoreAPI.Services
         private readonly LinkGenerator _linkGenerator;
 
         private readonly StockValidator _validator;
+        private readonly StockParametersValidator _stockParametersValidator;
 
         public StockService(IStockRepository productStockRepository, IMapper mapper, IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, LinkGenerator linkGenerator)
         {
@@ -30,15 +34,32 @@ namespace StoreAPI.Services
             _httpContextAccessor = httpContextAccessor;
             _linkGenerator = linkGenerator;
             _validator = new StockValidator();
+            _stockParametersValidator = new StockParametersValidator();
         }
 
 
-        public async Task<IEnumerable<ProductStockReadDto>> GetAllDtoAsync()
+        public async Task<PagedList<ProductStockReadDto>> GetAllDtoPagedAsync(StockParametersDto parameters)
         {
-            var stockList = await _stockRepository.GetAll();
-            var dtoList = _mapper.Map<IEnumerable<ProductStock>, IEnumerable<ProductStockReadDto>>(stockList);
+            var validationResult = _stockParametersValidator.Validate(parameters);
+            if (!validationResult.IsValid)
+            {
+                throw new AppValidationException(validationResult)
+                    .SetTitle("Validation error")
+                    .SetDetail($"Invalid query string parameters. Check '{ExceptionWithProblemDetails.ErrorKey}' for more details");
+            }
 
-            return dtoList;
+            Expression<Func<ProductStock, bool>> expression =
+                s =>
+                    s.Product.Name.ToLower().Contains(parameters.ProductName.ToLower()) &&
+                    s.Count >= parameters.MinCount &&
+                    s.Count <= parameters.MaxCount;
+
+
+            var result = await _stockRepository.GetAllWherePagedAsync(parameters.PageNumber, parameters.PageSize, expression);
+
+            var dto = _mapper.Map<PagedList<ProductStock>, PagedList<ProductStockReadDto>>(result);
+
+            return dto;
         }
 
 

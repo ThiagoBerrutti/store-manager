@@ -1,6 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StoreAPI.Domain;
+using StoreAPI.Dtos;
+using StoreAPI.Extensions;
+using StoreAPI.Identity;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace StoreAPI.Persistence.Repositories
@@ -14,12 +20,16 @@ namespace StoreAPI.Persistence.Repositories
             _context = context;
         }
 
-
-        public async Task<IEnumerable<ProductStock>> GetAll()
+                
+        public async Task<PagedList<ProductStock>> GetAllWherePagedAsync(int pageNumber, int pageSize, Expression<Func<ProductStock, bool>> expression)
         {
-            return await _context.ProductStocks
-                                .Include(ps => ps.Product)
-                                .ToListAsync();
+            var result = await _context.ProductStocks
+                .Include(s => s.Product)
+                .OrderBy(s => s.Product.Name)
+                .Where(expression)
+                .ToPagedListAsync(pageNumber, pageSize);
+
+            return result;
         }
 
 

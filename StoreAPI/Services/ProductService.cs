@@ -31,6 +31,33 @@ namespace StoreAPI.Services
         }
 
 
+        
+        public async Task<PagedList<ProductReadDto>> GetAllDtoPagedAsync(ProductParametersDto parameters)
+        {
+            var validationResult = _productParametersValidator.Validate(parameters);
+            if (!validationResult.IsValid)
+            {
+                throw new AppValidationException(validationResult)
+                    .SetTitle("Validation error")
+                    .SetDetail($"Invalid query string parameters. Check '{ExceptionWithProblemDetails.ErrorKey}' for more details");
+            }
+
+            Expression<Func<Product, bool>> expression =
+                p =>
+                    p.Price >= parameters.MinPrice &&
+                    p.Price <= parameters.MaxPrice &&
+                    p.Name.ToLower().Contains(parameters.Name.ToLower()) &&
+                    p.Description.ToLower().Contains(parameters.Description.ToLower()) &&
+                    p.ProductStock.Count > 0 == parameters.OnStock;
+
+            var result = await _productRepository.GetAllWherePagedAsync(parameters.PageNumber, parameters.PageSize, expression);
+
+            var dto = _mapper.Map<PagedList<Product>, PagedList<ProductReadDto>>(result);
+
+            return dto;
+        }
+
+
         public async Task<ProductWithStockDto> CreateAsync(ProductWriteDto productDto, int amount)
         {
             if (amount < 0 || amount > int.MaxValue)
@@ -60,30 +87,6 @@ namespace StoreAPI.Services
         }
 
 
-        public async Task<PagedList<ProductReadDto>> GetAllDtoPagedAsync(ProductParametersDto parameters)
-        {
-            var validationResult = _productParametersValidator.Validate(parameters);
-            if (!validationResult.IsValid)
-            {
-                throw new AppValidationException(validationResult)
-                    .SetTitle("Validation error")
-                    .SetDetail($"Invalid query string parameters. Check '{ExceptionWithProblemDetails.ErrorKey}' for more details");
-            }
-
-            Expression<Func<Product, bool>> expression =
-                p =>
-                    p.Price >= parameters.MinPrice &&
-                    p.Price <= parameters.MaxPrice &&
-                    p.Name.ToLower().Contains(parameters.Name.ToLower()) &&
-                    p.Description.ToLower().Contains(parameters.Description.ToLower()) &&
-                    p.ProductStock.Count > 0 == parameters.OnStock;
-
-            var result = await _productRepository.GetAllWherePagedAsync(parameters.PageNumber, parameters.PageSize, expression);
-
-            var dto = _mapper.Map<PagedList<Product>, PagedList<ProductReadDto>>(result);
-
-            return dto;
-        }
 
 
         public async Task<ProductReadDto> GetDtoByIdAsync(int id)

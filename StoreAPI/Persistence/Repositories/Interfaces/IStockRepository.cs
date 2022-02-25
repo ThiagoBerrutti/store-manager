@@ -1,12 +1,14 @@
 ﻿using StoreAPI.Domain;
-using System.Collections.Generic;
+using StoreAPI.Dtos;
+using System;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace StoreAPI.Persistence.Repositories
 {
     public interface IStockRepository
     {
-        public Task<IEnumerable<ProductStock>> GetAll();
+        public Task<PagedList<ProductStock>> GetAllWherePagedAsync(int pageNumber, int pageSize, Expression<Func<ProductStock, bool>> expression);
 
         public Task<ProductStock> GetByProductIdAsync(int productId);
 

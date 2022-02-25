@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using StoreAPI.Dtos;
 using StoreAPI.Services;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace StoreAPI.Controllers
@@ -20,28 +18,10 @@ namespace StoreAPI.Controllers
         }
 
 
-        //[HttpGet]
-        //public async Task<ActionResult<IEnumerable<ProductReadDto>>> GetAllProducts()
-        //{
-        //    var result = await _productService.GetAllDtoAsync();
-        //    return Ok(result);
-        //}
 
-        //[AllowAnonymous]
-        //[HttpGet]
-        //public async Task<ActionResult<PagedList<ProductReadDto>>> GetAllProductsPaginated([FromQuery] ProductParametersDto parameters)
-        //{
-        //    var result = await _productService.GetAllDtoPaginatedAsync(parameters);
-        //    var metadata = result.GetMetadata();
 
-        //    Response.Headers.Add("X-Pagination", metadata);
-
-        //    return Ok(result);
-        //}
-
-        [AllowAnonymous]
         [HttpGet]
-        public async Task<ActionResult<PagedList<ProductReadDto>>> GetAllProductsPaginated([FromQuery] ProductParametersDto parameters)
+        public async Task<ActionResult<PagedList<ProductReadDto>>> GetAllProductsPaged([FromQuery] ProductParametersDto parameters)
         {
             var result = await _productService.GetAllDtoPagedAsync(parameters);
             var metadata = result.GetMetadata();
@@ -58,14 +38,6 @@ namespace StoreAPI.Controllers
             var result = await _productService.GetDtoByIdAsync(id);
             return Ok(result);
         }
-
-
-        //[HttpGet("search")]
-        //public async Task<ActionResult<ProductReadDto>> SearchProduct(string search)
-        //{
-        //    var result = await _productService.SearchDtosAsync(search);
-        //    return Ok(result);
-        //}
 
 
         [Authorize(Roles = "Administrator,Manager")]

@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using StoreAPI.Dtos;
 using StoreAPI.Dtos.Shared;
 using StoreAPI.Services;
-using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace StoreAPI.Controllers
@@ -22,16 +20,11 @@ namespace StoreAPI.Controllers
         }
 
 
-        //[HttpGet]
-        //public async Task<ActionResult<IEnumerable<RoleReadDto>>> GetAllRoles()
-        //{
-        //    var roles = await _roleService.GetAllDtoAsync();
-        //    return Ok(roles);
-        //}
+
         [HttpGet]
-        public async Task<ActionResult<PagedList<RoleReadDto>>> GetAllRoles([FromQuery] RoleParametersDto parameters)
+        public async Task<ActionResult<PagedList<RoleReadDto>>> GetAllRolesPaged([FromQuery] RoleParametersDto parameters)
         {
-            var result = await _roleService.GetAllPagedAsync(parameters);
+            var result = await _roleService.GetAllDtoPagedAsync(parameters);
 
             var metadata = result.GetMetadata();
             Response.Headers.Add("X-Pagination", metadata);
