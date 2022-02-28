@@ -8,7 +8,7 @@ namespace StoreAPI.Persistence.Repositories
 {
     public interface IProductRepository
     {
-        public Task<PagedList<Product>> GetAllWherePagedAsync(int pageNumber, int pageSize, Expression<Func<Product, bool>> expression);
+        public Task<PaginatedList<Product>> GetAllWherePaginatedAsync(int pageNumber, int pageSize, Expression<Func<Product, bool>> expression);
 
         public Task<Product> GetByIdAsync(int id);
 

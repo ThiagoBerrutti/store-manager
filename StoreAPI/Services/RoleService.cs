@@ -1,14 +1,14 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Routing;
 using StoreAPI.Dtos;
-using StoreAPI.Dtos.Shared;
 using StoreAPI.Exceptions;
+using StoreAPI.Extensions;
 using StoreAPI.Identity;
 using StoreAPI.Infra;
 using StoreAPI.Persistence.Repositories;
 using StoreAPI.Validations;
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
@@ -31,8 +31,8 @@ namespace StoreAPI.Services
             _roleParametersValidator = new RoleParametersValidator();
         }
 
-        
-        public async Task<PagedList<RoleReadDto>> GetAllDtoPagedAsync(RoleParametersDto parameters)
+
+        public async Task<PaginatedList<RoleReadDto>> GetAllDtoPaginatedAsync(RoleParametersDto parameters)
         {
             var validationResult = _roleParametersValidator.Validate(parameters);
             if (!validationResult.IsValid)
@@ -43,11 +43,15 @@ namespace StoreAPI.Services
             }
 
             Expression<Func<Role, bool>> expression =
-                r => r.Name.ToLower().Contains(parameters.Name.ToLower());
+                r =>
+                    r.Name.ToLower().Contains(parameters.Name.ToLower()) &&
+                    r.Users.Select(u => u.Id)
+                        .Where(id => parameters.UserId.Contains(id))
+                        .Count() == parameters.UserId.Count();
 
-            var result = await _roleRepository.GetAllWherePagedAsync(parameters.PageNumber, parameters.PageSize, expression);
+            var result = await _roleRepository.GetAllWherePaginatedAsync(parameters.PageNumber, parameters.PageSize, expression);
 
-            var dto = _mapper.Map<PagedList<Role>, PagedList<RoleReadDto>>(result);
+            var dto = _mapper.Map<PaginatedList<Role>, PaginatedList<RoleReadDto>>(result);
 
             return dto;
         }
@@ -149,12 +153,19 @@ namespace StoreAPI.Services
         }
 
 
-        public async Task<IEnumerable<UserReadDto>> GetAllUsersOnRole(int id)
+        public async Task<PaginatedList<UserReadDto>> GetAllUsersOnRolePaginated(int id, QueryStringParameterDto parameters)
         {
             var role = await _roleRepository.GetByIdAsync(id);
-            var usersViewModel = _mapper.Map<IEnumerable<UserReadDto>>(role.Users);
+            var usersOnRole = role.Users;
 
-            return usersViewModel;
+            var paginatedUsers = usersOnRole
+                    .OrderBy(u => u.FirstName)
+                    .ThenBy(p => p.Id)
+                    .ToPaginatedList(parameters.PageNumber, parameters.PageSize);
+
+            var usersReadDtoPaginated = _mapper.Map<PaginatedList<UserReadDto>>(paginatedUsers);
+
+            return usersReadDtoPaginated;
         }
 
 

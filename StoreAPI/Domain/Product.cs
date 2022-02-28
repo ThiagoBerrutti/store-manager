@@ -21,6 +21,6 @@
             Price = price;
         }
 
-        public bool OnStock() => ProductStock.Count > 0;
+        public bool OnStock() => ProductStock.Quantity > 0;
     }
 }

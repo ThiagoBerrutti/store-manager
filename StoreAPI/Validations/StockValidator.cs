@@ -8,11 +8,11 @@ namespace StoreAPI.Validations
     {
         public StockValidator()
         {
-            RuleFor(s => s.Count)
+            RuleFor(s => s.Quantity)
                 .NotNull()
-                    .WithMessage("Count cannot be null")
-                .InclusiveBetween(AppConstants.Validations.Stock.CountMinValue, AppConstants.Validations.Stock.CountMaxValue)
-                    .WithMessage("Count must be between {From} and {To}");
+                    .WithMessage("Quantity cannot be null")
+                .InclusiveBetween(AppConstants.Validations.Stock.QuantityMinValue, AppConstants.Validations.Stock.QuantityMaxValue)
+                    .WithMessage("Quantity must be between {From} and {To}");
         }
     }
 }

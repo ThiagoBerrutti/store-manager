@@ -39,6 +39,7 @@ namespace StoreAPI.Services
         }
 
 
+
         public async Task<AuthResponse> RegisterAsync(UserRegisterDto userDto)
         {           
             var validationResult = _userRegisterValidator.Validate(userDto);

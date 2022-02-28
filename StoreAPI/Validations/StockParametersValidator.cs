@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using StoreAPI.Dtos;
-using StoreAPI.Dtos.Shared;
 using StoreAPI.Infra;
 
 namespace StoreAPI.Validations
@@ -10,19 +9,19 @@ namespace StoreAPI.Validations
         public StockParametersValidator()
         {
             Include(new QueryStringParameterValidator());
-                        
+
             RuleFor(s => s.ProductName)
                 .MaximumLength(AppConstants.Validations.Product.NameMaxLength).WithMessage("ProductName maximum lenght is {MaxLength} chars");
 
-            RuleFor(s => s.MinCount)
-                .InclusiveBetween(AppConstants.Validations.Stock.CountMinValue, AppConstants.Validations.Stock.CountMaxValue)
-                    .WithMessage("MinCount must be between {From} and {To}");
+            RuleFor(s => s.QuantityMin)
+                .InclusiveBetween(AppConstants.Validations.Stock.QuantityMinValue, AppConstants.Validations.Stock.QuantityMaxValue)
+                    .WithMessage("QuantityMin must be between {From} and {To}");
 
-            RuleFor(s => s.MaxCount)
-                .InclusiveBetween(AppConstants.Validations.Stock.CountMinValue, AppConstants.Validations.Stock.CountMaxValue)
-                    .WithMessage("MaxCount must be between {From} and {To}")
-                .GreaterThanOrEqualTo(p => p.MinCount)
-                    .WithMessage("MaxCount must be greater or equal to MinCount");
+            RuleFor(s => s.QuantityMax)
+                .InclusiveBetween(AppConstants.Validations.Stock.QuantityMinValue, AppConstants.Validations.Stock.QuantityMaxValue)
+                    .WithMessage("QuantityMax must be between {From} and {To}")
+                .GreaterThanOrEqualTo(p => p.QuantityMin)
+                    .WithMessage("QuantityMax must be greater than or equal to QuantityMin");
         }
     }
 }

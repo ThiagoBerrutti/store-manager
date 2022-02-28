@@ -5,7 +5,6 @@ using StoreAPI.Exceptions;
 using StoreAPI.Persistence.Repositories;
 using StoreAPI.Validations;
 using System;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
@@ -31,8 +30,8 @@ namespace StoreAPI.Services
         }
 
 
-        
-        public async Task<PagedList<ProductReadDto>> GetAllDtoPagedAsync(ProductParametersDto parameters)
+
+        public async Task<PaginatedList<ProductReadDto>> GetAllDtoPaginatedAsync(ProductParametersDto parameters)
         {
             var validationResult = _productParametersValidator.Validate(parameters);
             if (!validationResult.IsValid)
@@ -48,23 +47,23 @@ namespace StoreAPI.Services
                     p.Price <= parameters.MaxPrice &&
                     p.Name.ToLower().Contains(parameters.Name.ToLower()) &&
                     p.Description.ToLower().Contains(parameters.Description.ToLower()) &&
-                    p.ProductStock.Count > 0 == parameters.OnStock;
+                    (!parameters.OnStock.HasValue || ((p.ProductStock.Quantity > 0) == parameters.OnStock.Value));
 
-            var result = await _productRepository.GetAllWherePagedAsync(parameters.PageNumber, parameters.PageSize, expression);
+            var result = await _productRepository.GetAllWherePaginatedAsync(parameters.PageNumber, parameters.PageSize, expression);
 
-            var dto = _mapper.Map<PagedList<Product>, PagedList<ProductReadDto>>(result);
+            var dto = _mapper.Map<PaginatedList<Product>, PaginatedList<ProductReadDto>>(result);
 
             return dto;
         }
 
 
-        public async Task<ProductWithStockDto> CreateAsync(ProductWriteDto productDto, int amount)
+        public async Task<ProductWithStockDto> CreateAsync(ProductWriteDto productDto, int quantity)
         {
-            if (amount < 0 || amount > int.MaxValue)
+            if (quantity < 0 || quantity > int.MaxValue)
             {
                 throw new AppException()
                     .SetTitle("Error creating product")
-                    .SetDetail("Amount should be greater or equal to zero");
+                    .SetDetail("Quantity should be greater than or equal to zero");
             }
 
             var validationResult = _productValidator.Validate(productDto);
@@ -78,7 +77,7 @@ namespace StoreAPI.Services
             var product = _mapper.Map<Product>(productDto);
             _productRepository.Add(product);
 
-            _stockService.CreateProductStock(product, amount);
+            _stockService.CreateProductStock(product, quantity);
             await _unitOfWork.CompleteAsync();
 
             var productWithStockDto = _mapper.Map<ProductWithStockDto>(product);

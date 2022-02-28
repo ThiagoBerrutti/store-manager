@@ -1,14 +1,12 @@
 ﻿using StoreAPI.Dtos;
-using StoreAPI.Dtos.Shared;
 using StoreAPI.Identity;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace StoreAPI.Services
 {
     public interface IRoleService
     {
-        public Task<PagedList<RoleReadDto>> GetAllDtoPagedAsync(RoleParametersDto parameters);
+        public Task<PaginatedList<RoleReadDto>> GetAllDtoPaginatedAsync(RoleParametersDto parameters);
 
         public Task<Role> GetByIdAsync(int id);
 
@@ -18,7 +16,7 @@ namespace StoreAPI.Services
 
         public Task<RoleReadDto> GetDtoByNameAsync(string name);
 
-        public Task<IEnumerable<UserReadDto>> GetAllUsersOnRole(int id);
+        public Task<PaginatedList<UserReadDto>> GetAllUsersOnRolePaginated(int id, QueryStringParameterDto parameters);
 
         public Task<RoleReadDto> CreateAsync(RoleWriteDto role);
 

@@ -1,16 +1,24 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using StoreAPI.Dtos;
 using StoreAPI.Identity;
 using StoreAPI.Infra;
 using StoreAPI.Services;
+using Swashbuckle.AspNetCore.Annotations;
+using System.Net.Mime;
 using System.Threading.Tasks;
 
 namespace StoreAPI.Controllers
 {
+    /// <summary>
+    /// Registration and JWT authentication
+    /// </summary>
     [ApiController]
     [AllowAnonymous]
-    [Route("api/v1/[controller]")]
+    [Route("api/v1/auth/")]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [Produces(MediaTypeNames.Application.Json)]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
@@ -23,8 +31,17 @@ namespace StoreAPI.Controllers
         }
 
 
+
+        /// <summary>
+        /// Registers new user
+        /// </summary>
+        /// <remarks>Registers a new user and authenticates it</remarks>
+        /// <param name="userDto">New user's data</param>
+        /// <returns>The user registered and a valid JWT for this user</returns>
         [HttpPost("register")]
-        public async Task<ActionResult<AuthResponse>> Register(UserRegisterDto userDto)
+        [SwaggerResponse(StatusCodes.Status201Created, "User successfully registered and authenticated", typeof(AuthResponse))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Error registering user", Type = null)]
+        public async Task<IActionResult> Register([SwaggerParameter("test description")] UserRegisterDto userDto)
         {
             var registerResponse = await _authService.RegisterAsync(userDto);
             var authenticateResponse = await _authService.AuthenticateAsync(userDto);
@@ -33,8 +50,17 @@ namespace StoreAPI.Controllers
         }
 
 
+        /// <summary>
+        /// Authenticate user
+        /// </summary>
+        /// <remarks>Authenticates an user and generate JWT</remarks>
+        /// <param name="userLogin">User's username and password</param>
+        /// <returns>A valid JWT for this user</returns>
         [HttpPost("authenticate")]
-        public async Task<ActionResult<AuthResponse>> Authenticate(UserLoginDto userLogin)
+        [SwaggerResponse(StatusCodes.Status200OK, "User authenticated")]
+        [SwaggerResponse(StatusCodes.Status400BadRequest)]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "User not found")]
+        public async Task<IActionResult> Authenticate(UserLoginDto userLogin)
         {
             var authResponse = await _authService.AuthenticateAsync(userLogin);
 
@@ -42,8 +68,14 @@ namespace StoreAPI.Controllers
         }
 
 
+        /// <summary>
+        /// Authenticate with a test user with 'Administrator' role assigned
+        /// </summary>
+        /// <remarks>Resets all test accounts data before authenticate</remarks>
+        /// <returns>A valid JWT for test user 'admin'</returns>
         [HttpPost("authenticate/testadmin")]
-        public async Task<ActionResult<AuthResponse>> AuthenticateTestAdminUser()
+        [SwaggerResponse(StatusCodes.Status200OK, "Test user 'admin' authenticated")]
+        public async Task<IActionResult> AuthenticateTestAdminUser()
         {
             await _userService.ResetTestUsers();
 
@@ -59,7 +91,13 @@ namespace StoreAPI.Controllers
         }
 
 
+        /// <summary>
+        /// Authenticate with a test user with 'Manager' role assigned
+        /// </summary>
+        /// <remarks>Resets all test accounts data before authenticate</remarks>
+        /// <returns>A valid JWT for test user 'manager'</returns>
         [HttpPost("authenticate/testmanager")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Test user 'manager' authenticated")]
         public async Task<ActionResult<AuthResponse>> AuthenticateTestManagerUser()
         {
             await _userService.ResetTestUsers();
@@ -76,7 +114,13 @@ namespace StoreAPI.Controllers
         }
 
 
+        /// <summary>
+        /// Authenticate with a test user with 'Stock' role assigned
+        /// </summary>
+        /// <remarks>Resets all test accounts data before authenticate</remarks>
+        /// <returns>A valid JWT for test user 'stock'</returns>
         [HttpPost("authenticate/teststock")]
+        [SwaggerResponse(StatusCodes.Status200OK, "User 'stock' authenticated")]
         public async Task<ActionResult<AuthResponse>> AuthenticateTestStockUser()
         {
             await _userService.ResetTestUsers();
@@ -93,7 +137,13 @@ namespace StoreAPI.Controllers
         }
 
 
+        /// <summary>
+        /// Authenticate with a test user with 'Seller' role assigned
+        /// </summary>
+        /// <remarks>Resets all test accounts data before authenticate</remarks>
+        /// <returns>A valid JWT for test user 'seller'</returns>
         [HttpPost("authenticate/testseller")]
+        [SwaggerResponse(StatusCodes.Status200OK, "User 'seller' authenticated")]
         public async Task<ActionResult<AuthResponse>> AuthenticateTestSellerUser()
         {
             await _userService.ResetTestUsers();
@@ -110,7 +160,13 @@ namespace StoreAPI.Controllers
         }
 
 
+        /// <summary>
+        /// Authenticate with a test user with no roles assigned
+        /// </summary>
+        /// <remarks>Resets all test accounts data before authenticate</remarks>
+        /// <returns>A valid JWT for test user 'public'</returns>
         [HttpPost("authenticate/testpublic")]
+        [SwaggerResponse(StatusCodes.Status200OK, "User 'public' authenticated")]
         public async Task<ActionResult<AuthResponse>> AuthenticateTestPublicUser()
         {
             await _userService.ResetTestUsers();

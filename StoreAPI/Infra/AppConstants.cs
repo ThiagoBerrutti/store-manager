@@ -102,6 +102,18 @@ namespace StoreAPI.Infra
         {
             public const int MaxPageSize = 50;
             public const int DefaultPageSize = 10;
+            public const string MetadataHeaderDescription = 
+                "Pagination data on **JSON** format" +
+                "\n\n" +
+                "Example:" +
+                "\n\n" +
+                "`{\"**TotalCount**\":30,\"PageSize\":10,\"CurrentPage\":1,\"TotalPages\":3,\"HasNext\":true,\"HasPrevious\":false}`\n" +            
+                "- TotalCount: total number of items found\n" +
+                "- CurrentPage: the page number that was received\n" +
+                "- PageSize: number of items per page\n" +
+                "- TotalPages: total number of pages\n" +
+                "- HasPrevious: true if it has another page before that, false if it don't\n" +
+                "- HasNext: true if it has another page after that, false if it don't\n";
         }
 
         public struct Validations
@@ -132,8 +144,8 @@ namespace StoreAPI.Infra
 
             public struct Stock
             {
-                public const int CountMinValue = 0;
-                public const int CountMaxValue = int.MaxValue;
+                public const int QuantityMinValue = 0;
+                public const int QuantityMaxValue = int.MaxValue;
             }
             
         }

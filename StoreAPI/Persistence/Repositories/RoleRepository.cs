@@ -24,13 +24,13 @@ namespace StoreAPI.Persistence.Repositories
 
 
 
-        public async Task<PagedList<Role>> GetAllWherePagedAsync(int pageNumber, int pageSize, Expression<Func<Role, bool>> expression)
+        public async Task<PaginatedList<Role>> GetAllWherePaginatedAsync(int pageNumber, int pageSize, Expression<Func<Role, bool>> expression)
         {
             var result = await _context.Roles
-                 .Include(r => r.Users)
-                 .OrderBy(r => r.Name)
-                 .Where(expression)
-                 .ToPagedListAsync(pageNumber, pageSize);
+                    .OrderBy(r => r.Id)
+                    .Include(r => r.Users)
+                    .Where(expression)
+                    .ToPaginatedListAsync(pageNumber, pageSize);                
 
             return result;
         }

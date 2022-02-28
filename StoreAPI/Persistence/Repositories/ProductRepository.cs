@@ -21,14 +21,13 @@ namespace StoreAPI.Persistence.Repositories
 
 
         
-        public async Task<PagedList<Product>> GetAllWherePagedAsync(int pageNumber, int pageSize, Expression<Func<Product, bool>> expression)
+        public async Task<PaginatedList<Product>> GetAllWherePaginatedAsync(int pageNumber, int pageSize, Expression<Func<Product, bool>> expression)
         {
             var result = await _context.Products
                  .Include(p => p.ProductStock)
-                 .OrderBy(p => p.Name)
-                 .ThenBy(p => p.Id)
+                 .OrderBy(p => p.Name)                 
                  .Where(expression)
-                 .ToPagedListAsync(pageNumber, pageSize);
+                 .ToPaginatedListAsync(pageNumber, pageSize);
 
             return result;
         }

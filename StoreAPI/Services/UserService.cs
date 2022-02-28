@@ -3,12 +3,15 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Routing;
 using StoreAPI.Dtos;
 using StoreAPI.Exceptions;
+using StoreAPI.Extensions;
 using StoreAPI.Identity;
 using StoreAPI.Infra;
 using StoreAPI.Persistence.Repositories;
 using StoreAPI.Validations;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace StoreAPI.Services
@@ -23,6 +26,7 @@ namespace StoreAPI.Services
 
         private readonly UserUpdateValidator _userUpdateValidator;
         private readonly ChangePasswordValidator _changePasswordValidator;
+        private readonly UserParametersValidator _userParametersValidator;
 
         public UserService(IRoleService roleService, IUserRepository userRepository, IMapper mapper, IUnitOfWork unitOfWork, LinkGenerator linkGenerator)
         {
@@ -33,19 +37,41 @@ namespace StoreAPI.Services
             _linkGenerator = linkGenerator;
             _userUpdateValidator = new UserUpdateValidator();
             _changePasswordValidator = new ChangePasswordValidator();
+            _userParametersValidator = new UserParametersValidator();
         }
 
 
 
-        public async Task<IEnumerable<UserReadDto>> GetAllDtoAsync()
+        public async Task<PaginatedList<UserReadDto>> GetAllDtoPaginatedAsync(UserParametersDto parameters)
         {
-            var users = await _userRepository.GetAllAsync();
+            var validationResult = _userParametersValidator.Validate(parameters);
+            if (!validationResult.IsValid)
+            {
+                throw new AppValidationException(validationResult)
+                    .SetTitle("Validation error")
+                    .SetDetail($"Invalid query string parameters. Check '{ExceptionWithProblemDetails.ErrorKey}' for more details");
+            }
 
-            var usersModel = _mapper.Map<IEnumerable<UserReadDto>>(users);
+            Expression<Func<User, bool>> expression =
+                u =>
+                    (u.FirstName.ToLower().Contains(parameters.Name.ToLower()) || u.LastName.ToLower().Contains(parameters.Name.ToLower())) &&
+                    u.DateOfbirth >= parameters.MinDateOfBirth &&
+                    u.DateOfbirth <= parameters.MaxDateOfBirth &&
+                    (parameters.IsExactUserName
+                        ? u.UserName.ToLower() == parameters.UserName.ToLower()
+                        : u.UserName.ToLower().Contains(parameters.UserName.ToLower())) &&
+                    //(!parameters.RoleId.HasValue || u.Roles.Select(r => r.Id).Contains(parameters.RoleId.Value)) &&
+                    u.Roles.Select(u => u.Id)
+                        .Where(id => parameters.RoleId.Contains(id))
+                        .Count() == parameters.RoleId.Count();
 
-            return usersModel;
+            var result = await _userRepository.GetAllWherePaginatedAsync(parameters.PageNumber, parameters.PageSize, expression);
+
+            var dto = _mapper.Map<PaginatedList<User>, PaginatedList<UserReadDto>>(result);
+
+            return dto;
         }
-
+        
 
         public async Task<User> GetByUserNameAsync(string userName)
         {
@@ -58,24 +84,6 @@ namespace StoreAPI.Services
             }
 
             return user;
-        }
-
-
-        public async Task<UserReadDto> GetDtoByUserNameAsync(string userName)
-        {
-            var user = await GetByUserNameAsync(userName);
-            var userViewModel = _mapper.Map<UserReadDto>(user);
-
-            return userViewModel;
-        }
-
-        public async Task<IEnumerable<UserReadDto>> SearchAsync(string search)
-        {
-            var result = await _userRepository.SearchAsync(search);
-
-            var usersDto = _mapper.Map<IEnumerable<UserReadDto>>(result);
-
-            return usersDto;
         }
 
 
@@ -93,15 +101,32 @@ namespace StoreAPI.Services
         }
 
 
-        public async Task<UserReadDto> GetDtoByIdAsync(int id)
+        public async Task<UserDetailedReadDto> GetDtoByIdAsync(int id)
         {
             var user = await GetByIdAsync(id);
-            var userViewModel = _mapper.Map<UserReadDto>(user);
+            var userViewModel = _mapper.Map<UserDetailedReadDto>(user);
 
             return userViewModel;
         }
 
 
+        public async Task<PaginatedList<RoleReadDto>> GetAllRolesFromUser(int id, QueryStringParameterDto parameters)
+        {
+            var user = await _userRepository.GetByIdAsync(id);
+            var rolesFromUser = user.Roles;
+
+            var paginatedUsers = rolesFromUser
+                    .OrderBy(r => r.Id)
+                    .ToPaginatedList(parameters.PageNumber, parameters.PageSize);
+
+            var rolesReadDtoPaginated = _mapper.Map<PaginatedList<RoleReadDto>>(paginatedUsers);
+
+            return rolesReadDtoPaginated;
+        }
+
+
+        //bere 98127-2272
+        //
         public async Task<IList<string>> GetRolesNamesAsync(string userName)
         {
             var user = await GetByUserNameAsync(userName);
@@ -111,7 +136,7 @@ namespace StoreAPI.Services
         }
 
 
-        //called by AuthService only
+        //called by AuthService use only
         public async Task<IdentityResult> CreateAsync(User user, string password)
         {
             var result = await _userRepository.CreateAsync(user, password);
@@ -215,7 +240,7 @@ namespace StoreAPI.Services
         }
 
 
-        public async Task<UserReadDto> GetDtoCurrentUserAsync()
+        public async Task<UserReadDto> GetCurrentUserDtoAsync()
         {
             var user = await GetCurrentUserAsync();
             var userViewModel = _mapper.Map<UserReadDto>(user);
@@ -283,8 +308,7 @@ namespace StoreAPI.Services
             }
         }
 
-
-        //public async Task ChangeCurrentUserPasswordAsync(string currentPassword, string newPassword)
+                
         public async Task ChangeCurrentUserPasswordAsync(ChangePasswordDto changePasswordDto)
         {
             var currentUser = await GetCurrentUserAsync();

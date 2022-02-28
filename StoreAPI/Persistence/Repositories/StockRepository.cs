@@ -2,9 +2,7 @@
 using StoreAPI.Domain;
 using StoreAPI.Dtos;
 using StoreAPI.Extensions;
-using StoreAPI.Identity;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -20,14 +18,14 @@ namespace StoreAPI.Persistence.Repositories
             _context = context;
         }
 
-                
-        public async Task<PagedList<ProductStock>> GetAllWherePagedAsync(int pageNumber, int pageSize, Expression<Func<ProductStock, bool>> expression)
+
+        public async Task<PaginatedList<ProductStock>> GetAllWherePaginatedAsync(int pageNumber, int pageSize, Expression<Func<ProductStock, bool>> expression)
         {
             var result = await _context.ProductStocks
                 .Include(s => s.Product)
                 .OrderBy(s => s.Product.Name)
                 .Where(expression)
-                .ToPagedListAsync(pageNumber, pageSize);
+                .ToPaginatedListAsync(pageNumber, pageSize);
 
             return result;
         }

@@ -1,14 +1,23 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StoreAPI.Dtos;
+using StoreAPI.Exceptions;
 using StoreAPI.Services;
+using System.Collections.Generic;
+using System.Net.Mime;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace StoreAPI.Controllers
 {
+    /// <summary>
+    /// User related operations
+    /// </summary>
+    [Authorize]
     [ApiController]
-    [Route("api/v1/[controller]")]
+    [Route("api/v1/users")]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [Produces(MediaTypeNames.Application.Json)]
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -18,17 +27,30 @@ namespace StoreAPI.Controllers
             _userService = userService;
         }
 
-
+        /// <summary>
+        /// Finds all users, filtering the result
+        /// </summary>
+        /// <remarks>Results are paginated. To configure pagination, include the query string parameters 'pageSize' and 'pageNumber'</remarks>
+        /// <param name="parameters">Query string with the result filters and pagination values</param>
         [Authorize(Roles = "Administrator,Manager")]
         [HttpGet]
-        public async Task<IActionResult> GetAllUsers()
-        {
-            var result = await _userService.GetAllDtoAsync();
+        public async Task<IActionResult> GetAllUsers([FromQuery] UserParametersDto parameters)
+        {           
+            var result = await _userService.GetAllDtoPaginatedAsync(parameters);
+            var metadata = result.GetMetadata();
 
-            return Ok(result);
+            Response.Headers.Add("X-Pagination", metadata);
+
+            return Ok(result.Items);
         }
 
 
+
+        /// <summary>
+        /// Finds an user by Id
+        /// </summary>
+        /// <remarks>Returns a single product</remarks>
+        /// <param name="id">Product Id</param>
         [Authorize(Roles = "Administrator,Manager")]
         [HttpGet("{id}", Name = nameof(GetUserById))]
         public async Task<IActionResult> GetUserById(int id)
@@ -39,32 +61,35 @@ namespace StoreAPI.Controllers
         }
 
 
+
+        /// <summary>
+        /// Returns current user
+        /// </summary>
         [HttpGet("current")]
         public async Task<IActionResult> GetCurrentUser()
         {
-            var result = await _userService.GetDtoCurrentUserAsync();
+            var result = await _userService.GetCurrentUserDtoAsync();
 
             return Ok(result);
         }
 
 
+        /// <summary>
+        /// Finds all roles an user is assigned, filtering the result
+        /// </summary>
+        /// <remarks>Results are paginated. To configure pagination, include the query string parameters 'pageSize' and 'pageNumber'</remarks>
+        /// <param name="parameters">Query string with the result filters and pagination values</param>
+        /// <param name="id" example="1,2,3">User Id</param>
         [Authorize(Roles = "Administrator,Manager")]
-        [HttpGet("userName/{userName}")]
-        public async Task<IActionResult> GetUserByUserName(string userName)
+        [HttpGet("{id}/roles")]
+        public async Task<IActionResult> GetRolesFromUser(int id, [FromQuery] QueryStringParameterDto parameters)
         {
-            var result = await _userService.GetDtoByUserNameAsync(userName);
+            var result = await _userService.GetAllRolesFromUser(id, parameters);
+            var metadata = result.GetMetadata();
 
-            return Ok(result);
-        }
+            Response.Headers.Add("X-Pagination", metadata);
 
-
-        [Authorize(Roles = "Administrator,Manager")]
-        [HttpGet("search/{search}")]
-        public async Task<IActionResult> SearchUser(string search)
-        {
-            var result = await _userService.SearchAsync(search);
-
-            return Ok(result);
+            return Ok(result.Items);
         }
 
 

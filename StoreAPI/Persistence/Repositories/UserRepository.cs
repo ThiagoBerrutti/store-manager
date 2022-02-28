@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using StoreAPI.Domain;
+using StoreAPI.Dtos;
+using StoreAPI.Extensions;
 using StoreAPI.Identity;
 using StoreAPI.Infra;
 using System;
@@ -25,9 +28,18 @@ namespace StoreAPI.Persistence.Repositories
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<IEnumerable<User>> GetAllAsync()
+        
+
+        public async Task<PaginatedList<User>> GetAllWherePaginatedAsync(int pageNumber, int pageSize, Expression<Func<User, bool>> expression)
         {
-            return await _userManager.Users.Include(u => u.Roles).ToListAsync();
+            var result = await _context.Users
+                    .OrderBy(u => u.FirstName)
+                    .ThenBy(p => p.Id)
+                    .Where(expression)
+                    .Include(u => u.Roles)
+                    .ToPaginatedListAsync(pageNumber, pageSize);
+
+            return result;
         }
 
 

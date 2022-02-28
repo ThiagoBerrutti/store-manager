@@ -8,7 +8,7 @@ namespace StoreAPI.Persistence.Repositories
 {
     public interface IStockRepository
     {
-        public Task<PagedList<ProductStock>> GetAllWherePagedAsync(int pageNumber, int pageSize, Expression<Func<ProductStock, bool>> expression);
+        public Task<PaginatedList<ProductStock>> GetAllWherePaginatedAsync(int pageNumber, int pageSize, Expression<Func<ProductStock, bool>> expression);
 
         public Task<ProductStock> GetByProductIdAsync(int productId);
 

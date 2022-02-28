@@ -5,16 +5,16 @@
         public int Id { get; set; }
         public Product Product { get; set; }
         public int ProductId { get; set; }
-        public int Count { get; set; }
+        public int Quantity { get; set; }
 
         public ProductStock()
         {
         }
 
-        public ProductStock(Product product, int count)
+        public ProductStock(Product product, int quantity)
         {
             Product = product;
-            Count = count;
+            Quantity = quantity;
         }
     }
 }

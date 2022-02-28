@@ -9,7 +9,7 @@ namespace StoreAPI.Persistence.Repositories
 {
     public interface IRoleRepository
     {
-        public Task<PagedList<Role>> GetAllWherePagedAsync(int pageNumber, int pageSize, Expression<Func<Role, bool>> expression);
+        public Task<PaginatedList<Role>> GetAllWherePaginatedAsync(int pageNumber, int pageSize, Expression<Func<Role, bool>> expression);
 
         public Task<Role> GetByNameAsync(string roleName);
 

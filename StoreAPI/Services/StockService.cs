@@ -1,17 +1,14 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using StoreAPI.Domain;
 using StoreAPI.Dtos;
 using StoreAPI.Exceptions;
-using StoreAPI.Domain;
 using StoreAPI.Persistence.Repositories;
 using StoreAPI.Validations;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using StoreAPI.Dtos.Shared;
 using System;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace StoreAPI.Services
 {
@@ -38,7 +35,7 @@ namespace StoreAPI.Services
         }
 
 
-        public async Task<PagedList<ProductStockReadDto>> GetAllDtoPagedAsync(StockParametersDto parameters)
+        public async Task<PaginatedList<ProductStockReadDto>> GetAllDtoPaginatedAsync(StockParametersDto parameters)
         {
             var validationResult = _stockParametersValidator.Validate(parameters);
             if (!validationResult.IsValid)
@@ -51,13 +48,13 @@ namespace StoreAPI.Services
             Expression<Func<ProductStock, bool>> expression =
                 s =>
                     s.Product.Name.ToLower().Contains(parameters.ProductName.ToLower()) &&
-                    s.Count >= parameters.MinCount &&
-                    s.Count <= parameters.MaxCount;
+                    s.Quantity >= parameters.QuantityMin &&
+                    s.Quantity <= parameters.QuantityMax;
 
 
-            var result = await _stockRepository.GetAllWherePagedAsync(parameters.PageNumber, parameters.PageSize, expression);
+            var result = await _stockRepository.GetAllWherePaginatedAsync(parameters.PageNumber, parameters.PageSize, expression);
 
-            var dto = _mapper.Map<PagedList<ProductStock>, PagedList<ProductStockReadDto>>(result);
+            var dto = _mapper.Map<PaginatedList<ProductStock>, PaginatedList<ProductStockReadDto>>(result);
 
             return dto;
         }
@@ -109,9 +106,9 @@ namespace StoreAPI.Services
         }
 
 
-        public ProductStock CreateProductStock(Product product, int startingAmount = 0)
+        public ProductStock CreateProductStock(Product product, int startingQuantity = 0)
         {
-            var productStock = new ProductStock(product, startingAmount);
+            var productStock = new ProductStock(product, startingQuantity);
             _stockRepository.Create(productStock);
 
             return productStock;
@@ -140,26 +137,26 @@ namespace StoreAPI.Services
         }
 
 
-        public async Task<ProductStockReadDto> AddProductAmountAsync(int id, int amount)
+        public async Task<ProductStockReadDto> AddProductQuantityAsync(int id, int quantity)
         {
-            if (amount <= 0)
+            if (quantity <= 0)
             {
                 throw new AppException()
-                    .SetTitle("Error adding amount")
-                    .SetDetail("Amount should be a positive number")
+                    .SetTitle("Error adding quantity")
+                    .SetDetail("Quantity should be a positive number")
                     .SetInstance(StockInstancePath(id));
             }
 
             var productStock = await GetByIdAsync(id);
-            if (productStock.Count >= 0 && (productStock.Count + amount < 0)) //overflow test
+            if (productStock.Quantity >= 0 && (productStock.Quantity + quantity < 0)) //overflow test
             {
                 throw new AppException()
-                    .SetTitle("Error adding amount")
-                    .SetDetail("Stock's [Count] value will overflow")
+                    .SetTitle("Error adding quantity")
+                    .SetDetail("Stock's [Quantity] value will overflow")
                     .SetInstance(StockInstancePath(id));
             }
 
-            productStock.Count += amount;
+            productStock.Quantity += quantity;
             await _unitOfWork.CompleteAsync();
 
             var productStockDto = _mapper.Map<ProductStockReadDto>(productStock);
@@ -167,26 +164,26 @@ namespace StoreAPI.Services
         }
 
 
-        public async Task<ProductStockReadDto> RemoveProductAmountAsync(int id, int amount)
+        public async Task<ProductStockReadDto> RemoveProductQuantityAsync(int id, int quantity)
         {
-            if (amount <= 0)
+            if (quantity <= 0)
             {
                 throw new AppException()
-                    .SetTitle("Error adding amount")
-                    .SetDetail("Amount should be a positive number")
+                    .SetTitle("Error adding quantity")
+                    .SetDetail("Quantity should be a positive number")
                     .SetInstance(StockInstancePath(id));
             }
 
             var productStock = await GetByIdAsync(id);
-            if (productStock.Count - amount < 0)
+            if (productStock.Quantity - quantity < 0)
             {
                 throw new AppException()
                     .SetTitle($"Not enough products available")
-                    .SetDetail($"Only [{productStock.Count}] on stock")
+                    .SetDetail($"Only [{productStock.Quantity}] on stock")
                     .SetInstance(StockInstancePath(id));
             }
 
-            productStock.Count -= amount;
+            productStock.Quantity -= quantity;
             await _unitOfWork.CompleteAsync();
 
             var productStockDto = _mapper.Map<ProductStockReadDto>(productStock);

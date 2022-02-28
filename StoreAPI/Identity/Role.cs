@@ -5,7 +5,7 @@ namespace StoreAPI.Identity
 {
     public class Role : IdentityRole<int>
     {
-        public List<User> Users { get; set; }
-        public List<UserRole> UserRoles { get; set; }
+        public List<User> Users { get; set; } = new List<User>();
+        public List<UserRole> UserRoles { get; set; } = new List<UserRole>();
     }
 }

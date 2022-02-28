@@ -1,13 +1,16 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using StoreAPI.Dtos;
 using StoreAPI.Identity;
+using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace StoreAPI.Persistence.Repositories
 {
     public interface IUserRepository
     {
-        public Task<IEnumerable<User>> GetAllAsync();
+        public Task<PaginatedList<User>> GetAllWherePaginatedAsync(int pageNumber, int pageSize, Expression<Func<User, bool>> expression);
 
         public Task<User> GetByUserNameAsync(string userName);
 

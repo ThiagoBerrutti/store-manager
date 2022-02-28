@@ -1,15 +1,22 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using StoreAPI.Dtos;
-using StoreAPI.Dtos.Shared;
 using StoreAPI.Services;
+using Swashbuckle.AspNetCore.Annotations;
+using System.Net.Mime;
 using System.Threading.Tasks;
 
 namespace StoreAPI.Controllers
 {
+    /// <summary>
+    /// Operations about roles
+    /// </summary>
     [Authorize(Roles = "Administrator,Manager")]
     [ApiController]
-    [Route("api/v1/[controller]")]
+    [Route("api/v1/roles")]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [Produces(MediaTypeNames.Application.Json)]
     public class RoleController : ControllerBase
     {
         private readonly IRoleService _roleService;
@@ -20,45 +27,83 @@ namespace StoreAPI.Controllers
         }
 
 
-
+        /// <summary>
+        /// Finds all roles, filtering the result
+        /// </summary>
+        /// <remarks>Results are paginated. To configure pagination, include the query string parameters 'pageSize' and 'pageNumber'</remarks>
+        /// <param name="parameters">Query string with the result filters and pagination values</param>
+        [SwaggerResponse(StatusCodes.Status200OK)]
+        [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [HttpGet]
-        public async Task<ActionResult<PagedList<RoleReadDto>>> GetAllRolesPaged([FromQuery] RoleParametersDto parameters)
+        public async Task<IActionResult> GetAllRolesPaginated([FromQuery] RoleParametersDto parameters)
         {
-            var result = await _roleService.GetAllDtoPagedAsync(parameters);
-
+            var result = await _roleService.GetAllDtoPaginatedAsync(parameters);
             var metadata = result.GetMetadata();
+
             Response.Headers.Add("X-Pagination", metadata);
 
-            return Ok(result);
+            return Ok(result.Items);
         }
 
 
+        /// <summary>
+        /// Finds a role by Id
+        /// </summary>
+        /// <remarks>Returns a single role</remarks>
+        /// <param name="id">The role's Id</param>
+        [SwaggerResponse(StatusCodes.Status200OK, "Role found")]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Role not found")]
         [HttpGet("{id:int}", Name = nameof(GetRoleById))]
-        public async Task<ActionResult<RoleReadDto>> GetRoleById(int id)
+        public async Task<IActionResult> GetRoleById(int id)
         {
             var employee = await _roleService.GetDtoByIdAsync(id);
             return Ok(employee);
         }
 
 
+        /// <summary>
+        /// Finds a role by name
+        /// </summary>
+        /// <remarks>Name must be an exact match, but it is not case-sensitive</remarks>
+        /// <param name="roleName">The role's name</param>
+        [SwaggerResponse(StatusCodes.Status200OK, "Role found")]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Role not found")]
         [HttpGet("{roleName}", Name = nameof(GetRoleByName))]
-        public async Task<ActionResult<RoleReadDto>> GetRoleByName(string roleName)
+        public async Task<IActionResult> GetRoleByName(string roleName)
         {
             var employee = await _roleService.GetDtoByNameAsync(roleName);
             return Ok(employee);
         }
 
-
+        /// <summary>
+        /// Finds all users on a role, filtering the result
+        /// </summary>
+        /// <remarks>Results are paginated. To configure pagination, include the query string parameters 'pageSize' and 'pageNumber'</remarks>
+        /// <param name="parameters">Query string with the result filters and pagination values</param>
+        /// <param name="id">Role's Id</param>
+        [SwaggerResponse(StatusCodes.Status200OK)]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Role not found")]
         [HttpGet("{id}/users")]
-        public async Task<ActionResult<UserReadDto>> GetUsersOnRole(int id)
+        public async Task<IActionResult> GetUsersOnRole(int id, [FromQuery] QueryStringParameterDto parameters)
         {
-            var users = await _roleService.GetAllUsersOnRole(id);
-            return Ok(users);
+            var result = await _roleService.GetAllUsersOnRolePaginated(id, parameters);
+            var metadata = result.GetMetadata();
+
+            Response.Headers.Add("X-Pagination", metadata);
+
+            return Ok(result.Items);
         }
 
 
+        /// <summary>
+        /// Create a new role
+        /// </summary>
+        /// <remarks>Role names are unique</remarks>
+        /// <param name="roleDto">Role object to be created</param>
+        [SwaggerResponse(StatusCodes.Status200OK)]
+        [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [HttpPost]
-        public async Task<ActionResult> CreateRole(RoleWriteDto roleDto)
+        public async Task<IActionResult> CreateRole(RoleWriteDto roleDto)
         {
             var roleOnRepo = await _roleService.CreateAsync(roleDto);
 
@@ -66,6 +111,13 @@ namespace StoreAPI.Controllers
         }
 
 
+        /// <summary>
+        /// Delete an existing role
+        /// </summary>
+        /// <param name="id">The role Id</param>
+        [SwaggerResponse(StatusCodes.Status200OK)]
+        [SwaggerResponse(StatusCodes.Status400BadRequest)]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Role not found")]
         [Authorize(Roles = "Administrator")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteRole(int id)

@@ -15,10 +15,10 @@ namespace StoreAPI.Mapper
                 .ReverseMap();
             CreateMap<Product, ProductWithStockDto>().ReverseMap();
 
-            CreateMap<PagedList<Product>, PagedList<ProductReadDto>>();
-            CreateMap<PagedList<Role>, PagedList<RoleReadDto>>();
-            CreateMap<PagedList<User>, PagedList<UserReadDto>>();
-            CreateMap<PagedList<ProductStock>, PagedList<ProductStockReadDto>>();
+            CreateMap<PaginatedList<Product>, PaginatedList<ProductReadDto>>();
+            CreateMap<PaginatedList<Role>, PaginatedList<RoleReadDto>>();
+            CreateMap<PaginatedList<User>, PaginatedList<UserReadDto>>();
+            CreateMap<PaginatedList<ProductStock>, PaginatedList<ProductStockReadDto>>();
 
             CreateMap<ProductStockReadDto, ProductStock>().ReverseMap();
             CreateMap<ProductStockWriteDto, ProductStock>().ReverseMap();
@@ -31,6 +31,9 @@ namespace StoreAPI.Mapper
             CreateMap<User, UserReadDto>()
                 .ForMember(dto => dto.FullName, o => o.MapFrom(src => src.FirstName + " " + src.LastName))
                 .ForMember(dto => dto.Age, o => o.MapFrom(src => AgeCalculator.Calculate(src.DateOfbirth)));
+            CreateMap<User, UserDetailedReadDto>()
+                .ForMember(dto => dto.Age, o => o.MapFrom(src => AgeCalculator.Calculate(src.DateOfbirth)));
+                
 
             CreateMap<Role, RoleReadDto>().ReverseMap();
             CreateMap<Role, RoleWriteDto>().ReverseMap();

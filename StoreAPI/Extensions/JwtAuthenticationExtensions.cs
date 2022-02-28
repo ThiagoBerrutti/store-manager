@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using StoreAPI.Infra;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 
 namespace StoreAPI.Extensions
@@ -16,7 +17,7 @@ namespace StoreAPI.Extensions
 
             var appSettings = appSettingsSection.Get<AppSettings>();
             var key = Encoding.ASCII.GetBytes(appSettings.Secret);
-
+            
             services
                 .AddAuthentication(options =>
                 {
