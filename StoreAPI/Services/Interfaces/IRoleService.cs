@@ -16,7 +16,7 @@ namespace StoreAPI.Services
 
         public Task<RoleReadDto> GetDtoByNameAsync(string name);
 
-        public Task<PaginatedList<UserReadDto>> GetAllUsersOnRolePaginated(int id, QueryStringParameterDto parameters);
+        public Task<PaginatedList<UserReadDto>> GetAllUsersOnRolePaginatedAsync(int id, QueryStringParameterDto parameters);
 
         public Task<RoleReadDto> CreateAsync(RoleWriteDto role);
 

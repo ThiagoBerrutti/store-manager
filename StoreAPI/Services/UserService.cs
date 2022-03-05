@@ -40,8 +40,6 @@ namespace StoreAPI.Services
             _userParametersValidator = new UserParametersValidator();
         }
 
-
-
         public async Task<PaginatedList<UserReadDto>> GetAllDtoPaginatedAsync(UserParametersDto parameters)
         {
             var validationResult = _userParametersValidator.Validate(parameters);
@@ -52,19 +50,28 @@ namespace StoreAPI.Services
                     .SetDetail($"Invalid query string parameters. Check '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
 
-            Expression<Func<User, bool>> expression =
-                u =>
-                    (u.FirstName.ToLower().Contains(parameters.Name.ToLower()) || u.LastName.ToLower().Contains(parameters.Name.ToLower())) &&
-                    u.DateOfbirth >= parameters.MinDateOfBirth &&
-                    u.DateOfbirth <= parameters.MaxDateOfBirth &&
-                    (parameters.IsExactUserName
-                        ? u.UserName.ToLower() == parameters.UserName.ToLower()
-                        : u.UserName.ToLower().Contains(parameters.UserName.ToLower())) &&
-                    //(!parameters.RoleId.HasValue || u.Roles.Select(r => r.Id).Contains(parameters.RoleId.Value)) &&
-                    u.Roles.Select(u => u.Id)
-                        .Where(id => parameters.RoleId.Contains(id))
-                        .Count() == parameters.RoleId.Count();
+            var earliestDob = parameters.EarliestDateToSearch();
+            var latestDob = parameters.LatestDateToSearch();
 
+            Expression<Func<User, bool>> expression =  
+                    u =>
+                        //Name
+                        (string.IsNullOrEmpty(parameters.Name) ||
+                            u.FirstName.ToLower().Contains(parameters.Name.ToLower()) || u.LastName.ToLower().Contains(parameters.Name.ToLower())) &&
+                        //MinDateOfBirth
+                        (!parameters.MinDateOfBirth.HasValue ||
+                            u.DateOfBirth >= earliestDob) &&
+                        //MaxDateOfBirth
+                        (!parameters.MaxDateOfBirth.HasValue ||
+                            u.DateOfBirth <= latestDob) &&
+                        //UserName
+                        (string.IsNullOrEmpty(parameters.UserName) ||
+                            u.UserName.ToLower().Contains(parameters.UserName.ToLower())) &&
+                        //RoleId
+                        (u.Roles.Select(u => u.Id)
+                                    .Where(id => parameters.RoleId.Contains(id))
+                                    .Count() == parameters.RoleId.Count());
+           
             var result = await _userRepository.GetAllWherePaginatedAsync(parameters.PageNumber, parameters.PageSize, expression);
 
             var dto = _mapper.Map<PaginatedList<User>, PaginatedList<UserReadDto>>(result);
@@ -110,7 +117,7 @@ namespace StoreAPI.Services
         }
 
 
-        public async Task<PaginatedList<RoleReadDto>> GetAllRolesFromUser(int id, QueryStringParameterDto parameters)
+        public async Task<PaginatedList<RoleReadDto>> GetAllRolesFromUserPaginatedAsync(int id, QueryStringParameterDto parameters)
         {
             var user = await _userRepository.GetByIdAsync(id);
             var rolesFromUser = user.Roles;
@@ -125,8 +132,6 @@ namespace StoreAPI.Services
         }
 
 
-        //bere 98127-2272
-        //
         public async Task<IList<string>> GetRolesNamesAsync(string userName)
         {
             var user = await GetByUserNameAsync(userName);
@@ -240,16 +245,16 @@ namespace StoreAPI.Services
         }
 
 
-        public async Task<UserReadDto> GetCurrentUserDtoAsync()
+        public async Task<UserDetailedReadDto> GetCurrentUserDtoAsync()
         {
             var user = await GetCurrentUserAsync();
-            var userViewModel = _mapper.Map<UserReadDto>(user);
+            var userViewModel = _mapper.Map<UserDetailedReadDto>(user);
 
             return userViewModel;
         }
 
 
-        public async Task<User> GetCurrentUserAsync()
+        protected async Task<User> GetCurrentUserAsync()
         {
             var user = await _userRepository.GetCurrentUserAsync();
 

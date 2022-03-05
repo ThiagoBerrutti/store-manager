@@ -1,5 +1,8 @@
 ﻿namespace StoreAPI.Dtos
 {
+    /// <summary>
+    /// Data about a role in the company
+    /// </summary>
     public class RoleReadDto
     {
         /// <summary>
@@ -9,9 +12,9 @@
         public int Id { get; set; }
 
         /// <summary>
-        /// Role name, should be unique
+        /// Role name
         /// </summary>
-        /// <example>trainee</example>
+        /// <example>seller</example>
         public string Name { get; set; }
     }
 }

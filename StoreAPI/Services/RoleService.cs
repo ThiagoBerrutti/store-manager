@@ -153,7 +153,7 @@ namespace StoreAPI.Services
         }
 
 
-        public async Task<PaginatedList<UserReadDto>> GetAllUsersOnRolePaginated(int id, QueryStringParameterDto parameters)
+        public async Task<PaginatedList<UserReadDto>> GetAllUsersOnRolePaginatedAsync(int id, QueryStringParameterDto parameters)
         {
             var role = await _roleRepository.GetByIdAsync(id);
             var usersOnRole = role.Users;

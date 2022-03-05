@@ -2,14 +2,19 @@
 
 namespace StoreAPI.Dtos
 {
+    /// <summary>
+    /// Query string parameters for product search filtering
+    /// </summary>
     public class RoleParametersDto : QueryStringParameterDto
     {
-        public string Name { get; set; } = "";
-        //public int? UserId { get; set; }
         /// <summary>
-        /// asdfd
+        /// Select only roles whose name contains this string
         /// </summary>
-        /// <example>[1,2,3]</example>
+        public string Name { get; set; } = "";
+
+        /// <summary>
+        /// Select only roles assigned to these users.
+        /// </summary>
         public List<int> UserId { get; set; } = new List<int>();
     }
 }

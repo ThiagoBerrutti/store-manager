@@ -5,7 +5,7 @@ namespace StoreAPI.Services
 {
     public interface IProductService
     {
-        public Task<ProductWithStockDto> CreateAsync(ProductWriteDto productDto, int quantity = 0);
+        public Task<ProductReadWithStockDto> CreateAsync(ProductWriteDto productDto, int quantity = 0);
 
         public Task<PaginatedList<ProductReadDto>> GetAllDtoPaginatedAsync(ProductParametersDto parameters);
 

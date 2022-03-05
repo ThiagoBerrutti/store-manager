@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace StoreAPI.Infra
+﻿namespace StoreAPI.Infra
 {
     public class AppConstants
     {
@@ -37,7 +34,7 @@ namespace StoreAPI.Infra
         }
 
         public struct Users
-        {            
+        {
             public struct Admin
             {
                 public const int Id = 1;
@@ -47,7 +44,6 @@ namespace StoreAPI.Infra
                 public const string LastName = "Istrator";
                 public const string Password = "admin";
                 public const string DateOfBirth = "1980-1-1";
-
             };
 
             public struct Manager
@@ -59,7 +55,6 @@ namespace StoreAPI.Infra
                 public const string LastName = "Test Acc";
                 public const string Password = "manager";
                 public const string DateOfBirth = "1990-1-1";
-
             };
 
             public struct Stock
@@ -71,7 +66,6 @@ namespace StoreAPI.Infra
                 public const string LastName = "Test Acc";
                 public const string Password = "stock";
                 public const string DateOfBirth = "1995-1-1";
-
             };
 
             public struct Seller
@@ -83,7 +77,6 @@ namespace StoreAPI.Infra
                 public const string LastName = "Test Acc";
                 public const string Password = "seller";
                 public const string DateOfBirth = "2000-1-1";
-
             };
 
             public struct Public
@@ -102,12 +95,13 @@ namespace StoreAPI.Infra
         {
             public const int MaxPageSize = 50;
             public const int DefaultPageSize = 10;
-            public const string MetadataHeaderDescription = 
+
+            public const string MetadataHeaderDescription =
                 "Pagination data on **JSON** format" +
                 "\n\n" +
                 "Example:" +
                 "\n\n" +
-                "`{\"**TotalCount**\":30,\"PageSize\":10,\"CurrentPage\":1,\"TotalPages\":3,\"HasNext\":true,\"HasPrevious\":false}`\n" +            
+                "{\"TotalCount\":30,\"PageSize\":10,\"CurrentPage\":1,\"TotalPages\":3,\"HasNext\":true,\"HasPrevious\":false}\n" +
                 "- TotalCount: total number of items found\n" +
                 "- CurrentPage: the page number that was received\n" +
                 "- PageSize: number of items per page\n" +
@@ -118,7 +112,7 @@ namespace StoreAPI.Infra
 
         public struct Validations
         {
-            public struct User 
+            public struct User
             {
                 public const int UsernameMaxLength = 50;
                 public const int UsernameMinLength = 4;
@@ -147,7 +141,6 @@ namespace StoreAPI.Infra
                 public const int QuantityMinValue = 0;
                 public const int QuantityMaxValue = int.MaxValue;
             }
-            
         }
     }
 }

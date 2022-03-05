@@ -29,7 +29,5 @@ namespace StoreAPI.Extensions
 
             return new PaginatedList<T>(items, pageNumber, pageSize, totalCount);
         }
-
-
     }
 }

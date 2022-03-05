@@ -3,7 +3,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using StoreAPI.Dtos;
 using StoreAPI.Services;
+using StoreAPI.Swagger;
 using Swashbuckle.AspNetCore.Annotations;
+using Swashbuckle.AspNetCore.Filters;
+using System.Collections.Generic;
 using System.Net.Mime;
 using System.Threading.Tasks;
 
@@ -17,6 +20,7 @@ namespace StoreAPI.Controllers
     [Route("api/v1/products")]
     [Consumes(MediaTypeNames.Application.Json)]
     [Produces(MediaTypeNames.Application.Json)]
+    [ProducesErrorResponseType(typeof(void))]
     public class ProductController : ControllerBase
     {
         private readonly IProductService _productService;
@@ -32,8 +36,9 @@ namespace StoreAPI.Controllers
         /// </summary>
         /// <remarks>Results are paginated. To configure pagination, include the query string parameters 'pageSize' and 'pageNumber'</remarks>
         /// <param name="parameters">Query string with the result filters and pagination values</param>
-        [SwaggerResponse(StatusCodes.Status200OK)]
+        [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(List<ProductReadDto>))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
+        [SwaggerResponseHeader(StatusCodes.Status200OK, "X-Pagination","string", Descriptions.XPaginationDescription)]
         [HttpGet]
         public async Task<IActionResult> GetAllProductsPaginated([FromQuery] ProductParametersDto parameters)
         {
@@ -66,9 +71,9 @@ namespace StoreAPI.Controllers
         /// </summary>
         /// <remarks>Create a new product and a new product stock for it, with the initial quantity informed</remarks>
         /// <param name="product">Product object to be add to store</param>
-        /// <param name="quantity">Product's initial quantity on stock</param>
+        /// <param name="quantity">Initial quantity of product in stock</param>
         [Authorize(Roles = "Administrator,Manager")]
-        [SwaggerResponse(StatusCodes.Status200OK, "Product created")]
+        [SwaggerResponse(StatusCodes.Status201Created, "Product created", typeof(ProductReadWithStockDto))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [HttpPost]
         public async Task<IActionResult> CreateProduct(ProductWriteDto product, int quantity)
@@ -99,7 +104,7 @@ namespace StoreAPI.Controllers
         /// <param name="id">Product's Id</param>
         /// <param name="productUpdate">Product's updated data</param>
         [Authorize(Roles = "Administrator,Manager")]
-        [SwaggerResponse(StatusCodes.Status200OK, "Product updated")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Product updated", typeof(ProductWriteDto))]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Product not found")]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [HttpPut("{id}", Name = nameof(UpdateProduct))]

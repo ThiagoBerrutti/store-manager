@@ -149,7 +149,7 @@ namespace StoreAPI.Persistence.Repositories
         {
             var hasher = new PasswordHasher<User>();
 
-            var userNames = new List<string> { 
+            var userNames = new List<string> {
                 AppConstants.Users.Admin.UserName,
                 AppConstants.Users.Manager.UserName,
                 AppConstants.Users.Stock.UserName,
@@ -179,31 +179,31 @@ namespace StoreAPI.Persistence.Repositories
             adminUser.FirstName = AppConstants.Users.Admin.FirstName;
             adminUser.LastName = AppConstants.Users.Admin.LastName;
             adminUser.PasswordHash = hasher.HashPassword(adminUser, AppConstants.Users.Admin.Password);
-            adminUser.DateOfbirth = DateTime.Parse(AppConstants.Users.Admin.DateOfBirth);
+            adminUser.DateOfBirth = DateTime.Parse(AppConstants.Users.Admin.DateOfBirth);
             await SetUserRoles(adminUser, adminRoles);
 
             managerUser.FirstName = AppConstants.Users.Manager.FirstName;
             managerUser.LastName = AppConstants.Users.Manager.LastName;
             managerUser.PasswordHash = hasher.HashPassword(managerUser, AppConstants.Users.Manager.Password);
-            managerUser.DateOfbirth = DateTime.Parse(AppConstants.Users.Manager.DateOfBirth);
+            managerUser.DateOfBirth = DateTime.Parse(AppConstants.Users.Manager.DateOfBirth);
             await SetUserRoles(managerUser, managerRoles);
 
             stockUser.FirstName = AppConstants.Users.Stock.FirstName;
             stockUser.LastName = AppConstants.Users.Stock.LastName;
             stockUser.PasswordHash = hasher.HashPassword(stockUser, AppConstants.Users.Stock.Password);
-            stockUser.DateOfbirth = DateTime.Parse(AppConstants.Users.Stock.DateOfBirth);
+            stockUser.DateOfBirth = DateTime.Parse(AppConstants.Users.Stock.DateOfBirth);
             await SetUserRoles(stockUser, stockRoles);
 
             sellerUser.FirstName = AppConstants.Users.Seller.FirstName;
             sellerUser.LastName = AppConstants.Users.Seller.LastName;
             sellerUser.PasswordHash = hasher.HashPassword(sellerUser, AppConstants.Users.Seller.Password);
-            sellerUser.DateOfbirth = DateTime.Parse(AppConstants.Users.Seller.DateOfBirth);
+            sellerUser.DateOfBirth = DateTime.Parse(AppConstants.Users.Seller.DateOfBirth);
             await SetUserRoles(sellerUser, sellerRoles);
 
             publicUser.FirstName = AppConstants.Users.Public.FirstName;
             publicUser.LastName = AppConstants.Users.Public.LastName;
             publicUser.PasswordHash = hasher.HashPassword(publicUser, AppConstants.Users.Public.Password);
-            publicUser.DateOfbirth = DateTime.Parse(AppConstants.Users.Public.DateOfBirth);
+            publicUser.DateOfBirth = DateTime.Parse(AppConstants.Users.Public.DateOfBirth);
             await SetUserRoles(publicUser, new List<Role>());
         }
 

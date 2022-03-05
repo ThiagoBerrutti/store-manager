@@ -43,10 +43,10 @@ namespace StoreAPI.Services
 
             Expression<Func<Product, bool>> expression =
                 p =>
-                    p.Price >= parameters.MinPrice &&
-                    p.Price <= parameters.MaxPrice &&
-                    p.Name.ToLower().Contains(parameters.Name.ToLower()) &&
-                    p.Description.ToLower().Contains(parameters.Description.ToLower()) &&
+                    (!parameters.MinPrice.HasValue || p.Price >= parameters.MinPrice) &&
+                    (!parameters.MaxPrice.HasValue || p.Price <= parameters.MaxPrice) &&
+                    (string.IsNullOrEmpty(parameters.Name) || p.Name.ToLower().Contains(parameters.Name.ToLower())) &&
+                    (string.IsNullOrEmpty(parameters.Name) || p.Description.ToLower().Contains(parameters.Description.ToLower())) &&
                     (!parameters.OnStock.HasValue || ((p.ProductStock.Quantity > 0) == parameters.OnStock.Value));
 
             var result = await _productRepository.GetAllWherePaginatedAsync(parameters.PageNumber, parameters.PageSize, expression);
@@ -57,7 +57,7 @@ namespace StoreAPI.Services
         }
 
 
-        public async Task<ProductWithStockDto> CreateAsync(ProductWriteDto productDto, int quantity)
+        public async Task<ProductReadWithStockDto> CreateAsync(ProductWriteDto productDto, int quantity)
         {
             if (quantity < 0 || quantity > int.MaxValue)
             {
@@ -80,7 +80,7 @@ namespace StoreAPI.Services
             _stockService.CreateProductStock(product, quantity);
             await _unitOfWork.CompleteAsync();
 
-            var productWithStockDto = _mapper.Map<ProductWithStockDto>(product);
+            var productWithStockDto = _mapper.Map<ProductReadWithStockDto>(product);
 
             return productWithStockDto;
         }

@@ -30,10 +30,23 @@ namespace StoreAPI.Validations
                 .GreaterThanOrEqualTo(u => u.MinDateOfBirth)
                     .WithMessage("MinDateOfBirth [{ComparisonValue:d}] cannot be later than MaxDateOfBirth [{PropertyValue:d}]");
 
-            RuleFor(u => u.RoleId)
-                .GreaterThanOrEqualTo(1).WithMessage("RoleId must be greater than or equal to {ComparisonValue}")
-                .When(u => u.RoleId > int.MinValue);
-                
+            RuleFor(u => u.MinAge)
+                .GreaterThanOrEqualTo(0)
+                    .WithMessage("{PropertyName} must be greater than or equal to {ComparisonValue}");
+
+            RuleFor(u => u.MaxAge)
+                .GreaterThanOrEqualTo(0)
+                    .WithMessage("{PropertyName} must be greater than or equal to {ComparisonValue}");
+
+            RuleFor(u => u.MaxAge)
+                .GreaterThanOrEqualTo(u => u.MinAge)
+                    .When(u => u.MinAge.HasValue)
+                    .WithMessage("{PropertyName} must be greater than or equal to {ComparisonValue}");
+
+
+
+            RuleForEach(u => u.RoleId)
+                .GreaterThanOrEqualTo(1).WithMessage("RoleId must be greater than or equal to {ComparisonValue}");                
         }
     }
 }

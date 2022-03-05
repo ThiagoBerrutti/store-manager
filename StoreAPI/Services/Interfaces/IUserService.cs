@@ -12,13 +12,13 @@ namespace StoreAPI.Services
 
         public Task<User> GetByUserNameAsync(string userName);
 
-        public Task<UserReadDto> GetCurrentUserDtoAsync();
+        public Task<UserDetailedReadDto> GetCurrentUserDtoAsync();
 
         public Task<UserDetailedReadDto> GetDtoByIdAsync(int id);
 
         public Task<User> GetByIdAsync(int id);
 
-        public Task<PaginatedList<RoleReadDto>> GetAllRolesFromUser(int id, QueryStringParameterDto parameters);
+        public Task<PaginatedList<RoleReadDto>> GetAllRolesFromUserPaginatedAsync(int id, QueryStringParameterDto parameters);
                 
         public Task<IdentityResult> CreateAsync(User user, string password);
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using StoreAPI.Helpers;
 using StoreAPI.Identity;
 using StoreAPI.Infra;
 using System;
@@ -33,7 +34,6 @@ namespace StoreAPI.Persistence.EntityConfigurations
                     builder => builder.HasKey(ur => new { ur.UserId, ur.RoleId })
                 );
 
-
             var hasher = new PasswordHasher<User>();
             builder.HasData(new List<User>
             {
@@ -47,7 +47,7 @@ namespace StoreAPI.Persistence.EntityConfigurations
                     LastName = AppConstants.Users.Admin.LastName,
                     PasswordHash = hasher.HashPassword(null,AppConstants.Users.Admin.Password),
                     SecurityStamp = Guid.NewGuid().ToString(),
-                    DateOfbirth = DateTime.Parse(AppConstants.Users.Admin.DateOfBirth)
+                    DateOfBirth = DateTime.Parse(AppConstants.Users.Admin.DateOfBirth)
                 },
 
                 //Manager
@@ -60,7 +60,7 @@ namespace StoreAPI.Persistence.EntityConfigurations
                     LastName = AppConstants.Users.Manager.LastName,
                     PasswordHash = hasher.HashPassword(null,AppConstants.Users.Manager.Password),
                     SecurityStamp = Guid.NewGuid().ToString(),
-                    DateOfbirth = DateTime.Parse(AppConstants.Users.Manager.DateOfBirth)
+                    DateOfBirth = DateTime.Parse(AppConstants.Users.Manager.DateOfBirth)
                 },
 
                 //Stock
@@ -73,7 +73,7 @@ namespace StoreAPI.Persistence.EntityConfigurations
                     LastName = AppConstants.Users.Stock.LastName,
                     PasswordHash = hasher.HashPassword(null,AppConstants.Users.Stock.Password),
                     SecurityStamp = Guid.NewGuid().ToString(),
-                    DateOfbirth = DateTime.Parse(AppConstants.Users.Stock.DateOfBirth)
+                    DateOfBirth = DateTime.Parse(AppConstants.Users.Stock.DateOfBirth)
                 },
 
                 //Seller
@@ -86,7 +86,7 @@ namespace StoreAPI.Persistence.EntityConfigurations
                     LastName = AppConstants.Users.Seller.LastName,
                     PasswordHash = hasher.HashPassword(null,AppConstants.Users.Seller.Password),
                     SecurityStamp = Guid.NewGuid().ToString(),
-                    DateOfbirth = DateTime.Parse(AppConstants.Users.Seller.DateOfBirth)
+                    DateOfBirth = DateTime.Parse(AppConstants.Users.Seller.DateOfBirth)
                 },
 
                 //Public
@@ -99,11 +99,8 @@ namespace StoreAPI.Persistence.EntityConfigurations
                     LastName = AppConstants.Users.Public.LastName,
                     PasswordHash = hasher.HashPassword(null,AppConstants.Users.Public.Password),
                     SecurityStamp = Guid.NewGuid().ToString(),
-                    DateOfbirth = DateTime.Parse(AppConstants.Users.Public.DateOfBirth)
+                    DateOfBirth = DateTime.Parse(AppConstants.Users.Public.DateOfBirth)
                 }
-
-
-
             }) ;
         }
     }

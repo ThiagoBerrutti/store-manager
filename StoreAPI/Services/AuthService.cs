@@ -10,7 +10,6 @@ using StoreAPI.Validations;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -41,7 +40,7 @@ namespace StoreAPI.Services
 
 
         public async Task<AuthResponse> RegisterAsync(UserRegisterDto userDto)
-        {           
+        {
             var validationResult = _userRegisterValidator.Validate(userDto);
             if (!validationResult.IsValid)
             {
@@ -147,9 +146,9 @@ namespace StoreAPI.Services
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();
-            
+
             SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
-            
+
             return tokenHandler.WriteToken(token);
         }
     }

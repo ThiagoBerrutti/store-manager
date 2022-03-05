@@ -23,6 +23,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace StoreAPI
@@ -86,6 +87,7 @@ namespace StoreAPI
                     o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
                     o.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
                     o.JsonSerializerOptions.Converters.Add(new CustomDateTimeConverter());
+                    o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 })
                 .SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0);
 
@@ -94,7 +96,7 @@ namespace StoreAPI
 
             //swagger
             services.AddSwaggerGen(options =>
-            {                
+            {
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
                 {
                     Name = "Authorization",
@@ -127,7 +129,7 @@ namespace StoreAPI
                     {
                         Title = "Store API",
                         Version = "v1",
-                        Description = "API demonstrativa de controle de estoque de empresa usando autenticação JWT",
+                        Description = "Demo API for inventory data management using JWT authentication",
                         Contact = new OpenApiContact
                         {
                             Name = "Thiago Berrutti",
@@ -145,8 +147,11 @@ namespace StoreAPI
 
                 options.OperationFilter<AddResponseHeadersFilter>();
 
-                //options.OperationFilter<SecurityRequirementsOperationFilter>();
+                //options.SchemaFilter<EnumTypesSchemaFilter>(xmlPath);
 
+                //options.OperationFilter<FromQueryModelFilter>();
+
+                //options.MapType<DateTime>(() => new OpenApiSchema { Type = "string", Format = "date" });
             });
 
 
@@ -158,6 +163,7 @@ namespace StoreAPI
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<ITestAccountService, TestAccountService>();
 
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IStockRepository, StockRepository>();
@@ -167,7 +173,7 @@ namespace StoreAPI
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             services.AddScoped<ProductSeed>();
-            services.AddTransient<ExceptionWithProblemDetails>();
+            //services.AddTransient<ExceptionWithProblemDetails>();
             services.AddTransient<ExceptionHandlerMiddleware>();
 
             services.AddHttpContextAccessor();
@@ -194,10 +200,11 @@ namespace StoreAPI
 
             app.UseSwaggerUI(opt =>
             {
-                opt.EnableDeepLinking();
-                opt.DisplayRequestDuration();
+                opt.EnablePersistAuthorization();
                 opt.ShowCommonExtensions();
                 opt.ShowExtensions();
+                opt.EnableDeepLinking();
+                //opt.DisplayRequestDuration();
                 opt.SwaggerEndpoint("/swagger/v1/swagger.json", "Store API");
             });
 

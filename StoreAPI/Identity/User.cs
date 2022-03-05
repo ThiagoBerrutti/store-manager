@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using StoreAPI.Helpers;
 using System;
 using System.Collections.Generic;
 
@@ -8,7 +9,7 @@ namespace StoreAPI.Identity
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        public DateTime DateOfbirth { get; set; }
+        public DateTime DateOfBirth { get; set; }
 
         public List<Role> Roles { get; set; } = new List<Role>();
         public List<UserRole> UserRoles { get; set; } = new List<UserRole>();
