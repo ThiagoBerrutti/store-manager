@@ -156,7 +156,7 @@ namespace StoreAPI.Services
         }
 
 
-        public async Task<UserReadDto> AddToRoleAsync(int id, int roleId)
+        public async Task<ServiceResponse<UserReadDto>> AddToRoleAsync(int id, int roleId)
         {
             AppCustomValidator.ValidateId(id, "User Id");
 
@@ -165,7 +165,14 @@ namespace StoreAPI.Services
             var adminRoleId = AppConstants.Roles.Admin.Id;
             var adminUserId = AppConstants.Users.Admin.Id;
             var adminRoleName = AppConstants.Roles.Admin.Name;
-            var role = await _roleService.GetByIdAsync(roleId);
+
+            var roleResponse = await _roleService.GetByIdAsync(roleId);
+            if (!roleResponse.Success)
+            {
+                return new ServiceResponse<UserReadDto>(roleResponse.Error);
+            }
+
+            var role = roleResponse.Data;
 
             if (roleId == adminRoleId)
             {
@@ -190,21 +197,24 @@ namespace StoreAPI.Services
                     .SetInstance(UserInstance(id));
             }
 
-            var result = await _userRepository.AddToRoleAsync(user, role.Name);
-            if (!result.Succeeded)
+            var addRoleResult = await _userRepository.AddToRoleAsync(user, role.Name);
+            if (!addRoleResult.Succeeded)
             {
-                throw new IdentityException(result)
+                throw new IdentityException(addRoleResult)
                     .SetTitle("Error adding role to user")
                     .SetDetail($"User not assigned to role '{role.Name}'. See '{ExceptionWithProblemDetails.ErrorKey}' property for more details")
                     .SetInstance(UserInstance(id));
             }
 
-            var userModel = _mapper.Map<UserReadDto>(user);
-            return userModel;
+            var dto = _mapper.Map<UserReadDto>(user);
+
+            var result = new ServiceResponse<UserReadDto>(dto);
+
+            return result;
         }
 
 
-        public async Task<UserReadDto> RemoveFromRoleAsync(int id, int roleId)
+        public async Task<ServiceResponse<UserReadDto>> RemoveFromRoleAsync(int id, int roleId)
         {
             AppCustomValidator.ValidateId(id, "User Id");
 
@@ -231,7 +241,14 @@ namespace StoreAPI.Services
                     .SetInstance(UserInstance(id));
             }
 
-            var roleToRemove = await _roleService.GetByIdAsync(roleId);
+            var roleResponse = await _roleService.GetByIdAsync(roleId);
+            if (!roleResponse.Success)
+            {
+                return new ServiceResponse<UserReadDto>(roleResponse.Error);
+            }
+
+            var roleToRemove = roleResponse.Data;
+
             var userToRemoveRole = await GetByIdAsync(id);
             var hasRole = userToRemoveRole.Roles.Contains(roleToRemove);
 
@@ -243,19 +260,21 @@ namespace StoreAPI.Services
                     .SetInstance(UserInstance(id));
             }
 
-            var result = await _userRepository.RemoveFromRoleAsync(userToRemoveRole, roleToRemove.Name);
-            if (!result.Succeeded)
+            var removeResult = await _userRepository.RemoveFromRoleAsync(userToRemoveRole, roleToRemove.Name);
+            if (!removeResult.Succeeded)
             {
-                throw new IdentityException(result)
+                throw new IdentityException(removeResult)
                     .SetTitle("Error removing role from user")
                     .SetDetail($"Error removing user from role '{roleToRemove.Name}'. See '{ExceptionWithProblemDetails.ErrorKey}' property for more details")
                     .SetInstance(UserInstance(id));
             }
 
             var userToReturn = await GetByIdAsync(id);
-            var userModel = _mapper.Map<UserReadDto>(userToReturn);
+            var dto = _mapper.Map<UserReadDto>(userToReturn);
 
-            return userModel;
+            var result = new ServiceResponse<UserReadDto>(dto);
+
+            return result;
         }
 
 

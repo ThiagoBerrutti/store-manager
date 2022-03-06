@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using StoreAPI.Domain;
 using StoreAPI.Dtos;
 using StoreAPI.Exceptions;
@@ -61,7 +62,7 @@ namespace StoreAPI.Services
         public async Task<ServiceResponse<ProductReadWithStockDto>> CreateAsync(ProductWriteDto productDto, int quantity)
         {
             var validationResult = AppCustomValidator.GreaterThanOrEqualTo(quantity, AppConstants.Validations.Stock.QuantityMinValue, "Quantity")
-                .AddValidationResult(_productValidator.Validate(productDto));
+                .AddValidationFailuresFrom(_productValidator.Validate(productDto));
             
             if (!validationResult.IsValid)
             {
@@ -85,13 +86,6 @@ namespace StoreAPI.Services
 
         public async Task<ServiceResponse<ProductReadDto>> GetDtoByIdAsync(int id)
         {
-            var validationResponse = AppCustomValidator.ValidateId(id, "Product Id");
-            if (!validationResponse.IsValid)
-            {
-                return new ServiceResponse<ProductReadDto>(validationResponse)
-                    .SetDetail($"Invalid product data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
-            }
-
             var response = await GetByIdAsync(id);
             if (!response.Success)
             {
@@ -106,12 +100,20 @@ namespace StoreAPI.Services
 
         public async Task<ServiceResponse<Product>> GetByIdAsync(int id)
         {
+            var validationResponse = AppCustomValidator.ValidateId(id, "Product Id");
+            if (!validationResponse.IsValid)
+            {
+                return new ServiceResponse<Product>(validationResponse)
+                    .SetDetail($"Invalid product data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
+            }
+
             var product = await _productRepository.GetByIdAsync(id);
             if (product == null)
             {
                 return new ServiceResponse<Product>()
                     .SetTitle("Product not found")
-                    .SetDetail($"Product [Id = {id}] not found.");
+                    .SetDetail($"Product [Id = {id}] not found.")
+                    .SetStatus(StatusCodes.Status404NotFound);
             }
 
             return new ServiceResponse<Product>(product);
@@ -121,7 +123,7 @@ namespace StoreAPI.Services
         public async Task<ServiceResponse<ProductReadDto>> UpdateAsync(int id, ProductWriteDto productDto)
         {
             var validationResult = AppCustomValidator.ValidateId(id, "Product Id");
-            validationResult.AddValidationResult(_productValidator.Validate(productDto));
+            validationResult.AddValidationFailuresFrom(_productValidator.Validate(productDto));
 
             if (!validationResult.IsValid)
             {

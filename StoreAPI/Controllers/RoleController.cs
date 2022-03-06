@@ -42,12 +42,18 @@ namespace StoreAPI.Controllers
         [HttpGet(Name = nameof(GetAllRolesPaginated))]
         public async Task<IActionResult> GetAllRolesPaginated([FromQuery] RoleParametersDto parameters)
         {
-            var result = await _roleService.GetAllDtoPaginatedAsync(parameters);
-            var metadata = result.GetMetadata();
+            var response = await _roleService.GetAllDtoPaginatedAsync(parameters);
+            if (!response.Success)
+            {
+                return BadRequest(response.Error);
+            }
+
+            var page = response.Data;
+            var metadata = page.GetMetadata();
 
             Response.Headers.Add("X-Pagination", metadata);
 
-            return Ok(result.Items);
+            return Ok(page.Items);
         }
 
 
@@ -61,8 +67,13 @@ namespace StoreAPI.Controllers
         [HttpGet("{id:int}", Name = nameof(GetRoleById))]
         public async Task<IActionResult> GetRoleById(int id)
         {
-            var employee = await _roleService.GetDtoByIdAsync(id);
-            return Ok(employee);
+            var response = await _roleService.GetDtoByIdAsync(id);
+            if (!response.Success)
+            {
+                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+            }
+
+            return Ok(response.Data);
         }
 
 
@@ -76,8 +87,13 @@ namespace StoreAPI.Controllers
         [HttpGet("{roleName}", Name = nameof(GetRoleByName))]
         public async Task<IActionResult> GetRoleByName(string roleName)
         {
-            var employee = await _roleService.GetDtoByNameAsync(roleName);
-            return Ok(employee);
+            var response = await _roleService.GetDtoByNameAsync(roleName);
+            if (!response.Success)
+            {
+                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+            }
+
+            return Ok(response.Data);
         }
 
         /// <summary>
@@ -92,12 +108,19 @@ namespace StoreAPI.Controllers
         [HttpGet("{id}/users", Name = nameof(GetUsersOnRole))]
         public async Task<IActionResult> GetUsersOnRole(int id, [FromQuery] QueryStringParameterDto parameters)
         {
-            var result = await _roleService.GetAllUsersOnRolePaginatedAsync(id, parameters);
-            var metadata = result.GetMetadata();
+            var response = await _roleService.GetAllUsersOnRolePaginatedAsync(id, parameters);
+            if (!response.Success)
+            {
+                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+            }
+
+            var page = response.Data;
+            var items = page.Items;
+            var metadata = page.GetMetadata();
 
             Response.Headers.Add("X-Pagination", metadata);
 
-            return Ok(result.Items);
+            return Ok(items);
         }
 
 
@@ -111,9 +134,15 @@ namespace StoreAPI.Controllers
         [HttpPost(Name = nameof(CreateRole))]
         public async Task<IActionResult> CreateRole(RoleWriteDto roleDto)
         {
-            var roleOnRepo = await _roleService.CreateAsync(roleDto);
+            var response = await _roleService.CreateAsync(roleDto);
+            if (!response.Success)
+            {
+                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+            }
 
-            return CreatedAtRoute(nameof(GetRoleById), new { roleOnRepo.Id }, roleOnRepo);
+            var role = response.Data;
+
+            return CreatedAtRoute(nameof(GetRoleById), new { role.Id }, role);
         }
 
 
@@ -128,7 +157,12 @@ namespace StoreAPI.Controllers
         [HttpDelete("{id}", Name = nameof(DeleteRole))]
         public async Task<IActionResult> DeleteRole(int id)
         {
-            await _roleService.DeleteAsync(id);
+            var response = await _roleService.DeleteAsync(id);
+            if (!response.Success)
+            {
+                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+            }
+
             return NoContent();
         }
     }

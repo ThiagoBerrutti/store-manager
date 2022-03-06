@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using StoreAPI.Dtos;
 using StoreAPI.Exceptions;
@@ -32,13 +33,12 @@ namespace StoreAPI.Services
         }
 
 
-        public async Task<PaginatedList<RoleReadDto>> GetAllDtoPaginatedAsync(RoleParametersDto parameters)
+        public async Task<ServiceResponse<PaginatedList<RoleReadDto>>> GetAllDtoPaginatedAsync(RoleParametersDto parameters)
         {
             var validationResult = _roleParametersValidator.Validate(parameters);
             if (!validationResult.IsValid)
             {
-                throw new AppValidationException(validationResult)
-                    .SetTitle("Validation error")
+                return new ServiceResponse<PaginatedList<RoleReadDto>>(validationResult)
                     .SetDetail($"Invalid query string parameters. Check '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
 
@@ -49,124 +49,181 @@ namespace StoreAPI.Services
                         .Where(id => parameters.UserId.Contains(id))
                         .Count() == parameters.UserId.Count();
 
-            var result = await _roleRepository.GetAllWherePaginatedAsync(parameters.PageNumber, parameters.PageSize, expression);
+            var page = await _roleRepository.GetAllWherePaginatedAsync(parameters.PageNumber, parameters.PageSize, expression);
+            var dto = _mapper.Map<PaginatedList<Role>, PaginatedList<RoleReadDto>>(page);
 
-            var dto = _mapper.Map<PaginatedList<Role>, PaginatedList<RoleReadDto>>(result);
+            var result = new ServiceResponse<PaginatedList<RoleReadDto>>(dto);
 
-            return dto;
+            return result;
         }
 
 
-        // return the entity without any validation or mapping
-        public async Task<Role> GetByIdAsync(int id)
+        public async Task<ServiceResponse<Role>> GetByIdAsync(int id)
         {
+            var validationResult = AppCustomValidator.ValidateId(id, "Role Id");
+            if (!validationResult.IsValid)
+            {
+                return new ServiceResponse<Role>(validationResult)
+                    .SetDetail($"Invalid role data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
+            }
+
             var role = await _roleRepository.GetByIdAsync(id);
             if (role == null)
             {
-                throw new IdentityNotFoundException()
+                return new ServiceResponse<Role>()
                     .SetTitle("Role not found")
-                    .SetDetail($"Role [Id = {id}] not found.");
+                    .SetDetail($"Role [Id = {id}] not found.")
+                    .SetStatus(StatusCodes.Status404NotFound);
             };
 
-            return role;
+            return new ServiceResponse<Role>(role);
         }
 
 
-        public async Task<RoleReadDto> GetDtoByIdAsync(int id)
+        public async Task<ServiceResponse<RoleReadDto>> GetDtoByIdAsync(int id)
         {
-            AppCustomValidator.ValidateId(id, "Role Id");
+            var roleResponse = await GetByIdAsync(id);
+            if (!roleResponse.Success)
+            {
+                return new ServiceResponse<RoleReadDto>(roleResponse.Error);
+            }
 
-            var role = await GetByIdAsync(id);
+            var role = roleResponse.Data;
             var roleDto = _mapper.Map<RoleReadDto>(role);
 
-            return roleDto;
+            var result = new ServiceResponse<RoleReadDto>(roleDto);
+
+            return result;
         }
 
 
-        public async Task<Role> GetByNameAsync(string name)
+        public async Task<ServiceResponse<Role>> GetByNameAsync(string name)
         {
-            AppCustomValidator.ValidateRoleName(name);
+            var validationResult = AppCustomValidator.ValidateRoleName(name);
+            if (!validationResult.IsValid)
+            {
+                return new ServiceResponse<Role>(validationResult)
+                    .SetDetail($"Invalid role data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
+            }
 
             var role = await _roleRepository.GetByNameAsync(name);
             if (role == null)
             {
-                throw new IdentityNotFoundException()
+                return new ServiceResponse<Role>()
                     .SetTitle("Role not found.")
-                    .SetDetail($"Role '{name}' not found.");
+                    .SetDetail($"Role '{name}' not found.")
+                    .SetStatus(StatusCodes.Status404NotFound);
             }
 
-            return role;
+            var result = new ServiceResponse<Role>(role);
+
+            return result;
         }
 
 
-        public async Task<RoleReadDto> GetDtoByNameAsync(string name)
+        public async Task<ServiceResponse<RoleReadDto>> GetDtoByNameAsync(string name)
         {
-            AppCustomValidator.ValidateRoleName(name);
+            var roleResponse = await GetByNameAsync(name);
+            if (!roleResponse.Success)
+            {
+                return new ServiceResponse<RoleReadDto>(roleResponse.Error);
+            }
 
-            var role = await GetByNameAsync(name);
+            var role = roleResponse.Data;
             var roleDto = _mapper.Map<RoleReadDto>(role);
 
-            return roleDto;
+            var result = new ServiceResponse<RoleReadDto>(roleDto);
+
+            return result;
         }
 
 
-        public async Task<RoleReadDto> CreateAsync(RoleWriteDto roleWriteDto)
+        public async Task<ServiceResponse<RoleReadDto>> CreateAsync(RoleWriteDto roleWriteDto)
         {
             var validationResult = _validator.Validate(roleWriteDto);
             if (!validationResult.IsValid)
             {
-                throw new AppValidationException(validationResult)
-                    .SetTitle("Validation error")
+                return new ServiceResponse<RoleReadDto>(validationResult)
                     .SetDetail($"Invalid role data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
 
             var role = _mapper.Map<Role>(roleWriteDto);
-            var result = await _roleRepository.CreateAsync(role);
-            if (!result.Succeeded)
+
+            var createResult = await _roleRepository.CreateAsync(role);
+            if (!createResult.Succeeded)
             {
-                throw new IdentityException(result)
+                return new ServiceResponse<RoleReadDto>()
+                    .SetErrors(createResult.Errors.Select(e => e.Description))
                     .SetTitle("Error creating role")
                     .SetDetail($"Role not created. See '{ExceptionWithProblemDetails.ErrorKey}' property for more details");
             }
 
             var appRole = await _roleRepository.GetByNameAsync(roleWriteDto.Name);
-            var roleReturn = _mapper.Map<RoleReadDto>(appRole);
+            var dto = _mapper.Map<RoleReadDto>(appRole);
 
-            return roleReturn;
+            var result = new ServiceResponse<RoleReadDto>(dto);
+
+            return result;
         }
 
 
-        public async Task DeleteAsync(int id)
+        public async Task<ServiceResponse<RoleReadDto>> DeleteAsync(int id)
         {
-            AppCustomValidator.ValidateId(id, "Role Id");
+            var validationResult = AppCustomValidator.ValidateId(id, "Role Id");
+            if (!validationResult.IsValid)
+            {
+                return new ServiceResponse<RoleReadDto>(validationResult)
+                    .SetDetail($"Invalid role data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
+            }
 
-            var role = await GetByIdAsync(id);
+            var roleResponse = await GetByIdAsync(id);
+            if (!roleResponse.Success)
+            {
+                return new ServiceResponse<RoleReadDto>(roleResponse.Error);
+            }
+
+            var role = roleResponse.Data;
+
             if (role.Name == AppConstants.Roles.Admin.Name ||
                 role.Name == AppConstants.Roles.Manager.Name ||
                 role.Name == AppConstants.Roles.Stock.Name ||
                 role.Name == AppConstants.Roles.Seller.Name)
             {
-                throw new AppException()
+                return new ServiceResponse<RoleReadDto>()
                     .SetTitle("Error deleting role")
                     .SetDetail($"Role '{role.Name}' cannot be deleted.")
                     .SetInstance(RoleInstance(id));
             }
 
-            var result = await _roleRepository.DeleteAsync(role);
-            if (!result.Succeeded)
+            var deleteResult = await _roleRepository.DeleteAsync(role);
+            if (!deleteResult.Succeeded)
             {
-                throw new IdentityException(result)
+                return new ServiceResponse<RoleReadDto>()
                     .SetTitle("Error deleting role")
+                    .SetErrors(deleteResult.Errors.Select(e => e.Description))
                     .SetDetail($"Role not deleted. See '{ExceptionWithProblemDetails.ErrorKey}' property for more details");
             }
+
+            return new ServiceResponse<RoleReadDto>();
         }
 
 
-        public async Task<PaginatedList<UserReadDto>> GetAllUsersOnRolePaginatedAsync(int id, QueryStringParameterDto parameters)
+        public async Task<ServiceResponse<PaginatedList<UserReadDto>>> GetAllUsersOnRolePaginatedAsync(int id, QueryStringParameterDto parameters)
         {
-            AppCustomValidator.ValidateId(id, "Role Id");
+            var validationResult = AppCustomValidator.ValidateId(id, "Role Id");
+            if (!validationResult.IsValid)
+            {
+                return new ServiceResponse<PaginatedList<UserReadDto>>(validationResult)
+                    .SetDetail($"Invalid role data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
+            }
 
-            var role = await _roleRepository.GetByIdAsync(id);
+            var roleResponse = await GetByIdAsync(id);
+            if (!roleResponse.Success)
+            {
+                return new ServiceResponse<PaginatedList<UserReadDto>>(roleResponse.Error);
+            }
+
+            var role = roleResponse.Data;
             var usersOnRole = role.Users;
 
             var paginatedUsers = usersOnRole
@@ -175,14 +232,15 @@ namespace StoreAPI.Services
                     .ToPaginatedList(parameters.PageNumber, parameters.PageSize);
 
             var usersReadDtoPaginated = _mapper.Map<PaginatedList<UserReadDto>>(paginatedUsers);
+            var result = new ServiceResponse<PaginatedList<UserReadDto>>(usersReadDtoPaginated);
 
-            return usersReadDtoPaginated;
+            return result;
         }
 
 
         private string RoleInstance(object id)
         {
             return _linkGenerator.GetPathByName(nameof(Controllers.RoleController.GetRoleById), new { id });
-        }        
+        }
     }
 }

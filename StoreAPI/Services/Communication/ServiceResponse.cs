@@ -1,4 +1,5 @@
 ﻿using FluentValidation.Results;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 
@@ -8,14 +9,13 @@ namespace StoreAPI.Services
     {
         public T Data { get; private set; }
         public bool Success { get; protected set; }
-        public ProblemDetails Error { get; protected set; }
+        public ProblemDetails Error { get; protected set; } = new ProblemDetails();
         public const string ErrorKey = "errors";
 
         public bool HasData => Data != null;
 
         public ServiceResponse()
         {
-            Error = new ProblemDetails();
             Success = true;
         }
 
@@ -32,8 +32,6 @@ namespace StoreAPI.Services
 
         public ServiceResponse(ValidationResult validationResult)
         {
-            Error = new ProblemDetails();
-
             if (!validationResult.IsValid)
             {
                 Success = false;
@@ -42,6 +40,17 @@ namespace StoreAPI.Services
                 SetStatus(400);
             }
         }
+
+
+        //public ServiceResponse(IdentityResult identityResult)
+        //{
+        //    if (!identityResult.Succeeded)
+        //    {
+        //        Success = false;
+        //        SetErrors(identityResult.Errors.Select(e => e.Description));
+        //        SetStatus(400);
+        //    }
+        //}
 
         public ServiceResponse(T data, ProblemDetails error) : this(error)
         {

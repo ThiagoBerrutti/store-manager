@@ -30,9 +30,9 @@ namespace StoreAPI.Services
 
         public Task ResetPasswordAsync(int id, string newPassword);
 
-        public Task<UserReadDto> AddToRoleAsync(int id, int userId);
+        public Task<ServiceResponse<UserReadDto>> AddToRoleAsync(int id, int userId);
 
-        public Task<UserReadDto> RemoveFromRoleAsync(int id, int userId);
+        public Task<ServiceResponse<UserReadDto>> RemoveFromRoleAsync(int id, int userId);
 
         public Task<IList<string>> GetRolesNamesAsync(string userName);
 

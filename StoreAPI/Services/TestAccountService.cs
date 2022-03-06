@@ -91,7 +91,7 @@ namespace StoreAPI.Services
             foreach (int id in roleId)
             {
                 var role = await _roleService.GetByIdAsync(id);
-                user.Roles.Add(role);
+                user.Roles.Add(role.Data);
             }
 
             await _unitOfWork.CompleteAsync();

@@ -85,7 +85,6 @@ namespace StoreAPI
                 {
                     o.InvalidModelStateResponseFactory = m => throw new ModelValidationException(m.ModelState);
                     o.SuppressMapClientErrors = true;
-
                 })
                 .AddJsonOptions(o =>
                 {

@@ -14,7 +14,7 @@
         /// <summary>
         /// Product description
         /// </summary>
-        /// <example>The crystal clear wine glasses are made from high quality glass. They allow for complete content visibility so you can showcase your delicious red and white wines for a quality presentation.</example>
+        /// <example>Crystal clear wine glasses are made from high quality glass</example>
         public string Description { get; set; }
 
         /// <summary>

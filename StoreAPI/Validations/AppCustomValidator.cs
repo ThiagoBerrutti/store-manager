@@ -1,5 +1,4 @@
 ﻿using FluentValidation.Results;
-using StoreAPI.Exceptions;
 using StoreAPI.Infra;
 
 namespace StoreAPI.Validations
@@ -12,7 +11,7 @@ namespace StoreAPI.Validations
         public static ValidationResult ValidateId(int id, string name = "Id")
         {
             var result = new ValidationResult()
-                            .AddValidationResult(GreaterThanOrEqualTo(id, 1, name));
+                            .AddValidationFailuresFrom(GreaterThanOrEqualTo(id, 1, name));
 
             return result;
         }
@@ -23,87 +22,115 @@ namespace StoreAPI.Validations
 
             if (value < comparingTo)
             {
-                result.Errors.Add(new ValidationFailure(valueName, $"{valueName} must be greater than or equal to {comparingTo}", value));
-
-                //throw new AppValidationException()
-                //.SetTitle("Validation error")
-                //.SetDetail($"{valueName} must be greater than or equal to {comparingTo}");
+                var failure = new ValidationFailure(valueName, $"{valueName} must be greater than or equal to {comparingTo}", value);
+                result.Errors.Add(failure);
             }
 
             return result;
         }
 
 
-        public static void GreaterThan(int value, int comparingTo, string valueName = "Value")
+        public static ValidationResult GreaterThan(int value, int comparingTo, string valueName = "Value")
         {
             var result = new ValidationResult();
 
             if (value <= comparingTo)
             {
-                throw new AppValidationException()
-                    .SetTitle("Validation error")
-                    .SetDetail($"{valueName} must be greater than {comparingTo}");
+                var failure = new ValidationFailure(valueName, $"{valueName} must be greater than {comparingTo}", value);
+                result.Errors.Add(failure);
             }
+
+            return result;
         }
 
 
-        public static void LessThan(int value, int comparingTo, string valueName = "Value")
+        public static ValidationResult LessThan(int value, int comparingTo, string valueName = "Value")
         {
+            var result = new ValidationResult();
+
             if (value > comparingTo)
             {
-                throw new AppValidationException()
-                    .SetTitle("Validation error")
-                    .SetDetail($"{valueName} must be less than {comparingTo}");
+                var failure = new ValidationFailure(valueName, $"{valueName} must be less than {comparingTo}", value);
+                result.Errors.Add(failure);
             }
+
+            return result;
         }
 
 
-        public static void InclusiveBetween(int value, int min, int max, string propertyName = "Value")
+        public static ValidationResult InclusiveBetween(int value, int min, int max, string propertyName = "Value")
         {
+            var result = new ValidationResult();
+
             if (value < min || value > max)
             {
-                throw new AppValidationException()
-                    .SetTitle("Validation error")
-                    .SetDetail($"{propertyName} must be between {min} and {max}");
+                var failure = new ValidationFailure(propertyName, $"{propertyName} must be between {min} and {max}", value);
+                result.Errors.Add(failure);
             }
+
+            return result;
         }
 
 
-        public static void NotNullOrEmpty(string text, string propertyName = "Property")
+        public static ValidationResult NotNullOrEmpty(string text, string propertyName = "Property")
         {
+            var result = new ValidationResult();
+
             if (string.IsNullOrEmpty(text))
             {
-                throw new AppValidationException()
-                    .SetTitle("Validation error")
-                    .SetDetail($"{propertyName} cannot be null or empty");
+                var failure = new ValidationFailure(propertyName, $"{propertyName} cannot be null or empty");
+                result.Errors.Add(failure);
             }
+
+
+            return result;
         }
 
 
-        public static void ValidatePassword(string password, string propertyName = "Password", bool nullable = false)
+        public static ValidationResult ValidatePassword(string password, string propertyName = "Password", bool nullable = false)
         {
+            var result = new ValidationResult();
+            var nullResult = new ValidationResult();
+
             if (!nullable)
             {
-                NotNullOrEmpty(password, propertyName);
+                nullResult = NotNullOrEmpty(password, propertyName);
             }
 
-            InclusiveBetween(password.Length, AppConstants.Validations.User.PasswordMinLength, AppConstants.Validations.User.PasswordMaxLength, propertyName);
+            var rangeResult = InclusiveBetween(password.Length, AppConstants.Validations.User.PasswordMinLength, AppConstants.Validations.User.PasswordMaxLength, propertyName);
+
+            result.AddValidationFailuresFrom(nullResult);
+            result.AddValidationFailuresFrom(rangeResult);
+
+            return result;
         }
 
 
-        public static void ValidateRoleName(string roleName, string propertyName = "Role Name")
+        public static ValidationResult ValidateRoleName(string roleName, string propertyName = "Role Name")
         {
-            NotNullOrEmpty(roleName, propertyName);
+            var result = new ValidationResult();
 
-            LessThan(roleName.Length, AppConstants.Validations.Role.NameMaxLength, propertyName);
+            var nullResult = NotNullOrEmpty(roleName, propertyName);
+            var lessResult = LessThan(roleName.Length, AppConstants.Validations.Role.NameMaxLength, propertyName);
+
+            result.AddValidationFailuresFrom(nullResult);
+            result.AddValidationFailuresFrom(lessResult);
+
+            return result;
         }
 
 
-        public static void ValidateUserName(string userName, string propertyName = "Username")
+        public static ValidationResult ValidateUserName(string userName, string propertyName = "Username")
         {
-            NotNullOrEmpty(userName, propertyName);
+            var result = new ValidationResult();
 
-            LessThan(userName.Length, AppConstants.Validations.Role.NameMaxLength, propertyName);
+            var nullResult = NotNullOrEmpty(userName, propertyName);
+            var lessResult = LessThan(userName.Length, AppConstants.Validations.Role.NameMaxLength, propertyName);
+
+            result.AddValidationFailuresFrom(nullResult);
+            result.AddValidationFailuresFrom(lessResult);
+
+            return result;
         }
     }
 }

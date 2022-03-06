@@ -10,7 +10,7 @@ namespace StoreAPI.Validations
         /// <param name="result">ValidationResult where the errors will be add</param>
         /// <param name="validationResult">Validation result that can be get the failures from</param>
         /// <returns></returns>
-        public static ValidationResult AddValidationResult(this ValidationResult result, ValidationResult validationResult)
+        public static ValidationResult AddValidationFailuresFrom(this ValidationResult result, ValidationResult validationResult)
         {
             if (!validationResult.IsValid)
             {

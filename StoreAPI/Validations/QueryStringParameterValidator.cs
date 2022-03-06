@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using StoreAPI.Dtos;
 using StoreAPI.Infra;
+using System;
 
 namespace StoreAPI.Validations
 {
