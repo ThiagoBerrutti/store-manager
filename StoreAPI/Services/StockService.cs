@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using StoreAPI.Domain;
 using StoreAPI.Dtos;
 using StoreAPI.Exceptions;
+using StoreAPI.Infra;
 using StoreAPI.Persistence.Repositories;
 using StoreAPI.Validations;
 using System;
@@ -47,9 +49,9 @@ namespace StoreAPI.Services
 
             Expression<Func<ProductStock, bool>> expression =
                 s =>
-                    s.Product.Name.ToLower().Contains(parameters.ProductName.ToLower()) &&
-                    s.Quantity >= parameters.QuantityMin &&
-                    s.Quantity <= parameters.QuantityMax;
+                    (string.IsNullOrEmpty(parameters.ProductName) || s.Product.Name.ToLower().Contains(parameters.ProductName.ToLower())) &&
+                    (!parameters.QuantityMin.HasValue || s.Quantity >= parameters.QuantityMin) &&
+                    (!parameters.QuantityMax.HasValue || s.Quantity <= parameters.QuantityMax);
 
 
             var result = await _stockRepository.GetAllWherePaginatedAsync(parameters.PageNumber, parameters.PageSize, expression);
@@ -59,7 +61,7 @@ namespace StoreAPI.Services
             return dto;
         }
 
-
+        // return the entity without any validation or mapping
         public async Task<ProductStock> GetByProductIdAsync(int productId)
         {
             var stock = await _stockRepository.GetByProductIdAsync(productId);
@@ -76,6 +78,8 @@ namespace StoreAPI.Services
 
         public async Task<ProductStockReadDto> GetDtoByProductIdAsync(int productId)
         {
+            AppCustomValidator.ValidateId(productId, "Product Id");
+
             var stock = await GetByProductIdAsync(productId);
             var dto = _mapper.Map<ProductStockReadDto>(stock);
 
@@ -99,15 +103,18 @@ namespace StoreAPI.Services
 
         public async Task<ProductStockReadDto> GetDtoByIdAsync(int id)
         {
+            AppCustomValidator.ValidateId(id, "Product stock Id");
+
             var stock = await GetByIdAsync(id);
             var dto = _mapper.Map<ProductStockReadDto>(stock);
 
             return dto;
         }
 
-
-        public ProductStock CreateProductStock(Product product, int startingQuantity = 0)
-        {
+        
+        // called by ProductService.Create only
+        public ProductStock CreateProductStock(Product product, int startingQuantity = AppConstants.Validations.Stock.QuantityMinValue)
+        {            
             var productStock = new ProductStock(product, startingQuantity);
             _stockRepository.Create(productStock);
 
@@ -117,6 +124,8 @@ namespace StoreAPI.Services
 
         public async Task<ProductStockReadDto> UpdateAsync(int id, ProductStockWriteDto dto)
         {
+            AppCustomValidator.ValidateId(id, "Product stock Id");
+
             var validationResult = _validator.Validate(dto);
             if (!validationResult.IsValid)
             {
@@ -139,20 +148,16 @@ namespace StoreAPI.Services
 
         public async Task<ProductStockReadDto> AddProductQuantityAsync(int id, int quantity)
         {
-            if (quantity <= 0)
-            {
-                throw new AppException()
-                    .SetTitle("Error adding quantity")
-                    .SetDetail("Quantity should be a positive number")
-                    .SetInstance(StockInstancePath(id));
-            }
+            AppCustomValidator.ValidateId(id, "Product stock Id");
+
+            AppCustomValidator.GreaterThan(quantity, 0, "Quantity");           
 
             var productStock = await GetByIdAsync(id);
             if (productStock.Quantity >= 0 && (productStock.Quantity + quantity < 0)) //overflow test
             {
                 throw new AppException()
-                    .SetTitle("Error adding quantity")
-                    .SetDetail("Stock's [Quantity] value will overflow")
+                    .SetTitle("Validation error")
+                    .SetDetail("Error adding to stock. Product stock quantity value will overflow. Contact the support")
                     .SetInstance(StockInstancePath(id));
             }
 
@@ -166,19 +171,15 @@ namespace StoreAPI.Services
 
         public async Task<ProductStockReadDto> RemoveProductQuantityAsync(int id, int quantity)
         {
-            if (quantity <= 0)
-            {
-                throw new AppException()
-                    .SetTitle("Error adding quantity")
-                    .SetDetail("Quantity should be a positive number")
-                    .SetInstance(StockInstancePath(id));
-            }
+            AppCustomValidator.ValidateId(id,"Product stock Id");
 
+            AppCustomValidator.GreaterThan(quantity, 0, "Quantity");
+            
             var productStock = await GetByIdAsync(id);
-            if (productStock.Quantity - quantity < 0)
+            if (productStock.Quantity - quantity < AppConstants.Validations.Stock.QuantityMinValue)
             {
                 throw new AppException()
-                    .SetTitle($"Not enough products available")
+                    .SetTitle($"")
                     .SetDetail($"Only [{productStock.Quantity}] on stock")
                     .SetInstance(StockInstancePath(id));
             }

@@ -81,15 +81,20 @@ namespace StoreAPI
                 options.Filters.Add(new AuthorizeFilter(policy));
                 options.ModelMetadataDetailsProviders.Add(new CustomMetadataProvider());
             })
-                .ConfigureApiBehaviorOptions(o => o.InvalidModelStateResponseFactory = m => throw new ModelValidationException(m.ModelState))
+                .ConfigureApiBehaviorOptions(o =>
+                {
+                    o.InvalidModelStateResponseFactory = m => throw new ModelValidationException(m.ModelState);
+                    o.SuppressMapClientErrors = true;
+
+                })
                 .AddJsonOptions(o =>
                 {
                     o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
                     o.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
                     o.JsonSerializerOptions.Converters.Add(new CustomDateTimeConverter());
                     o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-                })
-                .SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0);
+                });
+                
 
             //jwt token
             services.AddJwtAuthentication(Configuration);

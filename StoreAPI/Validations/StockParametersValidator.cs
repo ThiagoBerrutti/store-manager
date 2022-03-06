@@ -11,11 +11,12 @@ namespace StoreAPI.Validations
             Include(new QueryStringParameterValidator());
 
             RuleFor(s => s.ProductName)
-                .MaximumLength(AppConstants.Validations.Product.NameMaxLength).WithMessage("ProductName maximum lenght is {MaxLength} chars");
+                .MaximumLength(AppConstants.Validations.Product.NameMaxLength)
+                    .WithMessage("{PropertyName} maximum lenght is {MaxLength} chars");
 
             RuleFor(s => s.QuantityMin)
-                .InclusiveBetween(AppConstants.Validations.Stock.QuantityMinValue, AppConstants.Validations.Stock.QuantityMaxValue)
-                    .WithMessage("QuantityMin must be between {From} and {To}");
+                .GreaterThanOrEqualTo(AppConstants.Validations.Stock.QuantityMinValue)
+                    .WithMessage("{PropertyName} must be between {From} and {To}");
 
             RuleFor(s => s.QuantityMax)
                 .InclusiveBetween(AppConstants.Validations.Stock.QuantityMinValue, AppConstants.Validations.Stock.QuantityMaxValue)

@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using StoreAPI.Dtos;
+using StoreAPI.Enums;
 using StoreAPI.Helpers;
+using StoreAPI.Persistence.Repositories;
 using StoreAPI.TestUser;
 using System;
 using System.Collections.Generic;
@@ -13,10 +15,18 @@ namespace StoreAPI.Services
 {
     public class TestAccountService : ITestAccountService
     {
+        private readonly IAuthService _authService;
+        private readonly IUserService _userService;
+        private readonly IRoleService _roleService;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public TestAccountService(IMapper mapper)
+        public TestAccountService(IAuthService authService, IUserService userService, IRoleService roleService, IUnitOfWork unitOfWork, IMapper mapper)
         {
+            _authService = authService;
+            _userService = userService;
+            _roleService = roleService;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
 
@@ -66,6 +76,29 @@ namespace StoreAPI.Services
             var number = random.Next(int.MaxValue).ToString();
 
             return number;
+        }
+
+
+        public async Task<AuthResponse> RegisterTestAcc(List<RolesEnum> roleId)
+        {
+            var userDto = await GetRandomUser();
+
+            var registerResponse = await _authService.RegisterAsync(userDto);
+
+            var userId = registerResponse.User.Id;
+            var user = await _userService.GetByIdAsync(userId);
+
+            foreach (int id in roleId)
+            {
+                var role = await _roleService.GetByIdAsync(id);
+                user.Roles.Add(role);
+            }
+
+            await _unitOfWork.CompleteAsync();
+
+            var authenticateResponse = await _authService.AuthenticateAsync(userDto);
+
+            return authenticateResponse;
         }
     }
 }

@@ -53,16 +53,16 @@ namespace StoreAPI.Services
             var earliestDob = parameters.EarliestDateToSearch();
             var latestDob = parameters.LatestDateToSearch();
 
-            Expression<Func<User, bool>> expression =  
+            Expression<Func<User, bool>> expression =
                     u =>
                         //Name
                         (string.IsNullOrEmpty(parameters.Name) ||
                             u.FirstName.ToLower().Contains(parameters.Name.ToLower()) || u.LastName.ToLower().Contains(parameters.Name.ToLower())) &&
                         //MinDateOfBirth
-                        (!parameters.MinDateOfBirth.HasValue ||
+                        ((!parameters.MinDateOfBirth.HasValue && !parameters.MaxAge.HasValue) ||
                             u.DateOfBirth >= earliestDob) &&
                         //MaxDateOfBirth
-                        (!parameters.MaxDateOfBirth.HasValue ||
+                        ((!parameters.MaxDateOfBirth.HasValue && !parameters.MinAge.HasValue) ||
                             u.DateOfBirth <= latestDob) &&
                         //UserName
                         (string.IsNullOrEmpty(parameters.UserName) ||
@@ -71,17 +71,19 @@ namespace StoreAPI.Services
                         (u.Roles.Select(u => u.Id)
                                     .Where(id => parameters.RoleId.Contains(id))
                                     .Count() == parameters.RoleId.Count());
-           
+
             var result = await _userRepository.GetAllWherePaginatedAsync(parameters.PageNumber, parameters.PageSize, expression);
 
             var dto = _mapper.Map<PaginatedList<User>, PaginatedList<UserReadDto>>(result);
 
             return dto;
         }
-        
+
 
         public async Task<User> GetByUserNameAsync(string userName)
         {
+            //AppCustomValidator.ValidateUserName(userName);
+           
             var user = await _userRepository.GetByUserNameAsync(userName);
             if (user == null)
             {
@@ -95,7 +97,7 @@ namespace StoreAPI.Services
 
 
         public async Task<User> GetByIdAsync(int id)
-        {
+        {            
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null)
             {
@@ -110,6 +112,8 @@ namespace StoreAPI.Services
 
         public async Task<UserDetailedReadDto> GetDtoByIdAsync(int id)
         {
+            AppCustomValidator.ValidateId(id, "User Id");
+
             var user = await GetByIdAsync(id);
             var userViewModel = _mapper.Map<UserDetailedReadDto>(user);
 
@@ -119,6 +123,8 @@ namespace StoreAPI.Services
 
         public async Task<PaginatedList<RoleReadDto>> GetAllRolesFromUserPaginatedAsync(int id, QueryStringParameterDto parameters)
         {
+            AppCustomValidator.ValidateId(id, "User Id");
+
             var user = await _userRepository.GetByIdAsync(id);
             var rolesFromUser = user.Roles;
 
@@ -152,6 +158,10 @@ namespace StoreAPI.Services
 
         public async Task<UserReadDto> AddToRoleAsync(int id, int roleId)
         {
+            AppCustomValidator.ValidateId(id, "User Id");
+
+            AppCustomValidator.ValidateId(roleId, "Role Id");
+            
             var adminRoleId = AppConstants.Roles.Admin.Id;
             var adminUserId = AppConstants.Users.Admin.Id;
             var adminRoleName = AppConstants.Roles.Admin.Name;
@@ -196,6 +206,10 @@ namespace StoreAPI.Services
 
         public async Task<UserReadDto> RemoveFromRoleAsync(int id, int roleId)
         {
+            AppCustomValidator.ValidateId(id, "User Id");
+
+            AppCustomValidator.ValidateId(roleId, "Role Id");
+
             var adminUserId = AppConstants.Users.Admin.Id;
             var adminRoleName = AppConstants.Roles.Admin.Name;
             var adminRoleId = AppConstants.Roles.Admin.Id;
@@ -262,8 +276,10 @@ namespace StoreAPI.Services
         }
 
 
-        public async Task<UserReadDto> UpdateUserAsync(string userName, UserUpdateDto userUpdateDto)
+        public async Task<UserReadDto> UpdateUserAsync(int id, UserUpdateDto userUpdateDto)
         {
+            AppCustomValidator.ValidateId(id, "User Id");
+
             var validationResult = _userUpdateValidator.Validate(userUpdateDto);
             if (!validationResult.IsValid)
             {
@@ -271,7 +287,7 @@ namespace StoreAPI.Services
                     .SetTitle("Validation error")
                     .SetDetail($"Invalid user data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
-            var user = await GetByUserNameAsync(userName);
+            var user = await GetByIdAsync(id);
             _mapper.Map<UserUpdateDto, User>(userUpdateDto, user);
 
             var result = await _userRepository.UpdateUserAsync(user);
@@ -283,7 +299,7 @@ namespace StoreAPI.Services
                     .SetInstance(UserInstance(user.Id));
             }
 
-            var updatedUser = await GetByUserNameAsync(userName);
+            var updatedUser = await GetByIdAsync(id);
             var userToResult = _mapper.Map<UserReadDto>(updatedUser);
 
             return userToResult;
@@ -292,6 +308,8 @@ namespace StoreAPI.Services
 
         public async Task ChangePasswordAsync(int id, ChangePasswordDto changePasswordDto)
         {
+            AppCustomValidator.ValidateId(id, "User Id");
+
             var validationResult = _changePasswordValidator.Validate(changePasswordDto);
             if (!validationResult.IsValid)
             {
@@ -313,7 +331,7 @@ namespace StoreAPI.Services
             }
         }
 
-                
+
         public async Task ChangeCurrentUserPasswordAsync(ChangePasswordDto changePasswordDto)
         {
             var currentUser = await GetCurrentUserAsync();
@@ -340,6 +358,10 @@ namespace StoreAPI.Services
 
         public async Task ResetPasswordAsync(int id, string newPassword)
         {
+            AppCustomValidator.ValidateId(id, "User Id");
+
+            AppCustomValidator.ValidatePassword(newPassword, "NewPassword", true);
+
             var user = await GetByIdAsync(id);
             if (newPassword == "")
             {

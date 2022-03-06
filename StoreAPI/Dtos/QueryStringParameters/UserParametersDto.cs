@@ -77,21 +77,50 @@ namespace StoreAPI.Dtos
         public string Name { get; set; } = "";
 
 
+        // Search only for the latest date between MaxDateOfBirth and the date of the MaxAge
         public DateTime? LatestDateToSearch()
         {
-            var minAgeDoB = DateTime.UtcNow.AddYears(-MinAge.GetValueOrDefault());
-            var result = MinAge.HasValue && (MaxDateOfBirth > minAgeDoB) ? MaxDateOfBirth : minAgeDoB;
+            if (MinAge.HasValue)
+            {
+                var maximumDateByAge = DateTime.UtcNow.AddYears(-MinAge.Value);
+                if (MaxDateOfBirth.HasValue && (MaxDateOfBirth > maximumDateByAge))
+                {
+                    return MaxDateOfBirth;
+                }
 
-            return result;
+                return maximumDateByAge;
+            }
+
+            if (MaxDateOfBirth.HasValue)
+            {
+                return MaxDateOfBirth;
+            }
+
+            return DateTime.UtcNow;
         }
 
-
+        // Returns the earliest date between MinDateOfBirth and the earliest date possible where the user Age = MaxAge (a day from entering another age)
         public DateTime? EarliestDateToSearch()
         {
-            var minAgeDoB = DateTime.UtcNow.AddYears(-MaxAge.GetValueOrDefault());
-            var result = MinAge.HasValue && (MinDateOfBirth < minAgeDoB) ? MinDateOfBirth : minAgeDoB;
+            if (MaxAge.HasValue)
+            {
+                var minimumDateByAge = DateTime.UtcNow
+                                                .AddYears(-(MaxAge.Value + 1))  // to include the year before completing another birthday
+                                                .AddDays(1);                    
+                if (MinDateOfBirth.HasValue && (MinDateOfBirth < minimumDateByAge))
+                {
+                    return MinDateOfBirth;
+                }
 
-            return result;
+                return minimumDateByAge;
+            }
+
+            if (MinDateOfBirth.HasValue)
+            {
+                return MinDateOfBirth;
+            }
+
+            return new DateTime();
         }
     }
 }

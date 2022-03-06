@@ -8,13 +8,13 @@
         /// <summary>
         /// Role Id
         /// </summary>
-        /// <example>12</example>
+        /// <example>4</example>
         public int Id { get; set; }
 
         /// <summary>
         /// Role name
         /// </summary>
-        /// <example>seller</example>
+        /// <example>Seller</example>
         public string Name { get; set; }
     }
 }

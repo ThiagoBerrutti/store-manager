@@ -19,7 +19,5 @@ namespace StoreAPI.Exceptions
         public AppValidationException(ProblemDetails problemDetails) : base(problemDetails)
         {
         }
-
-
     }
 }

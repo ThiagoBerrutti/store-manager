@@ -2,6 +2,7 @@
 using StoreAPI.Domain;
 using StoreAPI.Dtos;
 using StoreAPI.Exceptions;
+using StoreAPI.Infra;
 using StoreAPI.Persistence.Repositories;
 using StoreAPI.Validations;
 using System;
@@ -59,12 +60,7 @@ namespace StoreAPI.Services
 
         public async Task<ProductReadWithStockDto> CreateAsync(ProductWriteDto productDto, int quantity)
         {
-            if (quantity < 0 || quantity > int.MaxValue)
-            {
-                throw new AppException()
-                    .SetTitle("Error creating product")
-                    .SetDetail("Quantity should be greater than or equal to zero");
-            }
+            AppCustomValidator.GreaterThanOrEqualTo(quantity, AppConstants.Validations.Stock.QuantityMinValue, "Quantity");
 
             var validationResult = _productValidator.Validate(productDto);
             if (!validationResult.IsValid)
@@ -86,10 +82,10 @@ namespace StoreAPI.Services
         }
 
 
-
-
         public async Task<ProductReadDto> GetDtoByIdAsync(int id)
         {
+            AppCustomValidator.ValidateId(id, "Product Id");
+
             var product = await GetByIdAsync(id);
             var dto = _mapper.Map<ProductReadDto>(product);
 
@@ -99,6 +95,8 @@ namespace StoreAPI.Services
 
         public async Task<Product> GetByIdAsync(int id)
         {
+            AppCustomValidator.ValidateId(id, "Product Id");
+
             var product = await _productRepository.GetByIdAsync(id);
             if (product == null)
             {
@@ -113,6 +111,8 @@ namespace StoreAPI.Services
 
         public async Task<ProductReadDto> UpdateAsync(int id, ProductWriteDto productDto)
         {
+            AppCustomValidator.ValidateId(id, "Product Id");
+
             var validationResult = _productValidator.Validate(productDto);
             if (!validationResult.IsValid)
             {
@@ -134,6 +134,8 @@ namespace StoreAPI.Services
 
         public async Task DeleteAsync(int id)
         {
+            AppCustomValidator.ValidateId(id, "Product Id");
+
             var product = await GetByIdAsync(id);
             _productRepository.Delete(product);
 

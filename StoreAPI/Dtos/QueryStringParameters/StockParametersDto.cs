@@ -15,11 +15,11 @@ namespace StoreAPI.Dtos
         /// <summary>
         /// Returns only product stocks with quantity greater than or equal to this
         /// </summary>
-        public int QuantityMin { get; set; } = AppConstants.Validations.Stock.QuantityMinValue;
+        public int? QuantityMin { get; set; }
 
         /// <summary>
         /// Returns only product stocks with quantity less than or equal to this
         /// </summary>
-        public int QuantityMax { get; set; } = AppConstants.Validations.Stock.QuantityMaxValue;
+        public int? QuantityMax { get; set; }
     }
 }

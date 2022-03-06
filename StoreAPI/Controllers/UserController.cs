@@ -39,8 +39,8 @@ namespace StoreAPI.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(List<UserReadDto>))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponseHeader(StatusCodes.Status200OK, "X-Pagination", "string", Descriptions.XPaginationDescription)]
-        [HttpGet]
-        public async Task<IActionResult> GetAllUsers([FromQuery] UserParametersDto parameters)
+        [HttpGet(Name = nameof(GetAllUsersPaginated))]
+        public async Task<IActionResult> GetAllUsersPaginated([FromQuery] UserParametersDto parameters)
         {
             var result = await _userService.GetAllDtoPaginatedAsync(parameters);
             var metadata = result.GetMetadata();
@@ -73,7 +73,7 @@ namespace StoreAPI.Controllers
         /// Returns current user
         /// </summary>
         [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(UserDetailedReadDto))]
-        [HttpGet("current")]
+        [HttpGet("current", Name = nameof(GetCurrentUser))]
         public async Task<IActionResult> GetCurrentUser()
         {
             var result = await _userService.GetCurrentUserDtoAsync();
@@ -93,7 +93,7 @@ namespace StoreAPI.Controllers
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status404NotFound, "User not found")]
         [SwaggerResponseHeader(StatusCodes.Status200OK, "X-Pagination", "string", Descriptions.XPaginationDescription)]
-        [HttpGet("{id}/roles")]
+        [HttpGet("{id}/roles", Name = nameof(GetRolesFromUser))]
         public async Task<IActionResult> GetRolesFromUser(int id, [FromQuery] QueryStringParameterDto parameters)
         {
             var result = await _userService.GetAllRolesFromUserPaginatedAsync(id, parameters);
@@ -108,25 +108,16 @@ namespace StoreAPI.Controllers
         /// <summary>
         /// Updates an existing user
         /// </summary>
-        /// <param name="userName">User userName</param>
+        /// <param name="id">User ID</param>
         /// <param name="userUpdate">User object with updated data</param>
         [Authorize(Roles = "Administrator,Manager")]
         [SwaggerResponse(StatusCodes.Status200OK, "User updated", typeof(UserReadDto))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status404NotFound, "User not found")]
-        [HttpPut]
-        public async Task<IActionResult> UpdateUser(string userName, UserUpdateDto userUpdate)
+        [HttpPut(Name = nameof(UpdateUser))]
+        public async Task<IActionResult> UpdateUser(int id, UserUpdateDto userUpdate)
         {
-            //var currentUserClaims = HttpContext.User;
-            //var currentUserName = currentUserClaims.FindFirst(ClaimTypes.Name).Value;
-            //var isCurrentUser = currentUserName.ToUpper() == userName.ToUpper();
-
-            //if (!(currentUserClaims.IsInRole("Administrator") || currentUserClaims.IsInRole("Manager") || isCurrentUser))
-            //{
-            //    return new UnauthorizedResult();
-            //}
-
-            var result = await _userService.UpdateUserAsync(userName, userUpdate);
+            var result = await _userService.UpdateUserAsync(id, userUpdate);
 
             return Ok(result);
         }
@@ -135,15 +126,14 @@ namespace StoreAPI.Controllers
         /// Updates the current user
         /// </summary>
         /// <param name="userUpdate">User object with updated data</param>
-        /// <returns></returns>
         [SwaggerResponse(StatusCodes.Status200OK, "User updated", typeof(UserReadDto))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status404NotFound, "User not found")]
-        [HttpPut("current")]
+        [HttpPut("current", Name = nameof(UpdateCurrentUser))]
         public async Task<IActionResult> UpdateCurrentUser(UserUpdateDto userUpdate)
         {
             var currentUser = await _userService.GetCurrentUserDtoAsync();
-            var currentUserUpdated = await _userService.UpdateUserAsync(currentUser.UserName, userUpdate);
+            var currentUserUpdated = await _userService.UpdateUserAsync(currentUser.Id, userUpdate);
 
             return Ok(currentUserUpdated);
         }
@@ -160,7 +150,7 @@ namespace StoreAPI.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, "Password changed")]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status404NotFound, "User not found")]
-        [HttpPut("{id}/password")]
+        [HttpPut("{id}/password", Name = nameof(ChangePassword))]
         public async Task<IActionResult> ChangePassword(int id, ChangePasswordDto passwords)
         {
             await _userService.ChangePasswordAsync(id, passwords);
@@ -175,9 +165,9 @@ namespace StoreAPI.Controllers
         /// </summary>
         /// <remarks>Change your own password</remarks>
         /// <param name="passwords">Passwords object with old and new values</param>
-        [HttpPut("current/password")]
         [SwaggerResponse(StatusCodes.Status200OK, "Password changed")]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
+        [HttpPut("current/password", Name = nameof(ChangeCurrentUserPassword))]
         public async Task<IActionResult> ChangeCurrentUserPassword(ChangePasswordDto passwords)
         {
             await _userService.ChangeCurrentUserPasswordAsync(passwords);
@@ -187,11 +177,11 @@ namespace StoreAPI.Controllers
 
 
         /// <summary>
-        /// Forcefully resets an user's password
+        /// Forcefully resets an user password
         /// </summary>
         /// <remarks>When an user forgot a password and can't recover it, an admin can reset it</remarks>
         /// <param example="123" name="id">User Id</param>
-        /// <param name="newPassword">If included, sets the new user password. If ignored, sets to the same as the username.
+        /// <param name="newPassword">If included, sets the new user password. If ignored, sets the username as password.
         /// Example:
         /// <details>
         /// <summary>Show examples</summary>
@@ -217,10 +207,10 @@ namespace StoreAPI.Controllers
         /// </details>
         /// </param>
         [Authorize(Roles = "Administrator")]
-        [HttpDelete("{id}/password")]
         [SwaggerResponse(StatusCodes.Status200OK, "Password reset")]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status404NotFound, "User not found")]
+        [HttpDelete("{id}/password", Name = nameof(ResetPassword))]
         public async Task<IActionResult> ResetPassword(int id, [FromBody] string newPassword = "")
         {
             await _userService.ResetPasswordAsync(id, newPassword);
@@ -238,7 +228,7 @@ namespace StoreAPI.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, "User added to role", typeof(UserReadDto))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status404NotFound, "User or role not found")]
-        [HttpPut("{id}/roles/add/{roleId}")]
+        [HttpPut("{id}/roles/add/{roleId}", Name = nameof(AddUserToRole))]
         public async Task<IActionResult> AddUserToRole(int id, int roleId)
         {
             var user = await _userService.AddToRoleAsync(id, roleId);
@@ -255,7 +245,7 @@ namespace StoreAPI.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, "User removed from role", typeof(UserReadDto))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status404NotFound, "User or role not found")]
-        [HttpPut("{id}/roles/remove/{roleId}")]
+        [HttpPut("{id}/roles/remove/{roleId}", Name = nameof(RemoveFromRole))]
         public async Task<IActionResult> RemoveFromRole(int id, int roleId)
         {
             var user = await _userService.RemoveFromRoleAsync(id, roleId);

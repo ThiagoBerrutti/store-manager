@@ -39,7 +39,7 @@ namespace StoreAPI.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(List<RoleReadDto>))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponseHeader(StatusCodes.Status200OK, "X-Pagination", "string", Descriptions.XPaginationDescription)]
-        [HttpGet]
+        [HttpGet(Name = nameof(GetAllRolesPaginated))]
         public async Task<IActionResult> GetAllRolesPaginated([FromQuery] RoleParametersDto parameters)
         {
             var result = await _roleService.GetAllDtoPaginatedAsync(parameters);
@@ -89,7 +89,7 @@ namespace StoreAPI.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(List<RoleReadDto>))]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Role not found")]
         [SwaggerResponseHeader(StatusCodes.Status200OK, "X-Pagination", "string", Descriptions.XPaginationDescription)]
-        [HttpGet("{id}/users")]
+        [HttpGet("{id}/users", Name = nameof(GetUsersOnRole))]
         public async Task<IActionResult> GetUsersOnRole(int id, [FromQuery] QueryStringParameterDto parameters)
         {
             var result = await _roleService.GetAllUsersOnRolePaginatedAsync(id, parameters);
@@ -108,7 +108,7 @@ namespace StoreAPI.Controllers
         /// <param name="roleDto">Role object to be created</param>
         [SwaggerResponse(StatusCodes.Status201Created, "Role created", typeof(RoleReadDto))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
-        [HttpPost]
+        [HttpPost(Name = nameof(CreateRole))]
         public async Task<IActionResult> CreateRole(RoleWriteDto roleDto)
         {
             var roleOnRepo = await _roleService.CreateAsync(roleDto);
@@ -125,7 +125,7 @@ namespace StoreAPI.Controllers
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Role not found")]
         [Authorize(Roles = "Administrator")]
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}", Name = nameof(DeleteRole))]
         public async Task<IActionResult> DeleteRole(int id)
         {
             await _roleService.DeleteAsync(id);

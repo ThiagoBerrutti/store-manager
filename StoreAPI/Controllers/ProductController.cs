@@ -20,7 +20,7 @@ namespace StoreAPI.Controllers
     [Route("api/v1/products")]
     [Consumes(MediaTypeNames.Application.Json)]
     [Produces(MediaTypeNames.Application.Json)]
-    [ProducesErrorResponseType(typeof(void))]
+    //[ProducesErrorResponseType(typeof(void))]
     public class ProductController : ControllerBase
     {
         private readonly IProductService _productService;
@@ -39,7 +39,7 @@ namespace StoreAPI.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(List<ProductReadDto>))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponseHeader(StatusCodes.Status200OK, "X-Pagination","string", Descriptions.XPaginationDescription)]
-        [HttpGet]
+        [HttpGet(Name = nameof(GetAllProductsPaginated))]
         public async Task<IActionResult> GetAllProductsPaginated([FromQuery] ProductParametersDto parameters)
         {
             var result = await _productService.GetAllDtoPaginatedAsync(parameters);
@@ -75,7 +75,7 @@ namespace StoreAPI.Controllers
         [Authorize(Roles = "Administrator,Manager")]
         [SwaggerResponse(StatusCodes.Status201Created, "Product created", typeof(ProductReadWithStockDto))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
-        [HttpPost]
+        [HttpPost(Name = nameof(CreateProduct))]
         public async Task<IActionResult> CreateProduct(ProductWriteDto product, int quantity)
         {
             var productCreated = await _productService.CreateAsync(product, quantity);

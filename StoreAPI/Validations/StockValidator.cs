@@ -11,8 +11,8 @@ namespace StoreAPI.Validations
             RuleFor(s => s.Quantity)
                 .NotNull()
                     .WithMessage("Quantity cannot be null")
-                .InclusiveBetween(AppConstants.Validations.Stock.QuantityMinValue, AppConstants.Validations.Stock.QuantityMaxValue)
-                    .WithMessage("Quantity must be between {From} and {To}");
+                .GreaterThanOrEqualTo(AppConstants.Validations.Stock.QuantityMinValue)
+                    .WithMessage("Quantity must be greater than or equal to {ComparisonValue}");
         }
     }
 }

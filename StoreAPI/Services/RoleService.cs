@@ -57,6 +57,7 @@ namespace StoreAPI.Services
         }
 
 
+        // return the entity without any validation or mapping
         public async Task<Role> GetByIdAsync(int id)
         {
             var role = await _roleRepository.GetByIdAsync(id);
@@ -73,6 +74,8 @@ namespace StoreAPI.Services
 
         public async Task<RoleReadDto> GetDtoByIdAsync(int id)
         {
+            AppCustomValidator.ValidateId(id, "Role Id");
+
             var role = await GetByIdAsync(id);
             var roleDto = _mapper.Map<RoleReadDto>(role);
 
@@ -82,6 +85,8 @@ namespace StoreAPI.Services
 
         public async Task<Role> GetByNameAsync(string name)
         {
+            AppCustomValidator.ValidateRoleName(name);
+
             var role = await _roleRepository.GetByNameAsync(name);
             if (role == null)
             {
@@ -96,6 +101,8 @@ namespace StoreAPI.Services
 
         public async Task<RoleReadDto> GetDtoByNameAsync(string name)
         {
+            AppCustomValidator.ValidateRoleName(name);
+
             var role = await GetByNameAsync(name);
             var roleDto = _mapper.Map<RoleReadDto>(role);
 
@@ -131,6 +138,8 @@ namespace StoreAPI.Services
 
         public async Task DeleteAsync(int id)
         {
+            AppCustomValidator.ValidateId(id, "Role Id");
+
             var role = await GetByIdAsync(id);
             if (role.Name == AppConstants.Roles.Admin.Name ||
                 role.Name == AppConstants.Roles.Manager.Name ||
@@ -155,6 +164,8 @@ namespace StoreAPI.Services
 
         public async Task<PaginatedList<UserReadDto>> GetAllUsersOnRolePaginatedAsync(int id, QueryStringParameterDto parameters)
         {
+            AppCustomValidator.ValidateId(id, "Role Id");
+
             var role = await _roleRepository.GetByIdAsync(id);
             var usersOnRole = role.Users;
 
@@ -172,6 +183,6 @@ namespace StoreAPI.Services
         private string RoleInstance(object id)
         {
             return _linkGenerator.GetPathByName(nameof(Controllers.RoleController.GetRoleById), new { id });
-        }
+        }        
     }
 }

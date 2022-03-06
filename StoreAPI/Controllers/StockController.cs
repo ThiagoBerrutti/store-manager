@@ -38,7 +38,7 @@ namespace StoreAPI.Controllers
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(ProductStockReadDto))]
         [SwaggerResponseHeader(StatusCodes.Status200OK, "X-Pagination", "string", Descriptions.XPaginationDescription)]
-        [HttpGet]
+        [HttpGet(Name = nameof(GetAllStocksPaginated))]
         public async Task<IActionResult> GetAllStocksPaginated([FromQuery] StockParametersDto parameters)
         {
             var result = await _stockService.GetAllDtoPaginatedAsync(parameters);
@@ -58,7 +58,7 @@ namespace StoreAPI.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, "Product stock found", typeof(ProductStockReadDto))]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Product stock not found")]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
-        [HttpGet("product/{productId}")]
+        [HttpGet("product/{productId}", Name = nameof(GetStockByProductId))]
         public async Task<IActionResult> GetStockByProductId(int productId)
         {
             var productStock = await _stockService.GetDtoByProductIdAsync(productId);
@@ -93,7 +93,7 @@ namespace StoreAPI.Controllers
         [SwaggerResponse(StatusCodes.Status404NotFound, "Stock not found")]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [Authorize(Roles = "Administrator,Manager")]
-        [HttpPut("{id}")]
+        [HttpPut("{id}", Name = nameof(UpdateStock))]
         public async Task<IActionResult> UpdateStock(int id, [FromBody] ProductStockWriteDto stockUpdate)
         {
             var productStockDto = await _stockService.UpdateAsync(id, stockUpdate);
@@ -112,7 +112,7 @@ namespace StoreAPI.Controllers
         [SwaggerResponse(StatusCodes.Status404NotFound, "Product stock not found")]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [Authorize(Roles = "Administrator,Manager,Stock")]
-        [HttpPut("{id}/add/{quantity}")]
+        [HttpPut("{id}/add/{quantity}", Name = nameof(AddQuantityToStock))]
         public async Task<IActionResult> AddQuantityToStock(int id, int quantity)
         {
             var productStockDto = await _stockService.AddProductQuantityAsync(id, quantity);
@@ -122,15 +122,15 @@ namespace StoreAPI.Controllers
 
 
         /// <summary>
-        /// Adds quantity to a product stock
+        /// Removes quantity to a product stock
         /// </summary>
         /// <remarks>Use this on daily stock movement (i.e. selling)</remarks>
         /// <param name="id">Product stock Id</param>
-        /// <param name="quantity">Quantity to add</param>
+        /// <param name="quantity">Quantity to remove</param>
         [SwaggerResponse(StatusCodes.Status200OK, "Removed product quantity", typeof(ProductStockReadDto))]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Product stock not found")]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
-        [HttpPut("{id}/remove/{quantity}")]
+        [HttpPut("{id}/remove/{quantity}", Name = nameof(RemoveQuantityFromStock))]
         public async Task<IActionResult> RemoveQuantityFromStock(int id, int quantity)
         {
             var productStockDto = await _stockService.RemoveProductQuantityAsync(id, quantity);

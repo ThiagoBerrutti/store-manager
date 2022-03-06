@@ -22,7 +22,7 @@ namespace StoreAPI.Services
                 
         public Task<IdentityResult> CreateAsync(User user, string password);
 
-        public Task<UserReadDto> UpdateUserAsync(string userName, UserUpdateDto userUpdateDto);
+        public Task<UserReadDto> UpdateUserAsync(int id, UserUpdateDto userUpdateDto);
 
         public Task ChangePasswordAsync(int id, ChangePasswordDto changePasswordDto);
 

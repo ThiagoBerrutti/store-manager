@@ -113,11 +113,13 @@ namespace StoreAPI.Persistence.Repositories
             return result;
         }
 
+
         public async Task<IdentityResult> AddToRoleAsync(User user, string roleName)
         {
             var result = await _userManager.AddToRoleAsync(user, roleName);
             return result;
         }
+
 
         public async Task<IdentityResult> RemoveFromRoleAsync(User user, string roleName)
         {
@@ -130,6 +132,7 @@ namespace StoreAPI.Persistence.Repositories
 
             return result;
         }
+
 
         public async Task<IdentityResult> UpdateUserAsync(User user)
         {
