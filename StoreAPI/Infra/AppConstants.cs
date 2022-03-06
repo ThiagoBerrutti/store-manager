@@ -1,4 +1,4 @@
-﻿namespace StoreAPI.Infra
+﻿    namespace StoreAPI.Infra
 {
     public class AppConstants
     {
@@ -128,7 +128,7 @@
                 public const int NameMaxLength = 50;
                 public const double PriceMinValue = 0;
                 public const double PriceMaxValue = double.MaxValue;
-                public const int DescriptionMaxLength = 50;
+                public const int DescriptionMaxLength = 200;
             }
 
             public struct Role

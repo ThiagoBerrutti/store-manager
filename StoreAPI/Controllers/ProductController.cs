@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using StoreAPI.Dtos;
+using StoreAPI.Extensions;
 using StoreAPI.Services;
 using StoreAPI.Swagger;
 using Swashbuckle.AspNetCore.Annotations;
@@ -38,16 +39,22 @@ namespace StoreAPI.Controllers
         /// <param name="parameters">Query string with the result filters and pagination values</param>
         [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(List<ProductReadDto>))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
-        [SwaggerResponseHeader(StatusCodes.Status200OK, "X-Pagination","string", Descriptions.XPaginationDescription)]
+        [SwaggerResponseHeader(StatusCodes.Status200OK, "X-Pagination", "string", Descriptions.XPaginationDescription)]
         [HttpGet(Name = nameof(GetAllProductsPaginated))]
         public async Task<IActionResult> GetAllProductsPaginated([FromQuery] ProductParametersDto parameters)
         {
-            var result = await _productService.GetAllDtoPaginatedAsync(parameters);
-            var metadata = result.GetMetadata();
+            var response = await _productService.GetAllDtoPaginatedAsync(parameters);
+            if (!response.Success)
+            {
+                return BadRequest(response.Error);
+            }
+
+            var page = response.Data;
+            var metadata = page.GetMetadata();
 
             Response.Headers.Add("X-Pagination", metadata);
 
-            return Ok(result.Items);
+            return Ok(page.Items);
         }
 
 
@@ -59,11 +66,22 @@ namespace StoreAPI.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, "Product found")]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Product not found")]
         [HttpGet("{id}", Name = nameof(GetProductById))]
-        public async Task<ActionResult<ProductReadDto>> GetProductById(int id)
+        public async Task<IActionResult> GetProductById(int id)
         {
-            var result = await _productService.GetDtoByIdAsync(id);
-            return Ok(result);
+            var response = await _productService.GetDtoByIdAsync(id);
+            if (!response.Success)
+            {
+                if (response.Error.Status == StatusCodes.Status400BadRequest)
+                {
+                    return BadRequest(response.Error);
+                }
+
+                return NotFound(response.Error);
+            }
+
+            return Ok(response.Data);
         }
+
 
 
         /// <summary>
@@ -78,7 +96,14 @@ namespace StoreAPI.Controllers
         [HttpPost(Name = nameof(CreateProduct))]
         public async Task<IActionResult> CreateProduct(ProductWriteDto product, int quantity)
         {
-            var productCreated = await _productService.CreateAsync(product, quantity);
+            var response = await _productService.CreateAsync(product, quantity);
+            if (!response.Success)
+            {
+                return BadRequest(response.Error);
+            }
+
+            var productCreated = response.Data;
+
             return CreatedAtRoute(nameof(GetProductById), new { productCreated.Id }, productCreated);
         }
 
@@ -93,7 +118,17 @@ namespace StoreAPI.Controllers
         [HttpDelete("{id}", Name = nameof(DeleteProduct))]
         public async Task<IActionResult> DeleteProduct(int id)
         {
-            await _productService.DeleteAsync(id);
+            var response = await _productService.DeleteAsync(id);
+            if (!response.Success)
+            {
+                if (response.Error.Status == StatusCodes.Status400BadRequest)
+                {
+                    return BadRequest(response.Error);
+                }
+
+                return NotFound(response.Error);
+            }
+
             return Ok();
         }
 
@@ -110,8 +145,18 @@ namespace StoreAPI.Controllers
         [HttpPut("{id}", Name = nameof(UpdateProduct))]
         public async Task<IActionResult> UpdateProduct(int id, ProductWriteDto productUpdate)
         {
-            var updatedProductDto = await _productService.UpdateAsync(id, productUpdate);
-            return Ok(updatedProductDto);
+            var response = await _productService.UpdateAsync(id, productUpdate);
+            if (!response.Success)
+            {
+                if (response.Error.Status == StatusCodes.Status400BadRequest)
+                {
+                    return BadRequest(response.Error);
+                }
+
+                return NotFound(response.Error);
+            }
+
+            return Ok(response.Data);
         }
     }
 }

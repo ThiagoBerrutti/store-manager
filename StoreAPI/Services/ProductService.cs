@@ -32,13 +32,12 @@ namespace StoreAPI.Services
 
 
 
-        public async Task<PaginatedList<ProductReadDto>> GetAllDtoPaginatedAsync(ProductParametersDto parameters)
+        public async Task<ServiceResponse<PaginatedList<ProductReadDto>>> GetAllDtoPaginatedAsync(ProductParametersDto parameters)
         {
             var validationResult = _productParametersValidator.Validate(parameters);
             if (!validationResult.IsValid)
             {
-                throw new AppValidationException(validationResult)
-                    .SetTitle("Validation error")
+                return new ServiceResponse<PaginatedList<ProductReadDto>>(validationResult)
                     .SetDetail($"Invalid query string parameters. Check '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
 
@@ -47,26 +46,26 @@ namespace StoreAPI.Services
                     (!parameters.MinPrice.HasValue || p.Price >= parameters.MinPrice) &&
                     (!parameters.MaxPrice.HasValue || p.Price <= parameters.MaxPrice) &&
                     (string.IsNullOrEmpty(parameters.Name) || p.Name.ToLower().Contains(parameters.Name.ToLower())) &&
-                    (string.IsNullOrEmpty(parameters.Name) || p.Description.ToLower().Contains(parameters.Description.ToLower())) &&
+                    (string.IsNullOrEmpty(parameters.Description) || p.Description.ToLower().Contains(parameters.Description.ToLower())) &&
                     (!parameters.OnStock.HasValue || ((p.ProductStock.Quantity > 0) == parameters.OnStock.Value));
 
-            var result = await _productRepository.GetAllWherePaginatedAsync(parameters.PageNumber, parameters.PageSize, expression);
+            var page = await _productRepository.GetAllWherePaginatedAsync(parameters.PageNumber, parameters.PageSize, expression);
+            var dto = _mapper.Map<PaginatedList<Product>, PaginatedList<ProductReadDto>>(page);
 
-            var dto = _mapper.Map<PaginatedList<Product>, PaginatedList<ProductReadDto>>(result);
+            var result = new ServiceResponse<PaginatedList<ProductReadDto>>(dto);
 
-            return dto;
+            return result;
         }
 
 
-        public async Task<ProductReadWithStockDto> CreateAsync(ProductWriteDto productDto, int quantity)
+        public async Task<ServiceResponse<ProductReadWithStockDto>> CreateAsync(ProductWriteDto productDto, int quantity)
         {
-            AppCustomValidator.GreaterThanOrEqualTo(quantity, AppConstants.Validations.Stock.QuantityMinValue, "Quantity");
-
-            var validationResult = _productValidator.Validate(productDto);
+            var validationResult = AppCustomValidator.GreaterThanOrEqualTo(quantity, AppConstants.Validations.Stock.QuantityMinValue, "Quantity")
+                .AddValidationResult(_productValidator.Validate(productDto));
+            
             if (!validationResult.IsValid)
             {
-                throw new AppValidationException(validationResult)
-                    .SetTitle("Validation error")
+                return new ServiceResponse<ProductReadWithStockDto>(validationResult)
                     .SetDetail($"Invalid product data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
 
@@ -78,68 +77,97 @@ namespace StoreAPI.Services
 
             var productWithStockDto = _mapper.Map<ProductReadWithStockDto>(product);
 
-            return productWithStockDto;
+            var result = new ServiceResponse<ProductReadWithStockDto>(productWithStockDto);
+
+            return result;
         }
 
 
-        public async Task<ProductReadDto> GetDtoByIdAsync(int id)
+        public async Task<ServiceResponse<ProductReadDto>> GetDtoByIdAsync(int id)
         {
-            AppCustomValidator.ValidateId(id, "Product Id");
+            var validationResponse = AppCustomValidator.ValidateId(id, "Product Id");
+            if (!validationResponse.IsValid)
+            {
+                return new ServiceResponse<ProductReadDto>(validationResponse)
+                    .SetDetail($"Invalid product data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
+            }
 
-            var product = await GetByIdAsync(id);
-            var dto = _mapper.Map<ProductReadDto>(product);
+            var response = await GetByIdAsync(id);
+            if (!response.Success)
+            {
+                return new ServiceResponse<ProductReadDto>(response.Error);
+            }
 
-            return dto;
+            var dto = _mapper.Map<ProductReadDto>(response.Data);
+
+            return new ServiceResponse<ProductReadDto>(dto);
         }
 
 
-        public async Task<Product> GetByIdAsync(int id)
+        public async Task<ServiceResponse<Product>> GetByIdAsync(int id)
         {
-            AppCustomValidator.ValidateId(id, "Product Id");
-
             var product = await _productRepository.GetByIdAsync(id);
             if (product == null)
             {
-                throw new DomainNotFoundException()
+                return new ServiceResponse<Product>()
                     .SetTitle("Product not found")
                     .SetDetail($"Product [Id = {id}] not found.");
             }
 
-            return product;
+            return new ServiceResponse<Product>(product);
         }
 
 
-        public async Task<ProductReadDto> UpdateAsync(int id, ProductWriteDto productDto)
+        public async Task<ServiceResponse<ProductReadDto>> UpdateAsync(int id, ProductWriteDto productDto)
         {
-            AppCustomValidator.ValidateId(id, "Product Id");
+            var validationResult = AppCustomValidator.ValidateId(id, "Product Id");
+            validationResult.AddValidationResult(_productValidator.Validate(productDto));
 
-            var validationResult = _productValidator.Validate(productDto);
             if (!validationResult.IsValid)
             {
-                throw new AppValidationException(validationResult)
-                    .SetTitle("Validation error")
-                    .SetDetail($"Invalid product data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
+                return new ServiceResponse<ProductReadDto>(validationResult)
+                            .SetDetail($"Invalid product data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
-            var productOnRepo = await GetByIdAsync(id);
+            var productResponse = await GetByIdAsync(id);
+            if (!productResponse.Success)
+            {
+                return new ServiceResponse<ProductReadDto>(productResponse.Error);
+            }
 
-            _mapper.Map(productDto, productOnRepo);
-            _productRepository.Update(productOnRepo);
+            var product = productResponse.Data;
 
+            _mapper.Map(productDto, product);
+            _productRepository.Update(product);
             await _unitOfWork.CompleteAsync();
 
-            var productReadDto = _mapper.Map<ProductReadDto>(productOnRepo);
-            return productReadDto;
+            var productReadDto = _mapper.Map<ProductReadDto>(product);
+
+            return new ServiceResponse<ProductReadDto>(productReadDto);
         }
 
 
-        public async Task DeleteAsync(int id)
+        public async Task<ServiceResponse<ProductReadDto>> DeleteAsync(int id)
         {
-            AppCustomValidator.ValidateId(id, "Product Id");
+            var validationResult = AppCustomValidator.ValidateId(id, "Product Id");
+            if (!validationResult.IsValid)
+            {
+                return new ServiceResponse<ProductReadDto>(validationResult)
+                            .SetDetail($"Invalid product data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
+            }
 
-            var product = await GetByIdAsync(id);
+            var response = await GetByIdAsync(id);
+            if (!response.Success)
+            {
+                return new ServiceResponse<ProductReadDto>(response.Error);
+            }
+
+            var product = response.Data;
+
             _productRepository.Delete(product);
 
             await _unitOfWork.CompleteAsync();
+
+            return new ServiceResponse<ProductReadDto>();
         }
     }
 }

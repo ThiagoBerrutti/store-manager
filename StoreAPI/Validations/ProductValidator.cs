@@ -9,18 +9,24 @@ namespace StoreAPI.Validations
         public ProductValidator()
         {               
             RuleFor(p => p.Name)
-                .NotNull().WithMessage("Name cannot be null")
-                .NotEmpty().WithMessage("Name cannot be empty")
-                .MaximumLength(AppConstants.Validations.Product.NameMaxLength).WithMessage("Name maximum lenght is {MaxLength} chars");
+                .NotNull()
+                    .WithMessage("{PropertyName} cannot be null")
+                .NotEmpty()
+                    .WithMessage("{PropertyName} cannot be empty")
+                .MaximumLength(AppConstants.Validations.Product.NameMaxLength)
+                    .WithMessage("{PropertyName} maximum lenght is {MaxLength} chars");
 
             RuleFor(p => p.Price)
-                .NotNull().WithMessage("Price cannot be null")
-                .InclusiveBetween(AppConstants.Validations.Product.PriceMinValue, AppConstants.Validations.Product.PriceMaxValue)
-                .WithMessage("Price must be between {From} and {To}");
+                .NotNull()
+                    .WithMessage("{PropertyName} cannot be null")
+                .GreaterThanOrEqualTo(AppConstants.Validations.Product.PriceMinValue)
+                    .WithMessage("{PropertyName} must be greater than or equal to {ComparisonValue}");
 
             RuleFor(p => p.Description)
-                .NotNull().WithMessage("Description cannot be null")
-                .MaximumLength(AppConstants.Validations.Product.DescriptionMaxLength).WithMessage("Description maximum length is {MaxLength} chars");
+                .NotNull()
+                    .WithMessage("{PropertyName} cannot be null")
+                .MaximumLength(AppConstants.Validations.Product.DescriptionMaxLength)
+                    .WithMessage("{PropertyName} maximum length is {MaxLength} chars");
         }
     }
 }

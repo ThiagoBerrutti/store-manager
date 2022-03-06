@@ -1,4 +1,5 @@
-﻿using StoreAPI.Exceptions;
+﻿using FluentValidation.Results;
+using StoreAPI.Exceptions;
 using StoreAPI.Infra;
 
 namespace StoreAPI.Validations
@@ -6,26 +7,37 @@ namespace StoreAPI.Validations
     /// <summary>
     /// Validations for primitive types, usually parameters
     /// </summary>
-    public class AppCustomValidator
+    public static class AppCustomValidator
     {
-        public static void ValidateId(int id, string name = "Id")
+        public static ValidationResult ValidateId(int id, string name = "Id")
         {
-            GreaterThanOrEqualTo(id, 1, name);
+            var result = new ValidationResult()
+                            .AddValidationResult(GreaterThanOrEqualTo(id, 1, name));
+
+            return result;
         }
 
-        public static void GreaterThanOrEqualTo(int value, int comparingTo, string valueName = "Value")
+        public static ValidationResult GreaterThanOrEqualTo(int value, int comparingTo, string valueName = "Value")
         {
+            var result = new ValidationResult();
+
             if (value < comparingTo)
             {
-                throw new AppValidationException()
-                    .SetTitle("Validation error")
-                    .SetDetail($"{valueName} must be greater than or equal to {comparingTo}");
+                result.Errors.Add(new ValidationFailure(valueName, $"{valueName} must be greater than or equal to {comparingTo}", value));
+
+                //throw new AppValidationException()
+                //.SetTitle("Validation error")
+                //.SetDetail($"{valueName} must be greater than or equal to {comparingTo}");
             }
+
+            return result;
         }
 
 
         public static void GreaterThan(int value, int comparingTo, string valueName = "Value")
         {
+            var result = new ValidationResult();
+
             if (value <= comparingTo)
             {
                 throw new AppValidationException()
