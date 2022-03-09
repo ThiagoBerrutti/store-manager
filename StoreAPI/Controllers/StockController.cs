@@ -41,12 +41,19 @@ namespace StoreAPI.Controllers
         [HttpGet(Name = nameof(GetAllStocksPaginated))]
         public async Task<IActionResult> GetAllStocksPaginated([FromQuery] StockParametersDto parameters)
         {
-            var result = await _stockService.GetAllDtoPaginatedAsync(parameters);
-            var metadata = result.GetMetadata();
+            var response = await _stockService.GetAllDtoPaginatedAsync(parameters);
+            if (!response.Success)
+            {
+                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+            }
+
+            var page = response.Data;
+            var metadata = page.GetMetadata();
+            var result = page.Items;
 
             Response.Headers.Add("X-Pagination", metadata);
 
-            return Ok(result.Items);
+            return Ok(result);
         }
 
 
@@ -61,9 +68,15 @@ namespace StoreAPI.Controllers
         [HttpGet("product/{productId}", Name = nameof(GetStockByProductId))]
         public async Task<IActionResult> GetStockByProductId(int productId)
         {
-            var productStock = await _stockService.GetDtoByProductIdAsync(productId);
+            var response = await _stockService.GetDtoByProductIdAsync(productId);
+            if (!response.Success)
+            {
+                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+            }
 
-            return Ok(productStock);
+            var result = response.Data;
+
+            return Ok(result);
         }
 
 
@@ -78,9 +91,15 @@ namespace StoreAPI.Controllers
         [HttpGet("{id}", Name = nameof(GetStockById))]
         public async Task<IActionResult> GetStockById(int id)
         {
-            var productStock = await _stockService.GetDtoByIdAsync(id);
+            var response = await _stockService.GetDtoByIdAsync(id);
+            if (!response.Success)
+            {
+                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+            }
 
-            return Ok(productStock);
+            var result = response.Data;
+
+            return Ok(result);
         }
 
         /// <summary>
@@ -96,9 +115,15 @@ namespace StoreAPI.Controllers
         [HttpPut("{id}", Name = nameof(UpdateStock))]
         public async Task<IActionResult> UpdateStock(int id, [FromBody] ProductStockWriteDto stockUpdate)
         {
-            var productStockDto = await _stockService.UpdateAsync(id, stockUpdate);
+            var response = await _stockService.UpdateAsync(id, stockUpdate);
+            if (!response.Success)
+            {
+                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+            }
 
-            return Ok(productStockDto);
+            var result = response.Data;
+
+            return Ok(result);
         }
 
 
@@ -115,9 +140,18 @@ namespace StoreAPI.Controllers
         [HttpPut("{id}/add/{quantity}", Name = nameof(AddQuantityToStock))]
         public async Task<IActionResult> AddQuantityToStock(int id, int quantity)
         {
-            var productStockDto = await _stockService.AddProductQuantityAsync(id, quantity);
+            var response = await _stockService.AddProductQuantityAsync(id, quantity);
+            if (!response.Success)
+            {
+                if (!response.Success)
+                {
+                    return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+                }
+            }
 
-            return Ok(productStockDto);
+            var result = response.Data;
+
+            return Ok(result);
         }
 
 
@@ -133,9 +167,18 @@ namespace StoreAPI.Controllers
         [HttpPut("{id}/remove/{quantity}", Name = nameof(RemoveQuantityFromStock))]
         public async Task<IActionResult> RemoveQuantityFromStock(int id, int quantity)
         {
-            var productStockDto = await _stockService.RemoveProductQuantityAsync(id, quantity);
+            var response = await _stockService.RemoveProductQuantityAsync(id, quantity);
+            if (!response.Success)
+            {
+                if (!response.Success)
+                {
+                    return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+                }
+            }
 
-            return Ok(productStockDto);
+            var result = response.Data;
+
+            return Ok(result);
         }
     }
 }

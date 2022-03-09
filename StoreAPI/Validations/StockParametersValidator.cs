@@ -16,13 +16,13 @@ namespace StoreAPI.Validations
 
             RuleFor(s => s.QuantityMin)
                 .GreaterThanOrEqualTo(AppConstants.Validations.Stock.QuantityMinValue)
-                    .WithMessage("{PropertyName} must be between {From} and {To}");
+                    .WithMessage("{PropertyName} must be greater than or equal to {ComparisonValue}");
 
             RuleFor(s => s.QuantityMax)
-                .InclusiveBetween(AppConstants.Validations.Stock.QuantityMinValue, AppConstants.Validations.Stock.QuantityMaxValue)
-                    .WithMessage("QuantityMax must be between {From} and {To}")
+                .GreaterThanOrEqualTo(AppConstants.Validations.Stock.QuantityMinValue)
+                    .WithMessage("{PropertyName} must be greater than or equal to {ComparisonValue}")
                 .GreaterThanOrEqualTo(p => p.QuantityMin)
-                    .WithMessage("QuantityMax must be greater than or equal to QuantityMin");
+                    .WithMessage("{PropertyName} must be greater than or equal to Quantity Min");
         }
     }
 }

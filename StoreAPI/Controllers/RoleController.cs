@@ -45,15 +45,16 @@ namespace StoreAPI.Controllers
             var response = await _roleService.GetAllDtoPaginatedAsync(parameters);
             if (!response.Success)
             {
-                return BadRequest(response.Error);
+                return new ObjectResult(response.Error);
             }
 
             var page = response.Data;
+            var result = page.Items;
             var metadata = page.GetMetadata();
 
             Response.Headers.Add("X-Pagination", metadata);
 
-            return Ok(page.Items);
+            return Ok(result);
         }
 
 
@@ -73,7 +74,9 @@ namespace StoreAPI.Controllers
                 return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
             }
 
-            return Ok(response.Data);
+            var result = response.Data;
+
+            return Ok(result);
         }
 
 
@@ -93,7 +96,9 @@ namespace StoreAPI.Controllers
                 return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
             }
 
-            return Ok(response.Data);
+            var result = response.Data;
+
+            return Ok(result);
         }
 
         /// <summary>
@@ -115,12 +120,12 @@ namespace StoreAPI.Controllers
             }
 
             var page = response.Data;
-            var items = page.Items;
+            var result = page.Items;
             var metadata = page.GetMetadata();
 
             Response.Headers.Add("X-Pagination", metadata);
 
-            return Ok(items);
+            return Ok(result);
         }
 
 
@@ -140,9 +145,9 @@ namespace StoreAPI.Controllers
                 return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
             }
 
-            var role = response.Data;
+            var result = response.Data;
 
-            return CreatedAtRoute(nameof(GetRoleById), new { role.Id }, role);
+            return CreatedAtRoute(nameof(GetRoleById), new { result.Id }, result);
         }
 
 

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Routing;
 using StoreAPI.Dtos;
@@ -112,7 +113,8 @@ namespace StoreAPI.Services
 
         public async Task<UserDetailedReadDto> GetDtoByIdAsync(int id)
         {
-            AppCustomValidator.ValidateId(id, "User Id");
+            var validationResult = new ValidationResult().ValidateId(id, "User Id");
+            
 
             var user = await GetByIdAsync(id);
             var userViewModel = _mapper.Map<UserDetailedReadDto>(user);
@@ -123,7 +125,7 @@ namespace StoreAPI.Services
 
         public async Task<PaginatedList<RoleReadDto>> GetAllRolesFromUserPaginatedAsync(int id, QueryStringParameterDto parameters)
         {
-            AppCustomValidator.ValidateId(id, "User Id");
+            var validationResult = new ValidationResult().ValidateId(id, "User Id");
 
             var user = await _userRepository.GetByIdAsync(id);
             var rolesFromUser = user.Roles;
@@ -158,9 +160,9 @@ namespace StoreAPI.Services
 
         public async Task<ServiceResponse<UserReadDto>> AddToRoleAsync(int id, int roleId)
         {
-            AppCustomValidator.ValidateId(id, "User Id");
-
-            AppCustomValidator.ValidateId(roleId, "Role Id");
+            var validationResult = new ValidationResult()
+                        .ValidateId(id, "User Id")
+                        .ValidateId(roleId, "Role Id");
             
             var adminRoleId = AppConstants.Roles.Admin.Id;
             var adminUserId = AppConstants.Users.Admin.Id;
@@ -216,9 +218,9 @@ namespace StoreAPI.Services
 
         public async Task<ServiceResponse<UserReadDto>> RemoveFromRoleAsync(int id, int roleId)
         {
-            AppCustomValidator.ValidateId(id, "User Id");
-
-            AppCustomValidator.ValidateId(roleId, "Role Id");
+            var validationResult = new ValidationResult()
+                    .ValidateId(id, "User Id")
+                    .ValidateId(roleId, "Role Id");
 
             var adminUserId = AppConstants.Users.Admin.Id;
             var adminRoleName = AppConstants.Roles.Admin.Name;
@@ -297,9 +299,10 @@ namespace StoreAPI.Services
 
         public async Task<UserReadDto> UpdateUserAsync(int id, UserUpdateDto userUpdateDto)
         {
-            AppCustomValidator.ValidateId(id, "User Id");
+            var validationResult = _userUpdateValidator.Validate(userUpdateDto)
+                    .ValidateId(id, "User Id");
+                    
 
-            var validationResult = _userUpdateValidator.Validate(userUpdateDto);
             if (!validationResult.IsValid)
             {
                 throw new AppValidationException(validationResult)
@@ -327,9 +330,9 @@ namespace StoreAPI.Services
 
         public async Task ChangePasswordAsync(int id, ChangePasswordDto changePasswordDto)
         {
-            AppCustomValidator.ValidateId(id, "User Id");
-
-            var validationResult = _changePasswordValidator.Validate(changePasswordDto);
+            var validationResult = _changePasswordValidator.Validate(changePasswordDto)
+                    .ValidateId(id, "User Id");
+                    
             if (!validationResult.IsValid)
             {
                 throw new AppValidationException()
@@ -377,9 +380,9 @@ namespace StoreAPI.Services
 
         public async Task ResetPasswordAsync(int id, string newPassword)
         {
-            AppCustomValidator.ValidateId(id, "User Id");
-
-            AppCustomValidator.ValidatePassword(newPassword, "NewPassword", true);
+            var validationResult = new ValidationResult()
+                    .ValidateId(id, "User Id")
+                    .ValidatePassword(newPassword, "NewPassword", true);
 
             var user = await GetByIdAsync(id);
             if (newPassword == "")

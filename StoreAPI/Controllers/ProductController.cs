@@ -46,15 +46,16 @@ namespace StoreAPI.Controllers
             var response = await _productService.GetAllDtoPaginatedAsync(parameters);
             if (!response.Success)
             {
-                return BadRequest(response.Error);
+                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
             }
 
             var page = response.Data;
             var metadata = page.GetMetadata();
+            var result = page.Items;
 
             Response.Headers.Add("X-Pagination", metadata);
 
-            return Ok(page.Items);
+            return Ok(result);
         }
 
 
@@ -71,15 +72,12 @@ namespace StoreAPI.Controllers
             var response = await _productService.GetDtoByIdAsync(id);
             if (!response.Success)
             {
-                if (response.Error.Status == StatusCodes.Status400BadRequest)
-                {
-                    return BadRequest(response.Error);
-                }
-
-                return NotFound(response.Error);
+                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
             }
 
-            return Ok(response.Data);
+            var result = response.Data;
+
+            return Ok(result);
         }
 
 
@@ -99,12 +97,12 @@ namespace StoreAPI.Controllers
             var response = await _productService.CreateAsync(product, quantity);
             if (!response.Success)
             {
-                return BadRequest(response.Error);
+                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
             }
 
-            var productCreated = response.Data;
+            var result = response.Data;
 
-            return CreatedAtRoute(nameof(GetProductById), new { productCreated.Id }, productCreated);
+            return CreatedAtRoute(nameof(GetProductById), new { result.Id }, result);
         }
 
 
@@ -121,12 +119,7 @@ namespace StoreAPI.Controllers
             var response = await _productService.DeleteAsync(id);
             if (!response.Success)
             {
-                if (response.Error.Status == StatusCodes.Status400BadRequest)
-                {
-                    return BadRequest(response.Error);
-                }
-
-                return NotFound(response.Error);
+                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
             }
 
             return Ok();
@@ -148,15 +141,12 @@ namespace StoreAPI.Controllers
             var response = await _productService.UpdateAsync(id, productUpdate);
             if (!response.Success)
             {
-                if (response.Error.Status == StatusCodes.Status400BadRequest)
-                {
-                    return BadRequest(response.Error);
-                }
-
-                return NotFound(response.Error);
+                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
             }
 
-            return Ok(response.Data);
+            var result = response.Data;
+
+            return Ok(result);
         }
     }
 }

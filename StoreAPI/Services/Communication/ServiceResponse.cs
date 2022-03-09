@@ -1,5 +1,5 @@
 ﻿using FluentValidation.Results;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 
@@ -9,7 +9,7 @@ namespace StoreAPI.Services
     {
         public T Data { get; private set; }
         public bool Success { get; protected set; }
-        public ProblemDetails Error { get; protected set; } = new ProblemDetails();
+        public ProblemDetails Error { get; protected set; } = new ProblemDetails { Status = StatusCodes.Status400BadRequest };
         public const string ErrorKey = "errors";
 
         public bool HasData => Data != null;

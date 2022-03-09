@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using StoreAPI.Domain;
 using StoreAPI.Dtos;
@@ -61,8 +62,10 @@ namespace StoreAPI.Services
 
         public async Task<ServiceResponse<ProductReadWithStockDto>> CreateAsync(ProductWriteDto productDto, int quantity)
         {
-            var validationResult = AppCustomValidator.GreaterThanOrEqualTo(quantity, AppConstants.Validations.Stock.QuantityMinValue, "Quantity")
-                .AddValidationFailuresFrom(_productValidator.Validate(productDto));
+            var validationResult = 
+                new ValidationResult()
+                        .GreaterThanOrEqualTo(quantity, AppConstants.Validations.Stock.QuantityMinValue, "Quantity")
+                        .AddFailuresFrom(_productValidator.Validate(productDto));
             
             if (!validationResult.IsValid)
             {
@@ -100,7 +103,7 @@ namespace StoreAPI.Services
 
         public async Task<ServiceResponse<Product>> GetByIdAsync(int id)
         {
-            var validationResponse = AppCustomValidator.ValidateId(id, "Product Id");
+            var validationResponse = new ValidationResult().ValidateId(id, "Product Id");
             if (!validationResponse.IsValid)
             {
                 return new ServiceResponse<Product>(validationResponse)
@@ -122,8 +125,9 @@ namespace StoreAPI.Services
 
         public async Task<ServiceResponse<ProductReadDto>> UpdateAsync(int id, ProductWriteDto productDto)
         {
-            var validationResult = AppCustomValidator.ValidateId(id, "Product Id");
-            validationResult.AddValidationFailuresFrom(_productValidator.Validate(productDto));
+            var validationResult = new ValidationResult()
+                        .ValidateId(id, "Product Id")
+                        .AddFailuresFrom(_productValidator.Validate(productDto));
 
             if (!validationResult.IsValid)
             {
@@ -150,7 +154,7 @@ namespace StoreAPI.Services
 
         public async Task<ServiceResponse<ProductReadDto>> DeleteAsync(int id)
         {
-            var validationResult = AppCustomValidator.ValidateId(id, "Product Id");
+            var validationResult = new ValidationResult().ValidateId(id, "Product Id");
             if (!validationResult.IsValid)
             {
                 return new ServiceResponse<ProductReadDto>(validationResult)

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using StoreAPI.Dtos;
@@ -60,7 +61,7 @@ namespace StoreAPI.Services
 
         public async Task<ServiceResponse<Role>> GetByIdAsync(int id)
         {
-            var validationResult = AppCustomValidator.ValidateId(id, "Role Id");
+            var validationResult = new ValidationResult().ValidateId(id, "Role Id");
             if (!validationResult.IsValid)
             {
                 return new ServiceResponse<Role>(validationResult)
@@ -99,7 +100,7 @@ namespace StoreAPI.Services
 
         public async Task<ServiceResponse<Role>> GetByNameAsync(string name)
         {
-            var validationResult = AppCustomValidator.ValidateRoleName(name);
+            var validationResult = new ValidationResult().ValidateRoleName(name);
             if (!validationResult.IsValid)
             {
                 return new ServiceResponse<Role>(validationResult)
@@ -169,7 +170,7 @@ namespace StoreAPI.Services
 
         public async Task<ServiceResponse<RoleReadDto>> DeleteAsync(int id)
         {
-            var validationResult = AppCustomValidator.ValidateId(id, "Role Id");
+            var validationResult = new ValidationResult().ValidateId(id, "Role Id");
             if (!validationResult.IsValid)
             {
                 return new ServiceResponse<RoleReadDto>(validationResult)
@@ -210,7 +211,7 @@ namespace StoreAPI.Services
 
         public async Task<ServiceResponse<PaginatedList<UserReadDto>>> GetAllUsersOnRolePaginatedAsync(int id, QueryStringParameterDto parameters)
         {
-            var validationResult = AppCustomValidator.ValidateId(id, "Role Id");
+            var validationResult = new ValidationResult().ValidateId(id, "Role Id");
             if (!validationResult.IsValid)
             {
                 return new ServiceResponse<PaginatedList<UserReadDto>>(validationResult)

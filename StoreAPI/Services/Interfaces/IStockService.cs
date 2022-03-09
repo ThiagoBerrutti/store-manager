@@ -6,18 +6,18 @@ namespace StoreAPI.Services
 {
     public interface IStockService
     {
-        public Task<PaginatedList<ProductStockReadDto>> GetAllDtoPaginatedAsync(StockParametersDto parameters);
+        public Task<ServiceResponse<PaginatedList<ProductStockReadDto>>> GetAllDtoPaginatedAsync(StockParametersDto parameters);
 
-        public Task<ProductStockReadDto> GetDtoByProductIdAsync(int productId);
+        public Task<ServiceResponse<ProductStockReadDto>> GetDtoByProductIdAsync(int productId);
 
-        public Task<ProductStockReadDto> GetDtoByIdAsync(int id);
+        public Task<ServiceResponse<ProductStockReadDto>> GetDtoByIdAsync(int id);
 
         public ProductStock CreateProductStock(Product product, int startingQuantity = 0);
 
-        public Task<ProductStockReadDto> UpdateAsync(int id, ProductStockWriteDto dto);
+        public Task<ServiceResponse<ProductStockReadDto>> UpdateAsync(int id, ProductStockWriteDto dto);
 
-        public Task<ProductStockReadDto> RemoveProductQuantityAsync(int id, int quantity);
+        public Task<ServiceResponse<ProductStockReadDto>> RemoveProductQuantityAsync(int id, int quantity);
 
-        public Task<ProductStockReadDto> AddProductQuantityAsync(int id, int quantity);
+        public Task<ServiceResponse<ProductStockReadDto>> AddProductQuantityAsync(int id, int quantity);
     }
 }

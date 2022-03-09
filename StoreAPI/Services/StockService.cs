@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using StoreAPI.Domain;
@@ -37,12 +37,12 @@ namespace StoreAPI.Services
         }
 
 
-        public async Task<PaginatedList<ProductStockReadDto>> GetAllDtoPaginatedAsync(StockParametersDto parameters)
+        public async Task<ServiceResponse<PaginatedList<ProductStockReadDto>>> GetAllDtoPaginatedAsync(StockParametersDto parameters)
         {
             var validationResult = _stockParametersValidator.Validate(parameters);
             if (!validationResult.IsValid)
             {
-                throw new AppValidationException(validationResult)
+                return new ServiceResponse<PaginatedList<ProductStockReadDto>>(validationResult)
                     .SetTitle("Validation error")
                     .SetDetail($"Invalid query string parameters. Check '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
@@ -54,141 +54,210 @@ namespace StoreAPI.Services
                     (!parameters.QuantityMax.HasValue || s.Quantity <= parameters.QuantityMax);
 
 
-            var result = await _stockRepository.GetAllWherePaginatedAsync(parameters.PageNumber, parameters.PageSize, expression);
+            var page = await _stockRepository.GetAllWherePaginatedAsync(parameters.PageNumber, parameters.PageSize, expression);
 
-            var dto = _mapper.Map<PaginatedList<ProductStock>, PaginatedList<ProductStockReadDto>>(result);
+            var dto = _mapper.Map<PaginatedList<ProductStock>, PaginatedList<ProductStockReadDto>>(page);
+            var result = new ServiceResponse<PaginatedList<ProductStockReadDto>>(dto);
 
-            return dto;
+            return result;
         }
 
         // return the entity without any validation or mapping
-        public async Task<ProductStock> GetByProductIdAsync(int productId)
+        //public async Task<ProductStock> GetByProductIdAsync(int productId)
+        //{
+        //    var stock = await _stockRepository.GetByProductIdAsync(productId);
+        //    if (stock == null)
+        //    {
+        //        throw new DomainNotFoundException()
+        //            .SetTitle("Stock not found")
+        //            .SetDetail($"Stock for product [productId = {productId}] not found");
+        //    }
+
+        //    return stock;
+        //}
+
+
+        public async Task<ServiceResponse<ProductStockReadDto>> GetDtoByProductIdAsync(int productId)
         {
+            var validationResult = new ValidationResult().ValidateId(productId, "Product Id");
+
+            if (!validationResult.IsValid)
+            {
+                return new ServiceResponse<ProductStockReadDto>(validationResult)
+                    .SetDetail($"Invalid product data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
+            }
+
             var stock = await _stockRepository.GetByProductIdAsync(productId);
             if (stock == null)
             {
-                throw new DomainNotFoundException()
-                    .SetTitle("Stock not found")
-                    .SetDetail($"Stock for product [productId = {productId}] not found");
+                return new ServiceResponse<ProductStockReadDto>()
+                    .SetTitle("Stock not found.")
+                    .SetDetail($"Stock for product [Id = {productId}]' not found.")
+                    .SetStatus(StatusCodes.Status404NotFound);
             }
-
-            return stock;
-        }
-
-
-        public async Task<ProductStockReadDto> GetDtoByProductIdAsync(int productId)
-        {
-            AppCustomValidator.ValidateId(productId, "Product Id");
-
-            var stock = await GetByProductIdAsync(productId);
             var dto = _mapper.Map<ProductStockReadDto>(stock);
 
-            return dto;
+            var result = new ServiceResponse<ProductStockReadDto>(dto);
+
+            return result;
         }
 
 
-        public async Task<ProductStock> GetByIdAsync(int id)
+        public async Task<ServiceResponse<ProductStock>> GetByIdAsync(int id)
         {
             var stock = await _stockRepository.GetByIdAsync(id);
             if (stock == null)
             {
-                throw new DomainNotFoundException()
+                return new ServiceResponse<ProductStock>()
                             .SetTitle("Stock not found")
-                            .SetDetail($"Stock [Id = {id}] not found.");
+                            .SetDetail($"Stock [Id = {id}] not found.")
+                            .SetStatus(StatusCodes.Status404NotFound);
             }
 
-            return stock;
+            return new ServiceResponse<ProductStock>(stock);
         }
 
 
-        public async Task<ProductStockReadDto> GetDtoByIdAsync(int id)
+        public async Task<ServiceResponse<ProductStockReadDto>> GetDtoByIdAsync(int id)
         {
-            AppCustomValidator.ValidateId(id, "Product stock Id");
+            var validationResult = new ValidationResult().ValidateId(id, "Product stock Id");
 
-            var stock = await GetByIdAsync(id);
+            if (!validationResult.IsValid)
+            {
+                return new ServiceResponse<ProductStockReadDto>(validationResult)
+                    .SetDetail($"Invalid stock data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
+            }
+
+            var stockResponse = await GetByIdAsync(id);
+            if (!stockResponse.Success)
+            {
+                return new ServiceResponse<ProductStockReadDto>(stockResponse.Error);
+            }
+            var stock = stockResponse.Data;
             var dto = _mapper.Map<ProductStockReadDto>(stock);
 
-            return dto;
+            var result = new ServiceResponse<ProductStockReadDto>(dto);
+
+            return result;
         }
 
-        
+
         // called by ProductService.Create only
         public ProductStock CreateProductStock(Product product, int startingQuantity = AppConstants.Validations.Stock.QuantityMinValue)
-        {            
+        {
             var productStock = new ProductStock(product, startingQuantity);
             _stockRepository.Create(productStock);
 
             return productStock;
         }
 
-
-        public async Task<ProductStockReadDto> UpdateAsync(int id, ProductStockWriteDto dto)
+        //test
+        public async Task<ServiceResponse<ProductStockReadDto>> UpdateAsync(int id, ProductStockWriteDto stockUpdate)
         {
-            AppCustomValidator.ValidateId(id, "Product stock Id");
+            var validationResult = _validator.Validate(stockUpdate)
+                                             .ValidateId(id, "Product stock Id");
 
-            var validationResult = _validator.Validate(dto);
             if (!validationResult.IsValid)
             {
-                throw new AppValidationException(validationResult)
-                    .SetTitle("Validation error")
-                    .SetDetail($"Invalid stock data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
+                return new ServiceResponse<ProductStockReadDto>(validationResult)
+                            .SetTitle("Validation error")
+                            .SetDetail($"Invalid stock data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
 
-            var psOnRepo = await GetByIdAsync(id);
-            _mapper.Map(dto, psOnRepo);
+            var stockResponse = await GetByIdAsync(id);
+            if (!stockResponse.Success)
+            {
+                return new ServiceResponse<ProductStockReadDto>(stockResponse.Error);
+            }
 
-            _stockRepository.Update(psOnRepo);
+            var stock = stockResponse.Data;
+            _mapper.Map(stockUpdate, stock);
 
+            _stockRepository.Update(stock);
             await _unitOfWork.CompleteAsync();
 
-            var productStockDto = _mapper.Map<ProductStockReadDto>(psOnRepo);
-            return productStockDto;
+            var dto = _mapper.Map<ProductStockReadDto>(stock);
+            var result = new ServiceResponse<ProductStockReadDto>(dto);
+
+            return result;
         }
 
 
-        public async Task<ProductStockReadDto> AddProductQuantityAsync(int id, int quantity)
+        public async Task<ServiceResponse<ProductStockReadDto>> AddProductQuantityAsync(int id, int quantity)
         {
-            AppCustomValidator.ValidateId(id, "Product stock Id");
+            var validationResult = new ValidationResult()
+                                            .ValidateId(id, "Product stock Id")
+                                            .GreaterThan(quantity, 0, "Quantity");
 
-            AppCustomValidator.GreaterThan(quantity, 0, "Quantity");           
-
-            var productStock = await GetByIdAsync(id);
-            if (productStock.Quantity >= 0 && (productStock.Quantity + quantity < 0)) //overflow test
+            if (!validationResult.IsValid)
             {
-                throw new AppException()
-                    .SetTitle("Validation error")
+                return new ServiceResponse<ProductStockReadDto>(validationResult)
+                            .SetTitle("Validation error")
+                            .SetDetail($"Error adding quantity to stock. See '{ServiceResponse<ProductStockReadDto>.ErrorKey}' for more details");
+            }
+
+            var stockResponse = await GetByIdAsync(id);
+            if (!stockResponse.Success)
+            {
+                return new ServiceResponse<ProductStockReadDto>(stockResponse.Error);
+            }
+
+            var stock = stockResponse.Data;
+
+            if (stock.Quantity >= 0 && (stock.Quantity + quantity < 0)) //overflow test
+            {
+                return new ServiceResponse<ProductStockReadDto>()
+                    .SetTitle("Operation error")
                     .SetDetail("Error adding to stock. Product stock quantity value will overflow. Contact the support")
                     .SetInstance(StockInstancePath(id));
             }
 
-            productStock.Quantity += quantity;
+            stock.Quantity += quantity;
             await _unitOfWork.CompleteAsync();
 
-            var productStockDto = _mapper.Map<ProductStockReadDto>(productStock);
-            return productStockDto;
+            var dto = _mapper.Map<ProductStockReadDto>(stock);
+            var result = new ServiceResponse<ProductStockReadDto>(dto);
+
+            return result;
         }
 
 
-        public async Task<ProductStockReadDto> RemoveProductQuantityAsync(int id, int quantity)
+        public async Task<ServiceResponse<ProductStockReadDto>> RemoveProductQuantityAsync(int id, int quantity)
         {
-            AppCustomValidator.ValidateId(id,"Product stock Id");
+            var validationResult = new ValidationResult()
+                                            .ValidateId(id, "Product stock Id")
+                                            .GreaterThan(quantity, 0, "Quantity");
 
-            AppCustomValidator.GreaterThan(quantity, 0, "Quantity");
-            
-            var productStock = await GetByIdAsync(id);
-            if (productStock.Quantity - quantity < AppConstants.Validations.Stock.QuantityMinValue)
+            if (!validationResult.IsValid)
             {
-                throw new AppException()
-                    .SetTitle($"")
-                    .SetDetail($"Only [{productStock.Quantity}] on stock")
+                return new ServiceResponse<ProductStockReadDto>(validationResult)
+                            .SetTitle("Validation error")
+                            .SetDetail($"Invalid stock data. See '{ServiceResponse<ProductStockReadDto>.ErrorKey}' for more details");
+            }
+
+            var stockResponse = await GetByIdAsync(id);
+            if (!stockResponse.Success)
+            {
+                return new ServiceResponse<ProductStockReadDto>(stockResponse.Error);
+            }
+
+            var stock = stockResponse.Data;
+
+            if (stock.Quantity - quantity < AppConstants.Validations.Stock.QuantityMinValue)
+            {
+                return new ServiceResponse<ProductStockReadDto>()
+                    .SetTitle($"Operation error")
+                    .SetDetail($"Error removing product quantity from stock. Only [{stock.Quantity}] left on stock. Please insert a value less than or equal to {AppConstants.Validations.Stock.QuantityMinValue + stock.Quantity}")
                     .SetInstance(StockInstancePath(id));
             }
 
-            productStock.Quantity -= quantity;
+            stock.Quantity -= quantity;
             await _unitOfWork.CompleteAsync();
 
-            var productStockDto = _mapper.Map<ProductStockReadDto>(productStock);
-            return productStockDto;
+            var dto = _mapper.Map<ProductStockReadDto>(stock);
+            var result = new ServiceResponse<ProductStockReadDto>(dto);
+
+            return result;
         }
 
 
