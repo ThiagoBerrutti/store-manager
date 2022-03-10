@@ -42,12 +42,20 @@ namespace StoreAPI.Controllers
         [HttpGet(Name = nameof(GetAllUsersPaginated))]
         public async Task<IActionResult> GetAllUsersPaginated([FromQuery] UserParametersDto parameters)
         {
-            var result = await _userService.GetAllDtoPaginatedAsync(parameters);
-            var metadata = result.GetMetadata();
+            var response = await _userService.GetAllDtoPaginatedAsync(parameters);
+            if (!response.Success)
+            {
+                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+            }
+
+            var page = response.Data;
+            var metadata = page.GetMetadata();
 
             Response.Headers.Add("X-Pagination", metadata);
 
-            return Ok(result.Items);
+            var result = page.Items;
+
+            return Ok(result);
         }
 
 
@@ -62,7 +70,13 @@ namespace StoreAPI.Controllers
         [HttpGet("{id}", Name = nameof(GetUserById))]
         public async Task<IActionResult> GetUserById(int id)
         {
-            var result = await _userService.GetDtoByIdAsync(id);
+            var response = await _userService.GetDtoByIdAsync(id);
+            if (!response.Success)
+            {
+                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+            }
+
+            var result = response.Data;
 
             return Ok(result);
         }
@@ -76,7 +90,13 @@ namespace StoreAPI.Controllers
         [HttpGet("current", Name = nameof(GetCurrentUser))]
         public async Task<IActionResult> GetCurrentUser()
         {
-            var result = await _userService.GetCurrentUserDtoAsync();
+            var response = await _userService.GetCurrentUserDtoAsync();
+            if (!response.Success)
+            {
+                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+            }
+
+            var result = response.Data;
 
             return Ok(result);
         }
@@ -96,12 +116,20 @@ namespace StoreAPI.Controllers
         [HttpGet("{id}/roles", Name = nameof(GetRolesFromUser))]
         public async Task<IActionResult> GetRolesFromUser(int id, [FromQuery] QueryStringParameterDto parameters)
         {
-            var result = await _userService.GetAllRolesFromUserPaginatedAsync(id, parameters);
-            var metadata = result.GetMetadata();
+            var response = await _userService.GetAllRolesFromUserPaginatedAsync(id, parameters);
+            if (!response.Success)
+            {
+                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+            }
+
+            var page = response.Data;
+            var metadata = page.GetMetadata();
 
             Response.Headers.Add("X-Pagination", metadata);
 
-            return Ok(result.Items);
+            var result = page.Items;
+
+            return Ok(result);
         }
 
 
@@ -117,7 +145,13 @@ namespace StoreAPI.Controllers
         [HttpPut(Name = nameof(UpdateUser))]
         public async Task<IActionResult> UpdateUser(int id, UserUpdateDto userUpdate)
         {
-            var result = await _userService.UpdateUserAsync(id, userUpdate);
+            var response = await _userService.UpdateUserAsync(id, userUpdate);
+            if (!response.Success)
+            {
+                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+            }
+
+            var result = response.Data;
 
             return Ok(result);
         }
@@ -132,10 +166,23 @@ namespace StoreAPI.Controllers
         [HttpPut("current", Name = nameof(UpdateCurrentUser))]
         public async Task<IActionResult> UpdateCurrentUser(UserUpdateDto userUpdate)
         {
-            var currentUser = await _userService.GetCurrentUserDtoAsync();
-            var currentUserUpdated = await _userService.UpdateUserAsync(currentUser.Id, userUpdate);
+            var currentUserResponse = await _userService.GetCurrentUserDtoAsync();
+            if (!currentUserResponse.Success)
+            {
+                return new ObjectResult(currentUserResponse.Error) { StatusCode = currentUserResponse.Error.Status ?? StatusCodes.Status400BadRequest };
+            }
 
-            return Ok(currentUserUpdated);
+            var currentUser = currentUserResponse.Data;
+
+            var updateResponse = await _userService.UpdateUserAsync(currentUser.Id, userUpdate);
+            if (!updateResponse.Success)
+            {
+                return new ObjectResult(updateResponse.Error) { StatusCode = updateResponse.Error.Status ?? StatusCodes.Status400BadRequest };
+            }
+
+            var result = updateResponse.Data;
+
+            return Ok(result);
         }
 
 
@@ -153,7 +200,11 @@ namespace StoreAPI.Controllers
         [HttpPut("{id}/password", Name = nameof(ChangePassword))]
         public async Task<IActionResult> ChangePassword(int id, ChangePasswordDto passwords)
         {
-            await _userService.ChangePasswordAsync(id, passwords);
+            var changeResponse = await _userService.ChangePasswordAsync(id, passwords);
+            if (!changeResponse.Success)
+            {
+                return new ObjectResult(changeResponse.Error) { StatusCode = changeResponse.Error.Status ?? StatusCodes.Status400BadRequest };
+            }
 
             return Ok();
         }
@@ -170,7 +221,11 @@ namespace StoreAPI.Controllers
         [HttpPut("current/password", Name = nameof(ChangeCurrentUserPassword))]
         public async Task<IActionResult> ChangeCurrentUserPassword(ChangePasswordDto passwords)
         {
-            await _userService.ChangeCurrentUserPasswordAsync(passwords);
+            var changeResponse = await _userService.ChangeCurrentUserPasswordAsync(passwords);
+            if (!changeResponse.Success)
+            {
+                return new ObjectResult(changeResponse.Error) { StatusCode = changeResponse.Error.Status ?? StatusCodes.Status400BadRequest };
+            }
 
             return Ok();
         }
@@ -213,7 +268,11 @@ namespace StoreAPI.Controllers
         [HttpDelete("{id}/password", Name = nameof(ResetPassword))]
         public async Task<IActionResult> ResetPassword(int id, [FromBody] string newPassword = "")
         {
-            await _userService.ResetPasswordAsync(id, newPassword);
+            var resetResponse = await _userService.ResetPasswordAsync(id, newPassword);
+            if (!resetResponse.Success)
+            {
+                return new ObjectResult(resetResponse.Error) { StatusCode = resetResponse.Error.Status ?? StatusCodes.Status400BadRequest };
+            }
 
             return Ok();
         }
@@ -231,9 +290,15 @@ namespace StoreAPI.Controllers
         [HttpPut("{id}/roles/add/{roleId}", Name = nameof(AddUserToRole))]
         public async Task<IActionResult> AddUserToRole(int id, int roleId)
         {
-            var user = await _userService.AddToRoleAsync(id, roleId);
+            var response = await _userService.AddToRoleAsync(id, roleId);
+            if (!response.Success)
+            {
+                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+            }
 
-            return Ok(user);
+            var result = response.Data;
+
+            return Ok(result);
         }
 
         /// <summary>
@@ -248,9 +313,15 @@ namespace StoreAPI.Controllers
         [HttpPut("{id}/roles/remove/{roleId}", Name = nameof(RemoveFromRole))]
         public async Task<IActionResult> RemoveFromRole(int id, int roleId)
         {
-            var user = await _userService.RemoveFromRoleAsync(id, roleId);
+            var response = await _userService.RemoveFromRoleAsync(id, roleId);
+            if (!response.Success)
+            {
+                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+            }
 
-            return Ok(user);
+            var result = response.Data;
+
+            return Ok(result);
         }
     }
 }

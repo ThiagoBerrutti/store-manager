@@ -78,7 +78,8 @@ namespace StoreAPI.Services
             var product = _mapper.Map<Product>(productDto);
             _productRepository.Add(product);
 
-            _stockService.CreateProductStock(product, quantity);
+            var response = _stockService.CreateProductStock(product, quantity);
+            
             await _unitOfWork.CompleteAsync();
 
             var productWithStockDto = _mapper.Map<ProductReadWithStockDto>(product);

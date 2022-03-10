@@ -49,9 +49,20 @@ namespace StoreAPI.Controllers
         public async Task<IActionResult> Register(UserRegisterDto userDto)
         {
             var registerResponse = await _authService.RegisterAsync(userDto);
-            var authenticateResponse = await _authService.AuthenticateAsync(userDto);
+            if (!registerResponse.Success)
+            {
+                return new ObjectResult(registerResponse.Error) { StatusCode = registerResponse.Error.Status ?? StatusCodes.Status400BadRequest };
+            }
 
-            return CreatedAtRoute(nameof(UserController.GetUserById), new { authenticateResponse.User.Id }, authenticateResponse);
+            var authenticateResponse = await _authService.AuthenticateAsync(userDto);
+            if (!authenticateResponse.Success)
+            {
+                return new ObjectResult(authenticateResponse.Error) { StatusCode = authenticateResponse.Error.Status ?? StatusCodes.Status400BadRequest };
+            }
+
+            var authResult = authenticateResponse.Data;
+
+            return CreatedAtRoute(nameof(UserController.GetUserById), new { authResult.User.Id }, authResult);
         }
 
 
@@ -67,8 +78,14 @@ namespace StoreAPI.Controllers
         public async Task<IActionResult> Authenticate(UserLoginDto userLogin)
         {
             var authResponse = await _authService.AuthenticateAsync(userLogin);
+            if (!authResponse.Success)
+            {
+                return new ObjectResult(authResponse.Error) { StatusCode = authResponse.Error.Status ?? StatusCodes.Status400BadRequest };
+            }
 
-            return Ok(authResponse);
+            var result = authResponse.Data;
+
+            return Ok(result);
         }
 
         /// <summary>
@@ -89,8 +106,14 @@ namespace StoreAPI.Controllers
         public async Task<IActionResult> RegisterTestAcc([FromQuery] List<RolesEnum> roleId)
         {           
             var authenticateResponse = await _testUserService.RegisterTestAcc(roleId);
+            if (!authenticateResponse.Success)
+            {
+                return new ObjectResult(authenticateResponse.Error) { StatusCode = authenticateResponse.Error.Status ?? StatusCodes.Status400BadRequest };
+            }
 
-            return CreatedAtRoute(nameof(UserController.GetUserById), new { authenticateResponse.User.Id }, authenticateResponse);
+            var authResult = authenticateResponse.Data;
+
+            return CreatedAtRoute(nameof(UserController.GetUserById), new { authResult.User.Id }, authResult);
         }
 
 
@@ -103,13 +126,23 @@ namespace StoreAPI.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(AuthResponse))]
         public async Task<IActionResult> AuthenticateTestUser(UserEnum user)
         {
-            await _userService.ResetTestUsers();
+            var resetResult = await _userService.ResetTestUsers();
+            if (!resetResult.Success)
+            {
+                return new ObjectResult(resetResult.Error) { StatusCode = resetResult.Error.Status ?? StatusCodes.Status400BadRequest };
+            }
 
             var testAdminLogin = TestAccountUsersLoginFactory.Generate(user);
 
             var authResponse = await _authService.AuthenticateAsync(testAdminLogin);
-            
-            return Ok(authResponse);
+            if (!authResponse.Success)
+            {
+                return new ObjectResult(authResponse.Error) { StatusCode = authResponse.Error.Status ?? StatusCodes.Status400BadRequest };
+            }
+
+            var result = authResponse.Data;
+
+            return Ok(result);
         }
     }
 }

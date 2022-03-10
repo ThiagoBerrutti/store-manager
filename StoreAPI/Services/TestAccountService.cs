@@ -98,6 +98,11 @@ namespace StoreAPI.Services
             var userDto = randomUserResponse.Data;
 
             var registerResponse = await _authService.RegisterAsync(userDto);
+            if (!registerResponse.Success)
+            {
+                return new FailedServiceResponse<AuthResponse>(registerResponse);
+            }
+
             var registerAuthResponse = registerResponse.Data;
 
             var userId = registerAuthResponse.User.Id;

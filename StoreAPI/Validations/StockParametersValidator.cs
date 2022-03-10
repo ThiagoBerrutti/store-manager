@@ -22,7 +22,8 @@ namespace StoreAPI.Validations
                 .GreaterThanOrEqualTo(AppConstants.Validations.Stock.QuantityMinValue)
                     .WithMessage("{PropertyName} must be greater than or equal to {ComparisonValue}")
                 .GreaterThanOrEqualTo(p => p.QuantityMin)
-                    .WithMessage("{PropertyName} must be greater than or equal to Quantity Min");
+                    .WithMessage("{PropertyName} must be greater than or equal to Quantity Min")
+                    .When(s => s.QuantityMin.HasValue);
         }
     }
 }

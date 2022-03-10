@@ -23,6 +23,5 @@ namespace StoreAPI.Enums
         /// sell
         /// </summary>
         Seller = AppConstants.Roles.Seller.Id,
-            Test = 42069
     }
 }

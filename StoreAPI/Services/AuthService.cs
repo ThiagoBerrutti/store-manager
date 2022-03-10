@@ -60,7 +60,15 @@ namespace StoreAPI.Services
                     .SetDetail($"See '{ExceptionWithProblemDetails.ErrorKey}' property for more details");
             }
 
-            var appUser = await _userService.GetByUserNameAsync(user.UserName);
+            var appUserResponse = await _userService.GetByUserNameAsync(user.UserName);
+            if (!appUserResponse.Success)
+            {
+                return new FailedServiceResponse<AuthResponse>(appUserResponse);
+            }
+
+            var appUser = appUserResponse.Data;
+
+
             var userLogin = _mapper.Map<UserLoginDto>(appUser);
             userLogin.Password = userDto.Password;
 
@@ -141,7 +149,13 @@ namespace StoreAPI.Services
         public async Task<ServiceResponse<AuthResponse>> AuthenticateAsync(UserRegisterDto userRegisterDto)
         {
             var userLoginDto = _mapper.Map<UserLoginDto>(userRegisterDto);
-            return await AuthenticateAsync(userLoginDto);
+            var response = await AuthenticateAsync(userLoginDto);
+            if (!response.Success)
+            {
+                return new FailedServiceResponse<AuthResponse>(response);
+            }
+
+            return response;
         }
 
 
