@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Routing;
 using StoreAPI.Dtos;
@@ -8,6 +9,7 @@ using StoreAPI.Extensions;
 using StoreAPI.Identity;
 using StoreAPI.Infra;
 using StoreAPI.Persistence.Repositories;
+using StoreAPI.Services.Communication;
 using StoreAPI.Validations;
 using System;
 using System.Collections.Generic;
@@ -41,14 +43,13 @@ namespace StoreAPI.Services
             _userParametersValidator = new UserParametersValidator();
         }
 
-        public async Task<PaginatedList<UserReadDto>> GetAllDtoPaginatedAsync(UserParametersDto parameters)
+        public async Task<ServiceResponse<PaginatedList<UserReadDto>>> GetAllDtoPaginatedAsync(UserParametersDto parameters)
         {
             var validationResult = _userParametersValidator.Validate(parameters);
             if (!validationResult.IsValid)
             {
-                throw new AppValidationException(validationResult)
-                    .SetTitle("Validation error")
-                    .SetDetail($"Invalid query string parameters. Check '{ExceptionWithProblemDetails.ErrorKey}' for more details");
+                return new FailedServiceResponse<PaginatedList<UserReadDto>>(validationResult)
+                    .SetDetail($"Invalid query string parameters. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
 
             var earliestDob = parameters.EarliestDateToSearch();
@@ -73,86 +74,143 @@ namespace StoreAPI.Services
                                     .Where(id => parameters.RoleId.Contains(id))
                                     .Count() == parameters.RoleId.Count());
 
-            var result = await _userRepository.GetAllWherePaginatedAsync(parameters.PageNumber, parameters.PageSize, expression);
+            var page = await _userRepository.GetAllWherePaginatedAsync(parameters.PageNumber, parameters.PageSize, expression);
 
-            var dto = _mapper.Map<PaginatedList<User>, PaginatedList<UserReadDto>>(result);
+            var dto = _mapper.Map<PaginatedList<User>, PaginatedList<UserReadDto>>(page);
+            var result = new ServiceResponse<PaginatedList<UserReadDto>>(dto);
 
-            return dto;
+            return result;
         }
 
 
-        public async Task<User> GetByUserNameAsync(string userName)
+        public async Task<ServiceResponse<User>> GetByUserNameAsync(string userName)
         {
-            //AppCustomValidator.ValidateUserName(userName);
-           
+            var validationResult = new ValidationResult().ValidateUserName(userName);
+            if (!validationResult.IsValid)
+            {
+                return new FailedServiceResponse<User>(validationResult)
+                        .SetDetail($"Invalid user data. See '{ServiceResponse.ErrorKey} for more details");
+            }
+
             var user = await _userRepository.GetByUserNameAsync(userName);
             if (user == null)
             {
-                throw new IdentityNotFoundException()
+                return new FailedServiceResponse<User>()
                     .SetTitle("User not found")
-                    .SetDetail($"User '{userName}' not found.");
+                    .SetDetail($"User '{userName}' not found.")
+                    .SetStatus(StatusCodes.Status404NotFound);
             }
 
-            return user;
+            var result = new ServiceResponse<User>(user);
+
+            return result;
         }
 
 
-        public async Task<User> GetByIdAsync(int id)
-        {            
+        public async Task<ServiceResponse<User>> GetByIdAsync(int id)
+        {
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null)
             {
-                throw new IdentityNotFoundException()
+                return new FailedServiceResponse<User>()
                     .SetTitle("User not found")
-                    .SetDetail($"User [Id = {id}] not found.");
+                    .SetDetail($"User [Id = {id}] not found.")
+                    .SetStatus(StatusCodes.Status404NotFound);
             }
 
-            return user;
+            var result = new ServiceResponse<User>(user);
+
+            return result;
         }
 
 
-        public async Task<UserDetailedReadDto> GetDtoByIdAsync(int id)
+        public async Task<ServiceResponse<UserDetailedReadDto>> GetDtoByIdAsync(int id)
         {
             var validationResult = new ValidationResult().ValidateId(id, "User Id");
-            
+            if (!validationResult.IsValid)
+            {
+                return new FailedServiceResponse<UserDetailedReadDto>(validationResult)
+                        .SetDetail($"Invalid user data. See '{ServiceResponse.ErrorKey} for more details");
+            }
 
-            var user = await GetByIdAsync(id);
-            var userViewModel = _mapper.Map<UserDetailedReadDto>(user);
+            var response = await GetByIdAsync(id);
+            if (!response.Success)
+            {
+                return new FailedServiceResponse<UserDetailedReadDto>(response.Error);
+            }
 
-            return userViewModel;
+            var user = response.Data;
+
+            var dto = _mapper.Map<UserDetailedReadDto>(user);
+            var result = new ServiceResponse<UserDetailedReadDto>(dto);
+
+            return result;
         }
 
 
-        public async Task<PaginatedList<RoleReadDto>> GetAllRolesFromUserPaginatedAsync(int id, QueryStringParameterDto parameters)
+        public async Task<ServiceResponse<PaginatedList<RoleReadDto>>> GetAllRolesFromUserPaginatedAsync(int id, QueryStringParameterDto parameters)
         {
             var validationResult = new ValidationResult().ValidateId(id, "User Id");
+            if (!validationResult.IsValid)
+            {
+                return new FailedServiceResponse<PaginatedList<RoleReadDto>>(validationResult)
+                        .SetDetail($"Invalid user data. See '{ServiceResponse.ErrorKey} for more details");
+            }
 
-            var user = await _userRepository.GetByIdAsync(id);
+            var response = await GetByIdAsync(id);
+            if (!response.Success)
+            {
+                return new FailedServiceResponse<PaginatedList<RoleReadDto>>(response.Error);
+            }
+
+            var user = response.Data;
             var rolesFromUser = user.Roles;
 
             var paginatedUsers = rolesFromUser
                     .OrderBy(r => r.Id)
                     .ToPaginatedList(parameters.PageNumber, parameters.PageSize);
 
-            var rolesReadDtoPaginated = _mapper.Map<PaginatedList<RoleReadDto>>(paginatedUsers);
+            var dto = _mapper.Map<PaginatedList<RoleReadDto>>(paginatedUsers);
+            var result = new ServiceResponse<PaginatedList<RoleReadDto>>(dto);
 
-            return rolesReadDtoPaginated;
+            return result;
         }
 
 
-        public async Task<IList<string>> GetRolesNamesAsync(string userName)
+        public async Task<ServiceResponse<IList<string>>> GetRolesNamesAsync(string userName)
         {
-            var user = await GetByUserNameAsync(userName);
+            var validationResult = new ValidationResult().ValidateUserName(userName);
+            if (!validationResult.IsValid)
+            {
+                return new FailedServiceResponse<IList<string>>(validationResult)
+                        .SetDetail($"Invalid user data. See '{ServiceResponse.ErrorKey} for more details");
+            }
+
+            var response = await GetByUserNameAsync(userName);
+            if (!response.Success)
+            {
+                return new FailedServiceResponse<IList<string>>(response.Error);
+            }
+
+            var user = response.Data;
             var roles = await _userRepository.GetRolesNamesAsync(user);
 
-            return roles;
+            var result = new ServiceResponse<IList<string>>(roles);
+
+            return result;
         }
 
 
         //called by AuthService use only
-        public async Task<IdentityResult> CreateAsync(User user, string password)
+        public async Task<ServiceResponse<IdentityResult>> CreateAsync(User user, string password)
         {
-            var result = await _userRepository.CreateAsync(user, password);
+            var createResponse = await _userRepository.CreateAsync(user, password);
+            if (!createResponse.Succeeded)
+            {
+                return new FailedServiceResponse<IdentityResult>(createResponse);
+            }
+
+            var result = new ServiceResponse<IdentityResult>(createResponse);
 
             return result;
         }
@@ -163,7 +221,13 @@ namespace StoreAPI.Services
             var validationResult = new ValidationResult()
                         .ValidateId(id, "User Id")
                         .ValidateId(roleId, "Role Id");
-            
+
+            if (!validationResult.IsValid)
+            {
+                return new FailedServiceResponse<UserReadDto>(validationResult)
+                        .SetDetail($"Invalid data. See '{ServiceResponse.ErrorKey} for more details");
+            }
+
             var adminRoleId = AppConstants.Roles.Admin.Id;
             var adminUserId = AppConstants.Users.Admin.Id;
             var adminRoleName = AppConstants.Roles.Admin.Name;
@@ -171,7 +235,7 @@ namespace StoreAPI.Services
             var roleResponse = await _roleService.GetByIdAsync(roleId);
             if (!roleResponse.Success)
             {
-                return new ServiceResponse<UserReadDto>(roleResponse.Error);
+                return new FailedServiceResponse<UserReadDto>(roleResponse.Error);
             }
 
             var role = roleResponse.Data;
@@ -181,20 +245,26 @@ namespace StoreAPI.Services
                 var currentUser = await GetCurrentUserAsync();
                 if (currentUser.Id != adminUserId)
                 {
-                    throw new IdentityException()
+                    return new FailedServiceResponse<UserReadDto>()
                         .SetTitle("Error adding role to user")
                         .SetDetail($"Only root {adminRoleName} [Id = {adminUserId}] can assign {adminRoleName} role")
                         .SetInstance(UserInstance(id));
                 }
             }
 
-            var user = await GetByIdAsync(id);
+            var userResponse = await GetByIdAsync(id);
+            if (!userResponse.Success)
+            {
+                return new FailedServiceResponse<UserReadDto>(userResponse.Error);
+            }
+
+            var user = userResponse.Data;
             var hasRole = user.Roles.Contains(role);
 
             if (hasRole)
             {
-                throw new IdentityException()
-                    .SetTitle("Error adding role to user")
+                return new FailedServiceResponse<UserReadDto>()
+                    .SetTitle("Error adding user to role")
                     .SetDetail($"User already assigned to role '{role.Name}'.")
                     .SetInstance(UserInstance(id));
             }
@@ -202,14 +272,13 @@ namespace StoreAPI.Services
             var addRoleResult = await _userRepository.AddToRoleAsync(user, role.Name);
             if (!addRoleResult.Succeeded)
             {
-                throw new IdentityException(addRoleResult)
-                    .SetTitle("Error adding role to user")
-                    .SetDetail($"User not assigned to role '{role.Name}'. See '{ExceptionWithProblemDetails.ErrorKey}' property for more details")
+                return new FailedServiceResponse<UserReadDto>(addRoleResult)
+                    .SetTitle("Error adding user to role")
+                    .SetDetail($"User not assigned to role '{role.Name}'. See '{ServiceResponse.ErrorKey}' property for more details")
                     .SetInstance(UserInstance(id));
             }
 
             var dto = _mapper.Map<UserReadDto>(user);
-
             var result = new ServiceResponse<UserReadDto>(dto);
 
             return result;
@@ -222,6 +291,12 @@ namespace StoreAPI.Services
                     .ValidateId(id, "User Id")
                     .ValidateId(roleId, "Role Id");
 
+            if (!validationResult.IsValid)
+            {
+                return new FailedServiceResponse<UserReadDto>(validationResult)
+                        .SetDetail($"Invalid data. See '{ServiceResponse.ErrorKey} for more details");
+            }
+
             var adminUserId = AppConstants.Users.Admin.Id;
             var adminRoleName = AppConstants.Roles.Admin.Name;
             var adminRoleId = AppConstants.Roles.Admin.Id;
@@ -229,7 +304,7 @@ namespace StoreAPI.Services
 
             if (id == adminUserId && roleId == adminRoleId)
             {
-                throw new IdentityException()
+                return new FailedServiceResponse<UserReadDto>()
                     .SetTitle("Error removing role from user")
                     .SetDetail($"Cannot remove '{adminRoleName}' role from root admin.")
                     .SetInstance(UserInstance(id));
@@ -237,7 +312,7 @@ namespace StoreAPI.Services
 
             if (roleId == adminRoleId && currentUser.Id != adminUserId)
             {
-                throw new IdentityException()
+                return new FailedServiceResponse<UserReadDto>()
                     .SetTitle("Error removing role from user")
                     .SetDetail($"Only root {adminRoleName} [Id = {adminUserId}] can remove {adminRoleName} role")
                     .SetInstance(UserInstance(id));
@@ -246,32 +321,44 @@ namespace StoreAPI.Services
             var roleResponse = await _roleService.GetByIdAsync(roleId);
             if (!roleResponse.Success)
             {
-                return new ServiceResponse<UserReadDto>(roleResponse.Error);
+                return new FailedServiceResponse<UserReadDto>(roleResponse.Error);
             }
 
             var roleToRemove = roleResponse.Data;
 
-            var userToRemoveRole = await GetByIdAsync(id);
+            var userResponse = await GetByIdAsync(id);
+            if (!userResponse.Success)
+            {
+                return new FailedServiceResponse<UserReadDto>(roleResponse.Error);
+            }
+
+            var userToRemoveRole = userResponse.Data;
             var hasRole = userToRemoveRole.Roles.Contains(roleToRemove);
 
             if (!hasRole)
             {
-                throw new IdentityException()
+                return new FailedServiceResponse<UserReadDto>()
                     .SetTitle("Error removing role from user")
-                    .SetDetail($"User not assigned to role '{roleToRemove.Name}'.")
+                    .SetDetail($"User not assigned to role '{roleToRemove.Name}'")
                     .SetInstance(UserInstance(id));
             }
 
-            var removeResult = await _userRepository.RemoveFromRoleAsync(userToRemoveRole, roleToRemove.Name);
-            if (!removeResult.Succeeded)
+            var removeRoleResult = await _userRepository.RemoveFromRoleAsync(userToRemoveRole, roleToRemove.Name);
+            if (!removeRoleResult.Succeeded)
             {
-                throw new IdentityException(removeResult)
+                return new FailedServiceResponse<UserReadDto>(removeRoleResult)
                     .SetTitle("Error removing role from user")
-                    .SetDetail($"Error removing user from role '{roleToRemove.Name}'. See '{ExceptionWithProblemDetails.ErrorKey}' property for more details")
+                    .SetDetail($"Error removing user from role '{roleToRemove.Name}'. See '{ServiceResponse.ErrorKey}' property for more details")
                     .SetInstance(UserInstance(id));
             }
 
-            var userToReturn = await GetByIdAsync(id);
+            var userToReturnResponse = await GetByIdAsync(id);
+            if (!userToReturnResponse.Success)
+            {
+                return new FailedServiceResponse<UserReadDto>(userToReturnResponse.Error);
+            }
+
+            var userToReturn = userToReturnResponse.Data;
             var dto = _mapper.Map<UserReadDto>(userToReturn);
 
             var result = new ServiceResponse<UserReadDto>(dto);
@@ -280,12 +367,18 @@ namespace StoreAPI.Services
         }
 
 
-        public async Task<UserDetailedReadDto> GetCurrentUserDtoAsync()
+        public async Task<ServiceResponse<UserDetailedReadDto>> GetCurrentUserDtoAsync()
         {
             var user = await GetCurrentUserAsync();
-            var userViewModel = _mapper.Map<UserDetailedReadDto>(user);
+            if (user is null)
+            {
+                return new FailedServiceResponse<UserDetailedReadDto>()
+                    .SetTitle("Current user not found");
+            }
+            var dto = _mapper.Map<UserDetailedReadDto>(user);
+            var result = new ServiceResponse<UserDetailedReadDto>(dto);
 
-            return userViewModel;
+            return result;
         }
 
 
@@ -297,107 +390,145 @@ namespace StoreAPI.Services
         }
 
 
-        public async Task<UserReadDto> UpdateUserAsync(int id, UserUpdateDto userUpdateDto)
+        public async Task<ServiceResponse<UserReadDto>> UpdateUserAsync(int id, UserUpdateDto userUpdateDto)
         {
-            var validationResult = _userUpdateValidator.Validate(userUpdateDto)
+            var validationResult = _userUpdateValidator
+                    .Validate(userUpdateDto)
                     .ValidateId(id, "User Id");
-                    
 
             if (!validationResult.IsValid)
             {
-                throw new AppValidationException(validationResult)
-                    .SetTitle("Validation error")
-                    .SetDetail($"Invalid user data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
+                return new FailedServiceResponse<UserReadDto>(validationResult);
             }
-            var user = await GetByIdAsync(id);
+            var response = await GetByIdAsync(id);
+            if (!response.Success)
+            {
+                return new FailedServiceResponse<UserReadDto>(response.Error);
+            }
+
+            var user = response.Data;
             _mapper.Map<UserUpdateDto, User>(userUpdateDto, user);
 
-            var result = await _userRepository.UpdateUserAsync(user);
-            if (!result.Succeeded)
+            var updateResult = await _userRepository.UpdateUserAsync(user);
+            if (!updateResult.Succeeded)
             {
-                throw new IdentityException(result)
+                return new FailedServiceResponse<UserReadDto>(updateResult)
                     .SetTitle("Error updating user")
                     .SetDetail($"See '{ExceptionWithProblemDetails.ErrorKey}' property for more details")
                     .SetInstance(UserInstance(user.Id));
             }
 
-            var updatedUser = await GetByIdAsync(id);
-            var userToResult = _mapper.Map<UserReadDto>(updatedUser);
+            var updatedUserResponse = await GetByIdAsync(id);
+            if (!updatedUserResponse.Success)
+            {
+                return new FailedServiceResponse<UserReadDto>(updatedUserResponse.Error);
+            }
 
-            return userToResult;
+            var updatedUser = updatedUserResponse.Data;
+            var dto = _mapper.Map<UserReadDto>(updatedUser);
+
+            var result = new ServiceResponse<UserReadDto>(dto);
+
+            return result;
         }
 
 
-        public async Task ChangePasswordAsync(int id, ChangePasswordDto changePasswordDto)
+        public async Task<ServiceResponse> ChangePasswordAsync(int id, ChangePasswordDto changePasswordDto)
         {
             var validationResult = _changePasswordValidator.Validate(changePasswordDto)
                     .ValidateId(id, "User Id");
-                    
+
             if (!validationResult.IsValid)
             {
-                throw new AppValidationException()
-                    .SetTitle("Validation error")
-                    .SetDetail($"Invalid passwords. See '{ExceptionWithProblemDetails.ErrorKey}' for more details")
-                    .SetErrors(validationResult.Errors.Select(e => e.ErrorMessage));
+                return new FailedServiceResponse(validationResult)
+                    .SetDetail($"Invalid passwords. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
 
-            var user = await GetByIdAsync(id);
-
-            var result = await _userRepository.ChangePasswordAsync(user, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
-            if (!result.Succeeded)
+            var userResponse = await GetByIdAsync(id);
+            if (!userResponse.Success)
             {
-                throw new IdentityException(result)
+                return new FailedServiceResponse(userResponse.Error);
+            }
+
+            var user = userResponse.Data;
+
+            var changePasswordResponse = await _userRepository.ChangePasswordAsync(user, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
+            if (!changePasswordResponse.Succeeded)
+            {
+                return new FailedServiceResponse(changePasswordResponse)
                     .SetTitle("Error changing password")
-                    .SetDetail($"See '{ExceptionWithProblemDetails.ErrorKey}' property for more details")
+                    .SetDetail($"See '{ServiceResponse.ErrorKey}' property for more details")
                     .SetInstance(UserInstance(id));
             }
+
+            return new ServiceResponse();
         }
 
 
-        public async Task ChangeCurrentUserPasswordAsync(ChangePasswordDto changePasswordDto)
+        public async Task<ServiceResponse> ChangeCurrentUserPasswordAsync(ChangePasswordDto changePasswordDto)
         {
             var currentUser = await GetCurrentUserAsync();
 
             var validationResult = _changePasswordValidator.Validate(changePasswordDto);
             if (!validationResult.IsValid)
             {
-                throw new AppValidationException(validationResult)
-                    .SetTitle("Validation error")
+                return new FailedServiceResponse(validationResult)
                     .SetDetail($"Invalid passwords. See '{ExceptionWithProblemDetails.ErrorKey}' for more details")
                     .SetInstance(UserInstance(currentUser.Id));
             }
 
-            var result = await _userRepository.ChangePasswordAsync(currentUser, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
-            if (!result.Succeeded)
+            var changePasswordResponse = await _userRepository.ChangePasswordAsync(currentUser, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
+            if (!changePasswordResponse.Succeeded)
             {
-                throw new IdentityException(result)
+                return new FailedServiceResponse(changePasswordResponse)
                     .SetTitle("Error changing password")
                     .SetDetail($"See '{ExceptionWithProblemDetails.ErrorKey}' property for more details")
                     .SetInstance(UserInstance(currentUser.Id));
             }
+
+            var result = new ServiceResponse();
+
+            return result;
         }
 
 
-        public async Task ResetPasswordAsync(int id, string newPassword)
+        public async Task<ServiceResponse> ResetPasswordAsync(int id, string newPassword)
         {
             var validationResult = new ValidationResult()
                     .ValidateId(id, "User Id")
                     .ValidatePassword(newPassword, "NewPassword", true);
 
-            var user = await GetByIdAsync(id);
-            if (newPassword == "")
+            if (!validationResult.IsValid)
             {
-                newPassword = user.UserName; // for simplicity sake
+                if (!validationResult.IsValid)
+                {
+                    return new FailedServiceResponse(validationResult);
+                }
             }
 
-            var result = await _userRepository.ResetPasswordAsync(user, newPassword);
-            if (!result.Succeeded)
+            var userResponse = await GetByIdAsync(id);
+            if (!userResponse.Success)
             {
-                throw new IdentityException(result)
+                return new FailedServiceResponse(userResponse);
+            }
+
+            var user = userResponse.Data;
+
+            if (newPassword == "")
+            {
+                newPassword = user.UserName; // for simplicity
+            }
+
+            var resetPasswordResponse = await _userRepository.ResetPasswordAsync(user, newPassword);
+            if (!resetPasswordResponse.Succeeded)
+            {
+                return new FailedServiceResponse(resetPasswordResponse)
                     .SetTitle("Error reseting password")
                     .SetDetail($"See '{ExceptionWithProblemDetails.ErrorKey}' property for more details")
                     .SetInstance(UserInstance(id));
             }
+
+            return new ServiceResponse();
         }
 
         private string UserInstance(object id)
@@ -406,10 +537,12 @@ namespace StoreAPI.Services
         }
 
 
-        public async Task ResetTestUsers()
+        public async Task<ServiceResponse> ResetTestUsers()
         {
             await _userRepository.ResetTestUsers();
             await _unitOfWork.CompleteAsync();
+
+            return new ServiceResponse();
         }
     }
 }

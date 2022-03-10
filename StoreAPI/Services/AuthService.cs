@@ -6,6 +6,7 @@ using StoreAPI.Dtos;
 using StoreAPI.Exceptions;
 using StoreAPI.Identity;
 using StoreAPI.Infra;
+using StoreAPI.Services.Communication;
 using StoreAPI.Validations;
 using System;
 using System.Collections.Generic;
@@ -39,22 +40,22 @@ namespace StoreAPI.Services
 
 
 
-        public async Task<AuthResponse> RegisterAsync(UserRegisterDto userDto)
+        public async Task<ServiceResponse<AuthResponse>> RegisterAsync(UserRegisterDto userDto)
         {
             var validationResult = _userRegisterValidator.Validate(userDto);
             if (!validationResult.IsValid)
             {
-                throw new AppValidationException(validationResult)
+                return new FailedServiceResponse<AuthResponse>(validationResult)
                     .SetTitle("Validation error")
-                    .SetDetail($"Invalid user data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
+                    .SetDetail($"Invalid user data. See '{ServiceResponse.ErrorKey}' for more details");
             }
 
             var user = _mapper.Map<User>(userDto);
 
-            var result = await _userService.CreateAsync(user, userDto.Password);
-            if (!result.Succeeded)
+            var createResponse = await _userService.CreateAsync(user, userDto.Password);
+            if (!createResponse.Success)
             {
-                throw new IdentityException(result)
+                return new FailedServiceResponse<AuthResponse>(createResponse)
                     .SetTitle("Error on user registration")
                     .SetDetail($"See '{ExceptionWithProblemDetails.ErrorKey}' property for more details");
             }
@@ -63,61 +64,88 @@ namespace StoreAPI.Services
             var userLogin = _mapper.Map<UserLoginDto>(appUser);
             userLogin.Password = userDto.Password;
 
-            var loginResult = await AuthenticateAsync(userLogin);
-            var userModel = _mapper.Map<UserAuthDto>(appUser);
+            var loginResponse = await AuthenticateAsync(userLogin);
+            if (!loginResponse.Success)
+            {
+                return new FailedServiceResponse<AuthResponse>(loginResponse)
+                    .SetDetail($"User succesfully registered, but an error occurred during authentication. Check '{ServiceResponse.ErrorKey}' for more details");
+            }
 
-            return new AuthResponse(userModel, loginResult.Token);
+            var loginData = loginResponse.Data;
+
+            var dto = _mapper.Map<UserAuthDto>(appUser);
+
+            var resultData = new AuthResponse(dto, loginData.Token);
+            var result = new ServiceResponse<AuthResponse>(resultData);
+
+            return result;
         }
 
 
-        public async Task<AuthResponse> AuthenticateAsync(UserLoginDto userDto)
+        public async Task<ServiceResponse<AuthResponse>> AuthenticateAsync(UserLoginDto userDto)
         {
             var validationResult = _userLoginValidator.Validate(userDto);
             if (!validationResult.IsValid)
             {
-                throw new AppValidationException(validationResult)
+                return new FailedServiceResponse<AuthResponse>(validationResult)
                     .SetTitle("Validation error")
                     .SetDetail($"Invalid user data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
-            var user = await _userService.GetByUserNameAsync(userDto.UserName);
+
+            var userResponse = await _userService.GetByUserNameAsync(userDto.UserName);
+            if (!userResponse.Success)
+            {
+                return new FailedServiceResponse<AuthResponse>(userResponse.Error);
+            }
+
+            var user = userResponse.Data;
 
             var signInResult = await _signInManager.CheckPasswordSignInAsync(user, userDto.Password, false);
             if (!signInResult.Succeeded)
             {
-                if (signInResult.IsLockedOut)
+                if (signInResult.IsLockedOut || signInResult.IsNotAllowed)
                 {
-                    throw new IdentityException()
+                    return new FailedServiceResponse<AuthResponse>(signInResult, user)
                         .SetTitle("Error authenticating user")
-                        .SetDetail($"User locked out until {user.LockoutEnd:G}");
+                        .SetDetail($"See '{ServiceResponse.ErrorKey}' for more details");
                 }
 
-                if (signInResult.IsNotAllowed)
-                {
-                    throw new IdentityException()
-                        .SetTitle("Error authenticating user")
-                        .SetDetail($"User not allowed.");
-                }
-
-                throw new IdentityException().SetTitle("Incorrect user/password");
+                return new FailedServiceResponse<AuthResponse>().SetTitle("Incorrect user/password");
             }
 
-            var appUser = await _userService.GetByUserNameAsync(userDto.UserName);
+            var appUserResponse = await _userService.GetByUserNameAsync(userDto.UserName);
+            if (!appUserResponse.Success)
+            {
+                return new FailedServiceResponse<AuthResponse>(appUserResponse.Error);
+            }
 
-            var token = await GenerateJWTAsync(appUser);
+            var appUser = appUserResponse.Data;
+
+            var jwtResponse = await GenerateJWTAsync(appUser);
+            if (!jwtResponse.Success)
+            {
+                return new FailedServiceResponse<AuthResponse>(jwtResponse);
+            }
+
+            var token = jwtResponse.Data;
+
             var userToReturn = _mapper.Map<UserAuthDto>(appUser);
 
-            return new AuthResponse(userToReturn, token);
+            var resultData = new AuthResponse(userToReturn, token);
+            var result = new ServiceResponse<AuthResponse>(resultData);
+
+            return result;
         }
 
 
-        public async Task<AuthResponse> AuthenticateAsync(UserRegisterDto userRegisterDto)
+        public async Task<ServiceResponse<AuthResponse>> AuthenticateAsync(UserRegisterDto userRegisterDto)
         {
             var userLoginDto = _mapper.Map<UserLoginDto>(userRegisterDto);
             return await AuthenticateAsync(userLoginDto);
         }
 
 
-        public async Task<string> GenerateJWTAsync(User user)
+        private async Task<ServiceResponse<string>> GenerateJWTAsync(User user)
         {
             var claims = new List<Claim>
             {
@@ -125,7 +153,14 @@ namespace StoreAPI.Services
                 new Claim(ClaimTypes.Name, user.UserName)
             };
 
-            var roles = await _userService.GetRolesNamesAsync(user.UserName);
+            var rolesResponse = await _userService.GetRolesNamesAsync(user.UserName);
+            if (!rolesResponse.Success)
+            {
+                return new FailedServiceResponse<string>(rolesResponse);                 
+            }
+
+            var roles = rolesResponse.Data;
+
             foreach (var role in roles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
@@ -149,7 +184,10 @@ namespace StoreAPI.Services
 
             SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
 
-            return tokenHandler.WriteToken(token);
+            var resultData = tokenHandler.WriteToken(token);
+            var result = new ServiceResponse<string>(resultData);
+
+            return result;
         }
     }
 }

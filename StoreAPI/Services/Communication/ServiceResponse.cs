@@ -1,123 +1,52 @@
 ﻿using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 
-namespace StoreAPI.Services
+namespace StoreAPI.Services.Communication
 {
-    public class ServiceResponse<T>
+    public class ServiceResponse
     {
-        public T Data { get; private set; }
         public bool Success { get; protected set; }
         public ProblemDetails Error { get; protected set; } = new ProblemDetails { Status = StatusCodes.Status400BadRequest };
         public const string ErrorKey = "errors";
-
-        public bool HasData => Data != null;
 
         public ServiceResponse()
         {
             Success = true;
         }
 
-        public ServiceResponse(T result) : this()
-        {
-            Data = result;
-        }
 
-        public ServiceResponse(ProblemDetails error)
+        public FailedServiceResponse HasFailed()
         {
-            Error = error;
-            Success = false;
-        }
-
-        public ServiceResponse(ValidationResult validationResult)
-        {
-            if (!validationResult.IsValid)
+            if (this is FailedServiceResponse asFailedServiceResponse)
             {
-                Success = false;
-                SetTitle("Validation error");
-                SetErrors(validationResult.Errors.Select(e => e.ErrorMessage));
-                SetStatus(400);
-            }
-        }
-
-
-        //public ServiceResponse(IdentityResult identityResult)
-        //{
-        //    if (!identityResult.Succeeded)
-        //    {
-        //        Success = false;
-        //        SetErrors(identityResult.Errors.Select(e => e.Description));
-        //        SetStatus(400);
-        //    }
-        //}
-
-        public ServiceResponse(T data, ProblemDetails error) : this(error)
-        {
-            Data = data;
-        }
-
-
-        public ServiceResponse<T> SetTitle(string title)
-        {
-            Error.Title = title;
-            Success = false;
-
-            return this;
-        }
-
-
-        public ServiceResponse<T> SetDetail(string detail)
-        {
-            Error.Detail = detail;
-            Success = false;
-
-            return this;
-        }
-
-
-        public ServiceResponse<T> SetErrors(object errors)
-        {
-            if (errors != null)
-            {
-                Error.Extensions[ErrorKey] = errors;
+                return asFailedServiceResponse;
             }
 
-            Success = false;
-
-            return this;
+            return new FailedServiceResponse(this);
         }
 
 
-        public ServiceResponse<T> SetExtensions(string key, object extension)
+        public FailedServiceResponse HasFailed(IdentityResult error)
         {
-            if (extension != null)
-            {
-                Error.Extensions.Add(key, extension);
-            }
+            var result = new FailedServiceResponse(error);
 
-            Success = false;
-
-            return this;
+            return result;
         }
 
 
-        public ServiceResponse<T> SetInstance(string instance)
+        public FailedServiceResponse HasFailed(ProblemDetails error)
         {
-            Error.Instance = instance;
-            Success = false;
-
-            return this;
+            return new FailedServiceResponse(error);
         }
 
-
-        public ServiceResponse<T> SetStatus(int statusCode)
+        public FailedServiceResponse HasFailed(ValidationResult error)
         {
-            Error.Status = statusCode;
-            Success = false;
-
-            return this;
+            return new FailedServiceResponse(error);
         }
+
 
         public IActionResult GenerateErrorActionResult()
         {

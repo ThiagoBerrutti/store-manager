@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using StoreAPI.Dtos;
 using StoreAPI.Identity;
+using StoreAPI.Services.Communication;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -8,35 +9,35 @@ namespace StoreAPI.Services
 {
     public interface IUserService
     {        
-        public Task<PaginatedList<UserReadDto>> GetAllDtoPaginatedAsync(UserParametersDto parameters);
+        public Task<ServiceResponse<PaginatedList<UserReadDto>>> GetAllDtoPaginatedAsync(UserParametersDto parameters);
 
-        public Task<User> GetByUserNameAsync(string userName);
+        public Task<ServiceResponse<User>> GetByUserNameAsync(string userName);
 
-        public Task<UserDetailedReadDto> GetCurrentUserDtoAsync();
+        public Task<ServiceResponse<UserDetailedReadDto>> GetCurrentUserDtoAsync();
 
-        public Task<UserDetailedReadDto> GetDtoByIdAsync(int id);
+        public Task<ServiceResponse<UserDetailedReadDto>> GetDtoByIdAsync(int id);
 
-        public Task<User> GetByIdAsync(int id);
+        public Task<ServiceResponse<User>> GetByIdAsync(int id);
 
-        public Task<PaginatedList<RoleReadDto>> GetAllRolesFromUserPaginatedAsync(int id, QueryStringParameterDto parameters);
+        public Task<ServiceResponse<PaginatedList<RoleReadDto>>> GetAllRolesFromUserPaginatedAsync(int id, QueryStringParameterDto parameters);
                 
-        public Task<IdentityResult> CreateAsync(User user, string password);
+        public Task<ServiceResponse<IdentityResult>> CreateAsync(User user, string password);
 
-        public Task<UserReadDto> UpdateUserAsync(int id, UserUpdateDto userUpdateDto);
+        public Task<ServiceResponse<UserReadDto>> UpdateUserAsync(int id, UserUpdateDto userUpdateDto);
 
-        public Task ChangePasswordAsync(int id, ChangePasswordDto changePasswordDto);
+        public Task<ServiceResponse> ChangePasswordAsync(int id, ChangePasswordDto changePasswordDto);
 
-        public Task ChangeCurrentUserPasswordAsync(ChangePasswordDto changePasswordDto);
+        public Task<ServiceResponse> ChangeCurrentUserPasswordAsync(ChangePasswordDto changePasswordDto);
 
-        public Task ResetPasswordAsync(int id, string newPassword);
+        public Task<ServiceResponse> ResetPasswordAsync(int id, string newPassword);
 
         public Task<ServiceResponse<UserReadDto>> AddToRoleAsync(int id, int userId);
 
         public Task<ServiceResponse<UserReadDto>> RemoveFromRoleAsync(int id, int userId);
 
-        public Task<IList<string>> GetRolesNamesAsync(string userName);
+        public Task<ServiceResponse<IList<string>>> GetRolesNamesAsync(string userName);
 
-        public Task ResetTestUsers();
+        public Task<ServiceResponse> ResetTestUsers();
 
 
     }

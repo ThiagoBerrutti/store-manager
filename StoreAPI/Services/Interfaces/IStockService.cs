@@ -1,5 +1,6 @@
 ﻿using StoreAPI.Domain;
 using StoreAPI.Dtos;
+using StoreAPI.Services.Communication;
 using System.Threading.Tasks;
 
 namespace StoreAPI.Services

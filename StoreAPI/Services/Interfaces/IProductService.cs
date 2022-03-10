@@ -1,4 +1,5 @@
 ﻿using StoreAPI.Dtos;
+using StoreAPI.Services.Communication;
 using System.Threading.Tasks;
 
 namespace StoreAPI.Services
@@ -13,6 +14,6 @@ namespace StoreAPI.Services
 
         public Task<ServiceResponse<ProductReadDto>> UpdateAsync(int productId, ProductWriteDto product);
 
-        public Task<ServiceResponse<ProductReadDto>> DeleteAsync(int id);
+        public Task<ServiceResponse> DeleteAsync(int id);
     }
 }

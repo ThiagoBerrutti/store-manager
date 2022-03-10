@@ -1,5 +1,6 @@
 ﻿using StoreAPI.Dtos;
 using StoreAPI.Identity;
+using StoreAPI.Services.Communication;
 using System.Threading.Tasks;
 
 namespace StoreAPI.Services
@@ -20,6 +21,6 @@ namespace StoreAPI.Services
 
         public Task<ServiceResponse<RoleReadDto>> CreateAsync(RoleWriteDto role);
 
-        public Task<ServiceResponse<RoleReadDto>> DeleteAsync(int id);
+        public Task<ServiceResponse> DeleteAsync(int id);
     }
 }

@@ -3,6 +3,7 @@ using StoreAPI.Dtos;
 using StoreAPI.Enums;
 using StoreAPI.Helpers;
 using StoreAPI.Persistence.Repositories;
+using StoreAPI.Services.Communication;
 using StoreAPI.TestUser;
 using System;
 using System.Collections.Generic;
@@ -32,19 +33,22 @@ namespace StoreAPI.Services
 
 
 
-        public async Task<UserRegisterDto> GetRandomUser()
+        public async Task<ServiceResponse<UserRegisterDto>> GetRandomUser()
         {
             var randomUser = await FetchUser();
             if (randomUser is null)
             {
-                return TestAccountUserRegisterFactory.Produce(); // fallback data
+                var producedUser = TestAccountUserRegisterFactory.Produce(); // fallback data
+                return new ServiceResponse<UserRegisterDto>(producedUser);
             }
 
             var userRegisterDto = _mapper.Map<UserRegisterDto>(randomUser);
             userRegisterDto.UserName = StringFormatter.RemoveAccents(userRegisterDto.FirstName) + RandomUserNameNumber();
             userRegisterDto.Password = "test";
 
-            return userRegisterDto;
+            var result = new ServiceResponse<UserRegisterDto>(userRegisterDto);
+
+            return result;
         }
 
 
@@ -79,26 +83,57 @@ namespace StoreAPI.Services
         }
 
 
-        public async Task<AuthResponse> RegisterTestAcc(List<RolesEnum> roleId)
+        public async Task<ServiceResponse<AuthResponse>> RegisterTestAcc(List<RolesEnum> roleId)
         {
-            var userDto = await GetRandomUser();
+            var randomUserResponse = await GetRandomUser();
+            if (!randomUserResponse.Success)
+            {
+                return new ServiceResponse<AuthResponse>()
+                    .HasFailed(randomUserResponse.Error)
+                    .SetTitle("Error registering test account")
+                    .SetDetail($"Error generating random user. Check {ServiceResponse.ErrorKey} for more details")
+                    .AddToExtensionsErrors(randomUserResponse.Error);
+            }
+
+            var userDto = randomUserResponse.Data;
 
             var registerResponse = await _authService.RegisterAsync(userDto);
+            var registerAuthResponse = registerResponse.Data;
 
-            var userId = registerResponse.User.Id;
-            var user = await _userService.GetByIdAsync(userId);
+            var userId = registerAuthResponse.User.Id;
+            var userResponse = await _userService.GetByIdAsync(userId);
+            if (!userResponse.Success)
+            {
+                return new FailedServiceResponse<AuthResponse>(userResponse);
+            }
+
+            var user = userResponse.Data;
 
             foreach (int id in roleId)
             {
-                var role = await _roleService.GetByIdAsync(id);
-                user.Roles.Add(role.Data);
+                var roleResponse = await _roleService.GetByIdAsync(id);
+                if (!roleResponse.Success)
+                {
+                    return new FailedServiceResponse<AuthResponse>(roleResponse);
+                }
+
+                var role = roleResponse.Data;
+
+                user.Roles.Add(role);
             }
 
             await _unitOfWork.CompleteAsync();
 
             var authenticateResponse = await _authService.AuthenticateAsync(userDto);
+            if (!authenticateResponse.Success)
+            {
+                return new FailedServiceResponse<AuthResponse>(authenticateResponse.Error);
+            }
 
-            return authenticateResponse;
+            var resultData = authenticateResponse.Data;
+            var result = new ServiceResponse<AuthResponse>(resultData);
+
+            return result;
         }
     }
 }

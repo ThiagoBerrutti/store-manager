@@ -7,6 +7,7 @@ using StoreAPI.Dtos;
 using StoreAPI.Exceptions;
 using StoreAPI.Infra;
 using StoreAPI.Persistence.Repositories;
+using StoreAPI.Services.Communication;
 using StoreAPI.Validations;
 using System;
 using System.Linq.Expressions;
@@ -42,9 +43,10 @@ namespace StoreAPI.Services
             var validationResult = _stockParametersValidator.Validate(parameters);
             if (!validationResult.IsValid)
             {
-                return new ServiceResponse<PaginatedList<ProductStockReadDto>>(validationResult)
+                return new ServiceResponse<PaginatedList<ProductStockReadDto>>()
+                    .HasFailed(validationResult)
                     .SetTitle("Validation error")
-                    .SetDetail($"Invalid query string parameters. Check '{ExceptionWithProblemDetails.ErrorKey}' for more details");
+                    .SetDetail($"Invalid query string parameters. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
 
             Expression<Func<ProductStock, bool>> expression =
@@ -83,7 +85,8 @@ namespace StoreAPI.Services
 
             if (!validationResult.IsValid)
             {
-                return new ServiceResponse<ProductStockReadDto>(validationResult)
+                return new ServiceResponse<ProductStockReadDto>()
+                    .HasFailed(validationResult)
                     .SetDetail($"Invalid product data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
 
@@ -91,6 +94,7 @@ namespace StoreAPI.Services
             if (stock == null)
             {
                 return new ServiceResponse<ProductStockReadDto>()
+                    .HasFailed()
                     .SetTitle("Stock not found.")
                     .SetDetail($"Stock for product [Id = {productId}]' not found.")
                     .SetStatus(StatusCodes.Status404NotFound);
@@ -109,12 +113,15 @@ namespace StoreAPI.Services
             if (stock == null)
             {
                 return new ServiceResponse<ProductStock>()
-                            .SetTitle("Stock not found")
-                            .SetDetail($"Stock [Id = {id}] not found.")
-                            .SetStatus(StatusCodes.Status404NotFound);
+                    .HasFailed()
+                    .SetTitle("Stock not found")
+                    .SetDetail($"Stock [Id = {id}] not found.")
+                    .SetStatus(StatusCodes.Status404NotFound);
             }
 
-            return new ServiceResponse<ProductStock>(stock);
+            var result = new ServiceResponse<ProductStock>(stock);
+
+            return result;
         }
 
 
@@ -124,15 +131,17 @@ namespace StoreAPI.Services
 
             if (!validationResult.IsValid)
             {
-                return new ServiceResponse<ProductStockReadDto>(validationResult)
+                return new ServiceResponse<ProductStockReadDto>()
+                    .HasFailed(validationResult)
                     .SetDetail($"Invalid stock data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
 
             var stockResponse = await GetByIdAsync(id);
             if (!stockResponse.Success)
             {
-                return new ServiceResponse<ProductStockReadDto>(stockResponse.Error);
+                return new ServiceResponse<ProductStockReadDto>().HasFailed(stockResponse.Error);
             }
+
             var stock = stockResponse.Data;
             var dto = _mapper.Map<ProductStockReadDto>(stock);
 
@@ -159,15 +168,16 @@ namespace StoreAPI.Services
 
             if (!validationResult.IsValid)
             {
-                return new ServiceResponse<ProductStockReadDto>(validationResult)
-                            .SetTitle("Validation error")
-                            .SetDetail($"Invalid stock data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
+                return new ServiceResponse<ProductStockReadDto>()
+                    .HasFailed(validationResult)
+                    .SetTitle("Validation error")
+                    .SetDetail($"Invalid stock data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
 
             var stockResponse = await GetByIdAsync(id);
             if (!stockResponse.Success)
             {
-                return new ServiceResponse<ProductStockReadDto>(stockResponse.Error);
+                return new ServiceResponse<ProductStockReadDto>().HasFailed(stockResponse.Error);
             }
 
             var stock = stockResponse.Data;
@@ -191,15 +201,16 @@ namespace StoreAPI.Services
 
             if (!validationResult.IsValid)
             {
-                return new ServiceResponse<ProductStockReadDto>(validationResult)
-                            .SetTitle("Validation error")
-                            .SetDetail($"Error adding quantity to stock. See '{ServiceResponse<ProductStockReadDto>.ErrorKey}' for more details");
+                return new ServiceResponse<ProductStockReadDto>()
+                    .HasFailed(validationResult)
+                    .SetTitle("Validation error")
+                    .SetDetail($"Error adding quantity to stock. See '{ServiceResponse<ProductStockReadDto>.ErrorKey}' for more details");
             }
 
             var stockResponse = await GetByIdAsync(id);
             if (!stockResponse.Success)
             {
-                return new ServiceResponse<ProductStockReadDto>(stockResponse.Error);
+                return new ServiceResponse<ProductStockReadDto>().HasFailed(stockResponse.Error);
             }
 
             var stock = stockResponse.Data;
@@ -207,6 +218,7 @@ namespace StoreAPI.Services
             if (stock.Quantity >= 0 && (stock.Quantity + quantity < 0)) //overflow test
             {
                 return new ServiceResponse<ProductStockReadDto>()
+                    .HasFailed()
                     .SetTitle("Operation error")
                     .SetDetail("Error adding to stock. Product stock quantity value will overflow. Contact the support")
                     .SetInstance(StockInstancePath(id));
@@ -230,22 +242,23 @@ namespace StoreAPI.Services
 
             if (!validationResult.IsValid)
             {
-                return new ServiceResponse<ProductStockReadDto>(validationResult)
-                            .SetTitle("Validation error")
-                            .SetDetail($"Invalid stock data. See '{ServiceResponse<ProductStockReadDto>.ErrorKey}' for more details");
+                return new ServiceResponse<ProductStockReadDto>()
+                    .HasFailed(validationResult)
+                    .SetTitle("Validation error")
+                    .SetDetail($"Invalid stock data. See '{ServiceResponse<ProductStockReadDto>.ErrorKey}' for more details");
             }
 
             var stockResponse = await GetByIdAsync(id);
             if (!stockResponse.Success)
             {
-                return new ServiceResponse<ProductStockReadDto>(stockResponse.Error);
+                return new ServiceResponse<ProductStockReadDto>().HasFailed(stockResponse.Error);
             }
 
             var stock = stockResponse.Data;
 
             if (stock.Quantity - quantity < AppConstants.Validations.Stock.QuantityMinValue)
             {
-                return new ServiceResponse<ProductStockReadDto>()
+                return new ServiceResponse<ProductStockReadDto>().HasFailed()
                     .SetTitle($"Operation error")
                     .SetDetail($"Error removing product quantity from stock. Only [{stock.Quantity}] left on stock. Please insert a value less than or equal to {AppConstants.Validations.Stock.QuantityMinValue + stock.Quantity}")
                     .SetInstance(StockInstancePath(id));

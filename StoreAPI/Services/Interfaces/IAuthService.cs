@@ -1,17 +1,15 @@
 ﻿using StoreAPI.Dtos;
-using StoreAPI.Identity;
+using StoreAPI.Services.Communication;
 using System.Threading.Tasks;
 
 namespace StoreAPI.Services
 {
     public interface IAuthService
     {
-        public Task<string> GenerateJWTAsync(User user);
+        public Task<ServiceResponse<AuthResponse>> RegisterAsync(UserRegisterDto userDto);
 
-        public Task<AuthResponse> RegisterAsync(UserRegisterDto userDto);
+        public Task<ServiceResponse<AuthResponse>> AuthenticateAsync(UserLoginDto userLogin);
 
-        public Task<AuthResponse> AuthenticateAsync(UserLoginDto userLogin);
-
-        public Task<AuthResponse> AuthenticateAsync(UserRegisterDto userRegisterDto);
+        public Task<ServiceResponse<AuthResponse>> AuthenticateAsync(UserRegisterDto userRegisterDto);
     }
 }

@@ -8,6 +8,7 @@ using StoreAPI.Extensions;
 using StoreAPI.Identity;
 using StoreAPI.Infra;
 using StoreAPI.Persistence.Repositories;
+using StoreAPI.Services.Communication;
 using StoreAPI.Validations;
 using System;
 using System.Linq;
@@ -39,7 +40,8 @@ namespace StoreAPI.Services
             var validationResult = _roleParametersValidator.Validate(parameters);
             if (!validationResult.IsValid)
             {
-                return new ServiceResponse<PaginatedList<RoleReadDto>>(validationResult)
+                return new ServiceResponse<PaginatedList<RoleReadDto>>()
+                    .HasFailed(validationResult)
                     .SetDetail($"Invalid query string parameters. Check '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
 
@@ -64,20 +66,23 @@ namespace StoreAPI.Services
             var validationResult = new ValidationResult().ValidateId(id, "Role Id");
             if (!validationResult.IsValid)
             {
-                return new ServiceResponse<Role>(validationResult)
+                return new ServiceResponse<Role>()
+                    .HasFailed(validationResult)
                     .SetDetail($"Invalid role data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
 
             var role = await _roleRepository.GetByIdAsync(id);
             if (role == null)
             {
-                return new ServiceResponse<Role>()
+                return new ServiceResponse<Role>().HasFailed()
                     .SetTitle("Role not found")
                     .SetDetail($"Role [Id = {id}] not found.")
                     .SetStatus(StatusCodes.Status404NotFound);
             };
 
-            return new ServiceResponse<Role>(role);
+            var result = new ServiceResponse<Role>(role);
+
+            return result;
         }
 
 
@@ -86,7 +91,7 @@ namespace StoreAPI.Services
             var roleResponse = await GetByIdAsync(id);
             if (!roleResponse.Success)
             {
-                return new ServiceResponse<RoleReadDto>(roleResponse.Error);
+                return new ServiceResponse<RoleReadDto>().HasFailed(roleResponse.Error);
             }
 
             var role = roleResponse.Data;
@@ -103,7 +108,8 @@ namespace StoreAPI.Services
             var validationResult = new ValidationResult().ValidateRoleName(name);
             if (!validationResult.IsValid)
             {
-                return new ServiceResponse<Role>(validationResult)
+                return new ServiceResponse<Role>()
+                    .HasFailed(validationResult)
                     .SetDetail($"Invalid role data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
 
@@ -111,6 +117,7 @@ namespace StoreAPI.Services
             if (role == null)
             {
                 return new ServiceResponse<Role>()
+                    .HasFailed()
                     .SetTitle("Role not found.")
                     .SetDetail($"Role '{name}' not found.")
                     .SetStatus(StatusCodes.Status404NotFound);
@@ -127,7 +134,7 @@ namespace StoreAPI.Services
             var roleResponse = await GetByNameAsync(name);
             if (!roleResponse.Success)
             {
-                return new ServiceResponse<RoleReadDto>(roleResponse.Error);
+                return new ServiceResponse<RoleReadDto>().HasFailed(roleResponse.Error);
             }
 
             var role = roleResponse.Data;
@@ -144,7 +151,7 @@ namespace StoreAPI.Services
             var validationResult = _validator.Validate(roleWriteDto);
             if (!validationResult.IsValid)
             {
-                return new ServiceResponse<RoleReadDto>(validationResult)
+                return new FailedServiceResponse<RoleReadDto>(validationResult)
                     .SetDetail($"Invalid role data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
 
@@ -153,8 +160,7 @@ namespace StoreAPI.Services
             var createResult = await _roleRepository.CreateAsync(role);
             if (!createResult.Succeeded)
             {
-                return new ServiceResponse<RoleReadDto>()
-                    .SetErrors(createResult.Errors.Select(e => e.Description))
+                return new FailedServiceResponse<RoleReadDto>(createResult)
                     .SetTitle("Error creating role")
                     .SetDetail($"Role not created. See '{ExceptionWithProblemDetails.ErrorKey}' property for more details");
             }
@@ -168,19 +174,20 @@ namespace StoreAPI.Services
         }
 
 
-        public async Task<ServiceResponse<RoleReadDto>> DeleteAsync(int id)
+        public async Task<ServiceResponse> DeleteAsync(int id)
         {
             var validationResult = new ValidationResult().ValidateId(id, "Role Id");
             if (!validationResult.IsValid)
             {
-                return new ServiceResponse<RoleReadDto>(validationResult)
+                return new ServiceResponse()
+                    .HasFailed(validationResult)
                     .SetDetail($"Invalid role data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
 
             var roleResponse = await GetByIdAsync(id);
             if (!roleResponse.Success)
             {
-                return new ServiceResponse<RoleReadDto>(roleResponse.Error);
+                return new ServiceResponse().HasFailed(roleResponse.Error);
             }
 
             var role = roleResponse.Data;
@@ -190,7 +197,8 @@ namespace StoreAPI.Services
                 role.Name == AppConstants.Roles.Stock.Name ||
                 role.Name == AppConstants.Roles.Seller.Name)
             {
-                return new ServiceResponse<RoleReadDto>()
+                return new ServiceResponse()
+                    .HasFailed()
                     .SetTitle("Error deleting role")
                     .SetDetail($"Role '{role.Name}' cannot be deleted.")
                     .SetInstance(RoleInstance(id));
@@ -199,13 +207,14 @@ namespace StoreAPI.Services
             var deleteResult = await _roleRepository.DeleteAsync(role);
             if (!deleteResult.Succeeded)
             {
-                return new ServiceResponse<RoleReadDto>()
+                return new ServiceResponse()
+                    .HasFailed()
                     .SetTitle("Error deleting role")
-                    .SetErrors(deleteResult.Errors.Select(e => e.Description))
+                    .AddToExtensionsErrors(deleteResult.Errors.Select(e => e.Description))
                     .SetDetail($"Role not deleted. See '{ExceptionWithProblemDetails.ErrorKey}' property for more details");
             }
 
-            return new ServiceResponse<RoleReadDto>();
+            return new ServiceResponse();
         }
 
 
@@ -214,14 +223,15 @@ namespace StoreAPI.Services
             var validationResult = new ValidationResult().ValidateId(id, "Role Id");
             if (!validationResult.IsValid)
             {
-                return new ServiceResponse<PaginatedList<UserReadDto>>(validationResult)
+                return new ServiceResponse<PaginatedList<UserReadDto>>()
+                    .HasFailed(validationResult)
                     .SetDetail($"Invalid role data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
 
             var roleResponse = await GetByIdAsync(id);
             if (!roleResponse.Success)
             {
-                return new ServiceResponse<PaginatedList<UserReadDto>>(roleResponse.Error);
+                return new ServiceResponse<PaginatedList<UserReadDto>>().HasFailed(roleResponse.Error);
             }
 
             var role = roleResponse.Data;

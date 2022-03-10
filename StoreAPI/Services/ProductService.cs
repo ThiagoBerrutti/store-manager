@@ -6,6 +6,7 @@ using StoreAPI.Dtos;
 using StoreAPI.Exceptions;
 using StoreAPI.Infra;
 using StoreAPI.Persistence.Repositories;
+using StoreAPI.Services.Communication;
 using StoreAPI.Validations;
 using System;
 using System.Linq.Expressions;
@@ -39,8 +40,9 @@ namespace StoreAPI.Services
             var validationResult = _productParametersValidator.Validate(parameters);
             if (!validationResult.IsValid)
             {
-                return new ServiceResponse<PaginatedList<ProductReadDto>>(validationResult)
-                    .SetDetail($"Invalid query string parameters. Check '{ExceptionWithProblemDetails.ErrorKey}' for more details");
+                return new ServiceResponse<PaginatedList<ProductReadDto>>()
+                            .HasFailed(validationResult)
+                            .SetDetail($"Invalid query string parameters. Check '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
 
             Expression<Func<Product, bool>> expression =
@@ -62,15 +64,15 @@ namespace StoreAPI.Services
 
         public async Task<ServiceResponse<ProductReadWithStockDto>> CreateAsync(ProductWriteDto productDto, int quantity)
         {
-            var validationResult = 
-                new ValidationResult()
+            var validationResult = new ValidationResult()
                         .GreaterThanOrEqualTo(quantity, AppConstants.Validations.Stock.QuantityMinValue, "Quantity")
                         .AddFailuresFrom(_productValidator.Validate(productDto));
-            
+
             if (!validationResult.IsValid)
             {
-                return new ServiceResponse<ProductReadWithStockDto>(validationResult)
-                    .SetDetail($"Invalid product data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
+                return new ServiceResponse<ProductReadWithStockDto>()
+                            .HasFailed(validationResult)
+                            .SetDetail($"Invalid product data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
 
             var product = _mapper.Map<Product>(productDto);
@@ -80,7 +82,6 @@ namespace StoreAPI.Services
             await _unitOfWork.CompleteAsync();
 
             var productWithStockDto = _mapper.Map<ProductReadWithStockDto>(product);
-
             var result = new ServiceResponse<ProductReadWithStockDto>(productWithStockDto);
 
             return result;
@@ -92,12 +93,13 @@ namespace StoreAPI.Services
             var response = await GetByIdAsync(id);
             if (!response.Success)
             {
-                return new ServiceResponse<ProductReadDto>(response.Error);
+                return new ServiceResponse<ProductReadDto>().HasFailed(response.Error);
             }
 
             var dto = _mapper.Map<ProductReadDto>(response.Data);
+            var result = new ServiceResponse<ProductReadDto>(dto);
 
-            return new ServiceResponse<ProductReadDto>(dto);
+            return result;
         }
 
 
@@ -106,18 +108,22 @@ namespace StoreAPI.Services
             var validationResponse = new ValidationResult().ValidateId(id, "Product Id");
             if (!validationResponse.IsValid)
             {
-                return new ServiceResponse<Product>(validationResponse)
-                    .SetDetail($"Invalid product data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
+                return new ServiceResponse<Product>()
+                            .HasFailed(validationResponse)
+                            .SetDetail($"Invalid product data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
 
             var product = await _productRepository.GetByIdAsync(id);
             if (product == null)
             {
                 return new ServiceResponse<Product>()
-                    .SetTitle("Product not found")
-                    .SetDetail($"Product [Id = {id}] not found.")
-                    .SetStatus(StatusCodes.Status404NotFound);
+                            .HasFailed()
+                            .SetTitle("Product not found")
+                            .SetDetail($"Product [Id = {id}] not found.")
+                            .SetStatus(StatusCodes.Status404NotFound);
             }
+
+            var result = new ServiceResponse<Product>(product);
 
             return new ServiceResponse<Product>(product);
         }
@@ -131,13 +137,15 @@ namespace StoreAPI.Services
 
             if (!validationResult.IsValid)
             {
-                return new ServiceResponse<ProductReadDto>(validationResult)
+                return new ServiceResponse<ProductReadDto>()
+                            .HasFailed(validationResult)
                             .SetDetail($"Invalid product data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
+
             var productResponse = await GetByIdAsync(id);
             if (!productResponse.Success)
             {
-                return new ServiceResponse<ProductReadDto>(productResponse.Error);
+                return new ServiceResponse<ProductReadDto>().HasFailed(productResponse.Error);
             }
 
             var product = productResponse.Data;
@@ -146,34 +154,35 @@ namespace StoreAPI.Services
             _productRepository.Update(product);
             await _unitOfWork.CompleteAsync();
 
-            var productReadDto = _mapper.Map<ProductReadDto>(product);
+            var dto = _mapper.Map<ProductReadDto>(product);
+            var result = new ServiceResponse<ProductReadDto>(dto);
 
-            return new ServiceResponse<ProductReadDto>(productReadDto);
+            return result;
         }
 
 
-        public async Task<ServiceResponse<ProductReadDto>> DeleteAsync(int id)
+        public async Task<ServiceResponse> DeleteAsync(int id)
         {
             var validationResult = new ValidationResult().ValidateId(id, "Product Id");
             if (!validationResult.IsValid)
             {
-                return new ServiceResponse<ProductReadDto>(validationResult)
+                return new ServiceResponse()
+                            .HasFailed(validationResult)
                             .SetDetail($"Invalid product data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
             }
 
             var response = await GetByIdAsync(id);
             if (!response.Success)
             {
-                return new ServiceResponse<ProductReadDto>(response.Error);
+                return new ServiceResponse().HasFailed(response.Error);
             }
 
             var product = response.Data;
 
             _productRepository.Delete(product);
-
             await _unitOfWork.CompleteAsync();
 
-            return new ServiceResponse<ProductReadDto>();
+            return new ServiceResponse();
         }
     }
 }
