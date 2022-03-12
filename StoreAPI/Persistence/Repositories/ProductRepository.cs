@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StoreAPI.Domain;
 using StoreAPI.Dtos;
-using StoreAPI.Extensions;
+using StoreAPI.Persistence.Repositories.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,19 +20,19 @@ namespace StoreAPI.Persistence.Repositories
         }
 
 
-        
+
         public async Task<PaginatedList<Product>> GetAllWherePaginatedAsync(int pageNumber, int pageSize, Expression<Func<Product, bool>> expression)
         {
             var result = await _context.Products
                  .Include(p => p.ProductStock)
-                 .OrderBy(p => p.Name)                 
+                 .OrderBy(p => p.Name)
                  .Where(expression)
                  .ToPaginatedListAsync(pageNumber, pageSize);
 
             return result;
         }
-                
-        
+
+
         public async Task<Product> GetByIdAsync(int id)
         {
             return await _context.Products

@@ -1,13 +1,12 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using StoreAPI.Helpers;
 using StoreAPI.Identity;
 using StoreAPI.Infra;
 using System;
 using System.Collections.Generic;
 
-namespace StoreAPI.Persistence.EntityConfigurations
+namespace StoreAPI.Persistence.Data
 {
     public class UserEntityConfig : IEntityTypeConfiguration<User>
     {
@@ -101,7 +100,7 @@ namespace StoreAPI.Persistence.EntityConfigurations
                     SecurityStamp = Guid.NewGuid().ToString(),
                     DateOfBirth = DateTime.Parse(AppConstants.Users.Public.DateOfBirth)
                 }
-            }) ;
+            });
         }
     }
 }

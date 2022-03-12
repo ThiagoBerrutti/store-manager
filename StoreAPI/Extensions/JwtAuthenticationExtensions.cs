@@ -3,7 +3,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using StoreAPI.Infra;
-using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 
 namespace StoreAPI.Extensions
@@ -11,13 +10,13 @@ namespace StoreAPI.Extensions
     public static class JwtAuthenticationExtensions
     {
         public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
-        {            
+        {
             var appSettingsSection = configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingsSection);
 
             var appSettings = appSettingsSection.Get<AppSettings>();
             var key = Encoding.ASCII.GetBytes(appSettings.Secret);
-            
+
             services
                 .AddAuthentication(options =>
                 {
@@ -34,7 +33,7 @@ namespace StoreAPI.Extensions
                         IssuerSigningKey = new SymmetricSecurityKey(key),
                         ValidateIssuer = true,
                         ValidateAudience = true,
-                        ValidAudience = appSettings.Audience,                        
+                        ValidAudience = appSettings.Audience,
                         ValidIssuer = appSettings.Issuer
                     };
                 });

@@ -17,34 +17,5 @@ namespace StoreAPI.Services.Communication
         {
             Data = result;
         }
-
-
-        public new FailedServiceResponse<T> HasFailed()
-        {
-            var result = new FailedServiceResponse<T>(this);
-
-            return result;
-        }
-
-        public new FailedServiceResponse<T> HasFailed(IdentityResult error)
-        {
-            var result = new FailedServiceResponse<T>(error);
-
-            return result;
-        }
-
-        public new FailedServiceResponse<T> HasFailed(ProblemDetails error)
-        {
-            var result = new FailedServiceResponse<T>(error);
-
-            return result;
-        }
-
-        public new FailedServiceResponse<T> HasFailed(ValidationResult error)
-        {
-            var result = new FailedServiceResponse<T>(error);
-
-            return result;
-        }
     }
 }

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using StoreAPI.Dtos;
+using StoreAPI.Infra;
 using StoreAPI.Services;
 using StoreAPI.Swagger;
 using Swashbuckle.AspNetCore.Annotations;
@@ -45,7 +46,7 @@ namespace StoreAPI.Controllers
             var response = await _userService.GetAllDtoPaginatedAsync(parameters);
             if (!response.Success)
             {
-                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(response.Error);
             }
 
             var page = response.Data;
@@ -73,7 +74,7 @@ namespace StoreAPI.Controllers
             var response = await _userService.GetDtoByIdAsync(id);
             if (!response.Success)
             {
-                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(response.Error);
             }
 
             var result = response.Data;
@@ -93,7 +94,7 @@ namespace StoreAPI.Controllers
             var response = await _userService.GetCurrentUserDtoAsync();
             if (!response.Success)
             {
-                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(response.Error);
             }
 
             var result = response.Data;
@@ -119,7 +120,7 @@ namespace StoreAPI.Controllers
             var response = await _userService.GetAllRolesFromUserPaginatedAsync(id, parameters);
             if (!response.Success)
             {
-                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(response.Error);
             }
 
             var page = response.Data;
@@ -148,7 +149,7 @@ namespace StoreAPI.Controllers
             var response = await _userService.UpdateUserAsync(id, userUpdate);
             if (!response.Success)
             {
-                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(response.Error);
             }
 
             var result = response.Data;
@@ -169,7 +170,7 @@ namespace StoreAPI.Controllers
             var currentUserResponse = await _userService.GetCurrentUserDtoAsync();
             if (!currentUserResponse.Success)
             {
-                return new ObjectResult(currentUserResponse.Error) { StatusCode = currentUserResponse.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(currentUserResponse.Error);
             }
 
             var currentUser = currentUserResponse.Data;
@@ -177,7 +178,7 @@ namespace StoreAPI.Controllers
             var updateResponse = await _userService.UpdateUserAsync(currentUser.Id, userUpdate);
             if (!updateResponse.Success)
             {
-                return new ObjectResult(updateResponse.Error) { StatusCode = updateResponse.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(updateResponse.Error);
             }
 
             var result = updateResponse.Data;
@@ -203,7 +204,7 @@ namespace StoreAPI.Controllers
             var changeResponse = await _userService.ChangePasswordAsync(id, passwords);
             if (!changeResponse.Success)
             {
-                return new ObjectResult(changeResponse.Error) { StatusCode = changeResponse.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(changeResponse.Error);
             }
 
             return Ok();
@@ -224,7 +225,7 @@ namespace StoreAPI.Controllers
             var changeResponse = await _userService.ChangeCurrentUserPasswordAsync(passwords);
             if (!changeResponse.Success)
             {
-                return new ObjectResult(changeResponse.Error) { StatusCode = changeResponse.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(changeResponse.Error);
             }
 
             return Ok();
@@ -271,7 +272,7 @@ namespace StoreAPI.Controllers
             var resetResponse = await _userService.ResetPasswordAsync(id, newPassword);
             if (!resetResponse.Success)
             {
-                return new ObjectResult(resetResponse.Error) { StatusCode = resetResponse.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(resetResponse.Error);
             }
 
             return Ok();
@@ -293,7 +294,7 @@ namespace StoreAPI.Controllers
             var response = await _userService.AddToRoleAsync(id, roleId);
             if (!response.Success)
             {
-                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(response.Error);
             }
 
             var result = response.Data;
@@ -316,7 +317,7 @@ namespace StoreAPI.Controllers
             var response = await _userService.RemoveFromRoleAsync(id, roleId);
             if (!response.Success)
             {
-                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(response.Error);
             }
 
             var result = response.Data;

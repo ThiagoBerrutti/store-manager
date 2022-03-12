@@ -4,7 +4,7 @@ using StoreAPI.Identity;
 using StoreAPI.Infra;
 using System.Collections.Generic;
 
-namespace StoreAPI.Persistence.EntityConfigurations
+namespace StoreAPI.Persistence.Data
 {
     public class RoleEntityConfig : IEntityTypeConfiguration<Role>
     {

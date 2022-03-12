@@ -1,11 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using StoreAPI.Domain;
 using StoreAPI.Dtos;
-using StoreAPI.Extensions;
 using StoreAPI.Identity;
 using StoreAPI.Infra;
+using StoreAPI.Persistence.Repositories.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,7 +27,7 @@ namespace StoreAPI.Persistence.Repositories
             _httpContextAccessor = httpContextAccessor;
         }
 
-        
+
 
         public async Task<PaginatedList<User>> GetAllWherePaginatedAsync(int pageNumber, int pageSize, Expression<Func<User, bool>> expression)
         {
@@ -157,7 +156,7 @@ namespace StoreAPI.Persistence.Repositories
                 AppConstants.Users.Manager.UserName,
                 AppConstants.Users.Stock.UserName,
                 AppConstants.Users.Seller.UserName,
-                AppConstants.Users.Public.UserName 
+                AppConstants.Users.Public.UserName
             };
 
             var users = await GetUserByNameRangeAsync(userNames);

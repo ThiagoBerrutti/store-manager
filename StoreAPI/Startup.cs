@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -18,6 +19,7 @@ using StoreAPI.Persistence;
 using StoreAPI.Persistence.Data;
 using StoreAPI.Persistence.Repositories;
 using StoreAPI.Services;
+using StoreAPI.Swagger;
 using Swashbuckle.AspNetCore.Filters;
 using System;
 using System.IO;
@@ -40,14 +42,15 @@ namespace StoreAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var connectionStringBuilder = new SqlConnectionStringBuilder(Configuration.GetConnectionString("SomeeDbSQLServer"))
+            var connectionStringBuilder = new SqlConnectionStringBuilder(Configuration.GetConnectionString("StoreDbSQLServer"))
             {
-                UserID = Configuration["SomeeDbSQLServer:UserId"],
-                Password = Configuration["SomeeDbSQLServer:DbPassword"]
+                UserID = Configuration["StoreDbSQLServer:UserId"],
+                Password = Configuration["StoreDbSQLServer:DbPassword"]
             };
+
             var connectionString = connectionStringBuilder.ConnectionString;
 
-            services.AddDbContext<StoreDbContext>(options =>
+            services.AddDbContext<StoreDbContext>(options =>    
             {
                 options
                     .UseSqlServer(connectionString)
@@ -99,65 +102,7 @@ namespace StoreAPI
             services.AddJwtAuthentication(Configuration);
 
             //swagger
-            services.AddSwaggerGen(options =>
-            {
-                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
-                {
-                    Name = "Authorization",
-                    Type = SecuritySchemeType.Http,
-                    Scheme = "Bearer",
-                    BearerFormat = "JWT",
-                    In = ParameterLocation.Header,
-                    Description = "JWT Authorization header using the Bearer scheme. " +
-                                  "\r\n\r\nEnter your token in the text input below. "
-                });
-
-                options.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
-                    {
-                          new OpenApiSecurityScheme
-                          {
-                              Reference = new OpenApiReference
-                              {
-                                  Type = ReferenceType.SecurityScheme,
-                                  Id = "Bearer"
-                              }
-                          },
-                         new string[] {}
-                    }
-                });
-
-                options.SwaggerDoc(
-                    "v1",
-                    new OpenApiInfo
-                    {
-                        Title = "Store API",
-                        Version = "v1",
-                        Description = "Demo API for inventory data management using JWT authentication",
-                        Contact = new OpenApiContact
-                        {
-                            Name = "Thiago Berrutti",
-                            Email = "thiagoberrutti@gmail.com"
-                        }
-                    });
-
-                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                options.IncludeXmlComments(xmlPath, true);
-
-                options.EnableAnnotations();
-
-                options.OperationFilter<AppendAuthorizeToSummaryOperationFilter>();
-
-                options.OperationFilter<AddResponseHeadersFilter>();
-
-                //options.SchemaFilter<EnumTypesSchemaFilter>(xmlPath);
-
-                //options.OperationFilter<FromQueryModelFilter>();
-
-                //options.MapType<DateTime>(() => new OpenApiSchema { Type = "string", Format = "date" });
-            });
-
+            services.AddSwaggerConfiguration();
 
             //app services
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -173,11 +118,8 @@ namespace StoreAPI
             services.AddScoped<IStockRepository, StockRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IRoleRepository, RoleRepository>();
-
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-            services.AddScoped<ProductSeed>();
-            //services.AddTransient<ExceptionWithProblemDetails>();
             services.AddTransient<ExceptionHandlerMiddleware>();
 
             services.AddHttpContextAccessor();
@@ -185,18 +127,16 @@ namespace StoreAPI
 
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ProductSeed pSeed)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
                 IdentityModelEventSource.ShowPII = true;
             }
-
+                        
             app.UseMiddleware<ExceptionHandlerMiddleware>();
 
             app.UseHsts();
-
-            Task.Run(async () => await pSeed.Seed());//.Wait();
 
             app.UseAuthentication();
 

@@ -20,7 +20,7 @@ namespace StoreAPI.Enums
         /// </summary>
         Stock = AppConstants.Roles.Stock.Id,
         /// <summary>
-        /// sell
+        /// seller
         /// </summary>
         Seller = AppConstants.Roles.Seller.Id,
     }

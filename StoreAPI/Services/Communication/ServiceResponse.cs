@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 
 namespace StoreAPI.Services.Communication
 {
@@ -15,36 +14,6 @@ namespace StoreAPI.Services.Communication
         public ServiceResponse()
         {
             Success = true;
-        }
-
-
-        public FailedServiceResponse HasFailed()
-        {
-            if (this is FailedServiceResponse asFailedServiceResponse)
-            {
-                return asFailedServiceResponse;
-            }
-
-            return new FailedServiceResponse(this);
-        }
-
-
-        public FailedServiceResponse HasFailed(IdentityResult error)
-        {
-            var result = new FailedServiceResponse(error);
-
-            return result;
-        }
-
-
-        public FailedServiceResponse HasFailed(ProblemDetails error)
-        {
-            return new FailedServiceResponse(error);
-        }
-
-        public FailedServiceResponse HasFailed(ValidationResult error)
-        {
-            return new FailedServiceResponse(error);
         }
 
 

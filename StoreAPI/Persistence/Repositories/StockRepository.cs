@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StoreAPI.Domain;
 using StoreAPI.Dtos;
-using StoreAPI.Extensions;
+using StoreAPI.Persistence.Repositories.Extensions;
 using System;
 using System.Linq;
 using System.Linq.Expressions;

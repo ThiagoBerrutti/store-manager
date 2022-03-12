@@ -57,7 +57,7 @@ namespace StoreAPI.Services
             {
                 return new FailedServiceResponse<AuthResponse>(createResponse)
                     .SetTitle("Error on user registration")
-                    .SetDetail($"See '{ExceptionWithProblemDetails.ErrorKey}' property for more details");
+                    .SetDetail($"See '{ServiceResponse.ErrorKey}' property for more details");
             }
 
             var appUserResponse = await _userService.GetByUserNameAsync(user.UserName);
@@ -76,7 +76,7 @@ namespace StoreAPI.Services
             if (!loginResponse.Success)
             {
                 return new FailedServiceResponse<AuthResponse>(loginResponse)
-                    .SetDetail($"User succesfully registered, but an error occurred during authentication. Check '{ServiceResponse.ErrorKey}' for more details");
+                    .SetDetail($"User succesfully registered, but an error occurred during authentication. See '{ServiceResponse.ErrorKey}' for more details");
             }
 
             var loginData = loginResponse.Data;
@@ -97,7 +97,7 @@ namespace StoreAPI.Services
             {
                 return new FailedServiceResponse<AuthResponse>(validationResult)
                     .SetTitle("Validation error")
-                    .SetDetail($"Invalid user data. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
+                    .SetDetail($"Invalid user data. See '{ServiceResponse.ErrorKey}' for more details");
             }
 
             var userResponse = await _userService.GetByUserNameAsync(userDto.UserName);

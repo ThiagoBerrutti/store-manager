@@ -5,7 +5,6 @@ using StoreAPI.Helpers;
 using StoreAPI.Persistence.Repositories;
 using StoreAPI.Services.Communication;
 using StoreAPI.TestUser;
-using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Formatting;
@@ -35,15 +34,17 @@ namespace StoreAPI.Services
 
         public async Task<ServiceResponse<UserRegisterDto>> GetRandomUser()
         {
+            var digits = 3;
+
             var randomUser = await FetchUser();
             if (randomUser is null)
             {
-                var producedUser = TestAccountUserRegisterFactory.Produce(); // fallback data
+                var producedUser = TestAccountUserRegisterFactory.Produce(digits); // fallback data
                 return new ServiceResponse<UserRegisterDto>(producedUser);
             }
 
             var userRegisterDto = _mapper.Map<UserRegisterDto>(randomUser);
-            userRegisterDto.UserName = StringFormatter.RemoveAccents(userRegisterDto.FirstName) + RandomUserNameNumber();
+            userRegisterDto.UserName = StringFormatter.RemoveAccents(userRegisterDto.FirstName) + TestAccountUserRegisterFactory.RandomUserNameNumber(digits);
             userRegisterDto.Password = "test";
 
             var result = new ServiceResponse<UserRegisterDto>(userRegisterDto);
@@ -73,26 +74,14 @@ namespace StoreAPI.Services
             return user;
         }
 
-
-        private static string RandomUserNameNumber()
-        {
-            var random = new Random();
-            var number = random.Next(int.MaxValue).ToString();
-
-            return number;
-        }
-
-
         public async Task<ServiceResponse<AuthResponse>> RegisterTestAcc(List<RolesEnum> roleId)
         {
             var randomUserResponse = await GetRandomUser();
             if (!randomUserResponse.Success)
             {
-                return new ServiceResponse<AuthResponse>()
-                    .HasFailed(randomUserResponse.Error)
+                return new FailedServiceResponse<AuthResponse>(randomUserResponse.Error)
                     .SetTitle("Error registering test account")
-                    .SetDetail($"Error generating random user. Check {ServiceResponse.ErrorKey} for more details")
-                    .AddToExtensionsErrors(randomUserResponse.Error);
+                    .SetDetail($"Error generating random user. See {ServiceResponse.ErrorKey} for more details");
             }
 
             var userDto = randomUserResponse.Data;
@@ -132,7 +121,7 @@ namespace StoreAPI.Services
             var authenticateResponse = await _authService.AuthenticateAsync(userDto);
             if (!authenticateResponse.Success)
             {
-                return new FailedServiceResponse<AuthResponse>(authenticateResponse.Error);
+                return new FailedServiceResponse<AuthResponse>(authenticateResponse);
             }
 
             var resultData = authenticateResponse.Data;

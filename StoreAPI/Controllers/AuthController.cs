@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using StoreAPI.Dtos;
 using StoreAPI.Enums;
 using StoreAPI.Helpers;
+using StoreAPI.Infra;
 using StoreAPI.Services;
+using StoreAPI.Services.Communication;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Collections.Generic;
 using System.Net.Mime;
@@ -51,13 +53,13 @@ namespace StoreAPI.Controllers
             var registerResponse = await _authService.RegisterAsync(userDto);
             if (!registerResponse.Success)
             {
-                return new ObjectResult(registerResponse.Error) { StatusCode = registerResponse.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(registerResponse.Error);
             }
 
             var authenticateResponse = await _authService.AuthenticateAsync(userDto);
             if (!authenticateResponse.Success)
             {
-                return new ObjectResult(authenticateResponse.Error) { StatusCode = authenticateResponse.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(authenticateResponse.Error);
             }
 
             var authResult = authenticateResponse.Data;
@@ -80,7 +82,7 @@ namespace StoreAPI.Controllers
             var authResponse = await _authService.AuthenticateAsync(userLogin);
             if (!authResponse.Success)
             {
-                return new ObjectResult(authResponse.Error) { StatusCode = authResponse.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(authResponse.Error);
             }
 
             var result = authResponse.Data;
@@ -108,7 +110,7 @@ namespace StoreAPI.Controllers
             var authenticateResponse = await _testUserService.RegisterTestAcc(roleId);
             if (!authenticateResponse.Success)
             {
-                return new ObjectResult(authenticateResponse.Error) { StatusCode = authenticateResponse.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(authenticateResponse.Error);
             }
 
             var authResult = authenticateResponse.Data;
@@ -129,7 +131,7 @@ namespace StoreAPI.Controllers
             var resetResult = await _userService.ResetTestUsers();
             if (!resetResult.Success)
             {
-                return new ObjectResult(resetResult.Error) { StatusCode = resetResult.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(resetResult.Error);
             }
 
             var testAdminLogin = TestAccountUsersLoginFactory.Generate(user);
@@ -137,7 +139,7 @@ namespace StoreAPI.Controllers
             var authResponse = await _authService.AuthenticateAsync(testAdminLogin);
             if (!authResponse.Success)
             {
-                return new ObjectResult(authResponse.Error) { StatusCode = authResponse.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(authResponse.Error);
             }
 
             var result = authResponse.Data;

@@ -4,11 +4,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Routing;
 using StoreAPI.Dtos;
-using StoreAPI.Exceptions;
-using StoreAPI.Extensions;
 using StoreAPI.Identity;
 using StoreAPI.Infra;
 using StoreAPI.Persistence.Repositories;
+using StoreAPI.Persistence.Repositories.Extensions;
 using StoreAPI.Services.Communication;
 using StoreAPI.Validations;
 using System;
@@ -49,7 +48,7 @@ namespace StoreAPI.Services
             if (!validationResult.IsValid)
             {
                 return new FailedServiceResponse<PaginatedList<UserReadDto>>(validationResult)
-                    .SetDetail($"Invalid query string parameters. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
+                    .SetDetail($"Invalid query string parameters. See '{ServiceResponse.ErrorKey}' for more details");
             }
 
             var earliestDob = parameters.EarliestDateToSearch();
@@ -414,7 +413,7 @@ namespace StoreAPI.Services
             {
                 return new FailedServiceResponse<UserReadDto>(updateResult)
                     .SetTitle("Error updating user")
-                    .SetDetail($"See '{ExceptionWithProblemDetails.ErrorKey}' property for more details")
+                    .SetDetail($"See '{ServiceResponse.ErrorKey}' property for more details")
                     .SetInstance(UserInstance(user.Id));
             }
 
@@ -441,7 +440,7 @@ namespace StoreAPI.Services
             if (!validationResult.IsValid)
             {
                 return new FailedServiceResponse(validationResult)
-                    .SetDetail($"Invalid passwords. See '{ExceptionWithProblemDetails.ErrorKey}' for more details");
+                    .SetDetail($"Invalid passwords. See '{ServiceResponse.ErrorKey}' for more details");
             }
 
             var userResponse = await GetByIdAsync(id);
@@ -473,7 +472,7 @@ namespace StoreAPI.Services
             if (!validationResult.IsValid)
             {
                 return new FailedServiceResponse(validationResult)
-                    .SetDetail($"Invalid passwords. See '{ExceptionWithProblemDetails.ErrorKey}' for more details")
+                    .SetDetail($"Invalid passwords. See '{ServiceResponse.ErrorKey}' for more details")
                     .SetInstance(UserInstance(currentUser.Id));
             }
 
@@ -482,7 +481,7 @@ namespace StoreAPI.Services
             {
                 return new FailedServiceResponse(changePasswordResponse)
                     .SetTitle("Error changing password")
-                    .SetDetail($"See '{ExceptionWithProblemDetails.ErrorKey}' property for more details")
+                    .SetDetail($"See '{ServiceResponse.ErrorKey}' property for more details")
                     .SetInstance(UserInstance(currentUser.Id));
             }
 
@@ -524,7 +523,7 @@ namespace StoreAPI.Services
             {
                 return new FailedServiceResponse(resetPasswordResponse)
                     .SetTitle("Error reseting password")
-                    .SetDetail($"See '{ExceptionWithProblemDetails.ErrorKey}' property for more details")
+                    .SetDetail($"See '{ServiceResponse.ErrorKey}' property for more details")
                     .SetInstance(UserInstance(id));
             }
 

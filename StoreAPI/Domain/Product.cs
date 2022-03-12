@@ -20,7 +20,5 @@
             Name = name;
             Price = price;
         }
-
-        public bool OnStock() => ProductStock.Quantity > 0;
     }
 }

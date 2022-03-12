@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using StoreAPI.Identity;
 using System.Collections.Generic;
 
-namespace StoreAPI.Persistence.EntityConfigurations
+namespace StoreAPI.Persistence.Data
 {
     public class UserRoleEntityConfig : IEntityTypeConfiguration<UserRole>
     {

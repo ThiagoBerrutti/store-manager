@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 using System.Net;
 using System.Text.Json;
@@ -33,36 +35,6 @@ namespace StoreAPI.Exceptions
 
                 switch (exceptionWithProblemDetails)
                 {
-                    case AppException _:
-                        {
-                            statusCode = problemDetails.Status ?? (int)HttpStatusCode.BadRequest;
-                            break;
-                        }
-
-                    case AppValidationException _:
-                        {
-                            statusCode = problemDetails.Status ?? (int)HttpStatusCode.BadRequest;
-                            break;
-                        }
-
-                    case DomainNotFoundException _:
-                        {
-                            statusCode = problemDetails.Status ?? (int)HttpStatusCode.NotFound;
-                            break;
-                        }
-
-                    case IdentityException _:
-                        {
-                            statusCode = problemDetails.Status ?? (int)HttpStatusCode.BadRequest;
-                            break;
-                        }
-
-                    case IdentityNotFoundException _:
-                        {
-                            statusCode = problemDetails.Status ?? (int)HttpStatusCode.NotFound;
-                            break;
-                        }
-
                     case InfrastructureException _:
                         {
                             statusCode = problemDetails.Status ?? (int)HttpStatusCode.InternalServerError;

@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using StoreAPI.Dtos;
-using StoreAPI.Extensions;
 using StoreAPI.Identity;
+using StoreAPI.Persistence.Repositories.Extensions;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -30,7 +29,7 @@ namespace StoreAPI.Persistence.Repositories
                     .OrderBy(r => r.Id)
                     .Include(r => r.Users)
                     .Where(expression)
-                    .ToPaginatedListAsync(pageNumber, pageSize);                
+                    .ToPaginatedListAsync(pageNumber, pageSize);
 
             return result;
         }

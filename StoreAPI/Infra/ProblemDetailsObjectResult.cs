@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace StoreAPI.Infra
 {
-    public class ErrorObjectResult : ObjectResult
+    public class ProblemDetailsObjectResult : ObjectResult
     {
-        public ErrorObjectResult(object value) : base(value)
+        public ProblemDetailsObjectResult(object value) : base(value)
         {
             if (value is ProblemDetails asProblemDetails)
             {
@@ -13,7 +13,7 @@ namespace StoreAPI.Infra
             }
         }
 
-        public ErrorObjectResult(object value, int? statusCode) : this(value)
+        public ProblemDetailsObjectResult(object value, int? statusCode) : this(value)
         {
             if (statusCode.HasValue)
             {

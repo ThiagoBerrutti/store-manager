@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using StoreAPI.Dtos;
+using StoreAPI.Infra;
 using StoreAPI.Services;
 using StoreAPI.Swagger;
 using Swashbuckle.AspNetCore.Annotations;
@@ -44,7 +45,7 @@ namespace StoreAPI.Controllers
             var response = await _stockService.GetAllDtoPaginatedAsync(parameters);
             if (!response.Success)
             {
-                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(response.Error);
             }
 
             var page = response.Data;
@@ -71,7 +72,7 @@ namespace StoreAPI.Controllers
             var response = await _stockService.GetDtoByProductIdAsync(productId);
             if (!response.Success)
             {
-                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(response.Error);
             }
 
             var result = response.Data;
@@ -94,7 +95,7 @@ namespace StoreAPI.Controllers
             var response = await _stockService.GetDtoByIdAsync(id);
             if (!response.Success)
             {
-                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(response.Error);
             }
 
             var result = response.Data;
@@ -118,7 +119,7 @@ namespace StoreAPI.Controllers
             var response = await _stockService.UpdateAsync(id, stockUpdate);
             if (!response.Success)
             {
-                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(response.Error);
             }
 
             var result = response.Data;
@@ -145,7 +146,7 @@ namespace StoreAPI.Controllers
             {
                 if (!response.Success)
                 {
-                    return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+                    return new ProblemDetailsObjectResult(response.Error);
                 }
             }
 
@@ -172,7 +173,7 @@ namespace StoreAPI.Controllers
             {
                 if (!response.Success)
                 {
-                    return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+                    return new ProblemDetailsObjectResult(response.Error);
                 }
             }
 

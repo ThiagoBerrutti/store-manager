@@ -10,8 +10,8 @@ using StoreAPI.Persistence;
 namespace StoreAPI.Migrations
 {
     [DbContext(typeof(StoreDbContext))]
-    [Migration("20220227231556_stockquantity")]
-    partial class stockquantity
+    [Migration("20220311202437_DbMigration")]
+    partial class DbMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -126,6 +126,43 @@ namespace StoreAPI.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Products");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Description = "Abacate 1kg",
+                            Name = "Abacate",
+                            Price = 9.9900000000000002
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Description = "Berinjela preta 1kg",
+                            Name = "Berinjela",
+                            Price = 3.0
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Description = "Coco seco un",
+                            Name = "Coco",
+                            Price = 7.5
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Description = "Danoninho Ice 70g",
+                            Name = "Danoninho",
+                            Price = 6.0
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Description = "Espaguete Isabela 500g",
+                            Name = "Espaguete",
+                            Price = 4.0
+                        });
                 });
 
             modelBuilder.Entity("StoreAPI.Domain.ProductStock", b =>
@@ -147,6 +184,38 @@ namespace StoreAPI.Migrations
                         .IsUnique();
 
                     b.ToTable("ProductStocks");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            ProductId = 1,
+                            Quantity = 200
+                        },
+                        new
+                        {
+                            Id = 2,
+                            ProductId = 2,
+                            Quantity = 100
+                        },
+                        new
+                        {
+                            Id = 3,
+                            ProductId = 3,
+                            Quantity = 50
+                        },
+                        new
+                        {
+                            Id = 4,
+                            ProductId = 4,
+                            Quantity = 150
+                        },
+                        new
+                        {
+                            Id = 5,
+                            ProductId = 5,
+                            Quantity = 200
+                        });
                 });
 
             modelBuilder.Entity("StoreAPI.Identity.Role", b =>
@@ -181,28 +250,28 @@ namespace StoreAPI.Migrations
                         new
                         {
                             Id = 1,
-                            ConcurrencyStamp = "77edfe02-acf0-45f5-a904-5d8c4d756711",
+                            ConcurrencyStamp = "38e12d0f-227d-47c6-8ce6-e25354920f5d",
                             Name = "Administrator",
                             NormalizedName = "ADMINISTRATOR"
                         },
                         new
                         {
                             Id = 2,
-                            ConcurrencyStamp = "c6133367-ffbd-4a7c-9806-55920fda2181",
+                            ConcurrencyStamp = "e7fa4211-fb54-4256-a137-82daf1f53169",
                             Name = "Manager",
                             NormalizedName = "MANAGER"
                         },
                         new
                         {
                             Id = 3,
-                            ConcurrencyStamp = "390d0f13-7207-4efc-984f-e45c6e7b383e",
+                            ConcurrencyStamp = "dd3cf533-e9c1-4a9e-97c8-584a87b305a3",
                             Name = "Stock",
                             NormalizedName = "STOCK"
                         },
                         new
                         {
                             Id = 4,
-                            ConcurrencyStamp = "17a18e4c-cd4f-442a-accb-39478beb6a30",
+                            ConcurrencyStamp = "1e932ed6-6921-4ee1-857e-cf793e269dce",
                             Name = "Seller",
                             NormalizedName = "SELLER"
                         });
@@ -222,7 +291,7 @@ namespace StoreAPI.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("DateOfbirth")
+                    b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
@@ -288,16 +357,16 @@ namespace StoreAPI.Migrations
                         {
                             Id = 1,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "a1c14f1f-2b78-444d-af30-2a58ad849b7f",
-                            DateOfbirth = new DateTime(1980, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            ConcurrencyStamp = "c3f0ef67-721d-412f-abd0-c4ed2bbb65b2",
+                            DateOfBirth = new DateTime(1980, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             EmailConfirmed = false,
                             FirstName = "Admin",
                             LastName = "Istrator",
                             LockoutEnabled = false,
                             NormalizedUserName = "ADMIN",
-                            PasswordHash = "AQAAAAEAACcQAAAAECj24mk4633h33WnIHpRDzBwAvl3XVAzJYRtA25uNk8yVoyreLGy1FUZqAzJ4Ws5gQ==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEBT4fdxp5/xfJ4X4raZqaTFphx5LtezaWuc25coE6yeuDyd9OgrHZFYko+hvuY+Bag==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "8d042e78-3d0a-4413-901d-efacc897caea",
+                            SecurityStamp = "2319e2d8-8c37-4157-91b2-d53f598dfb91",
                             TwoFactorEnabled = false,
                             UserName = "admin"
                         },
@@ -305,16 +374,16 @@ namespace StoreAPI.Migrations
                         {
                             Id = 2,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "0eb7ec2c-9823-4b0d-8e3b-beb0476b8e17",
-                            DateOfbirth = new DateTime(1990, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            ConcurrencyStamp = "82a6a5c4-795a-4025-8832-8c36665e54bd",
+                            DateOfBirth = new DateTime(1990, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             EmailConfirmed = false,
                             FirstName = "Manager",
                             LastName = "Test Acc",
                             LockoutEnabled = false,
                             NormalizedUserName = "MANAGER",
-                            PasswordHash = "AQAAAAEAACcQAAAAEG2pKP9FIJN0525YCa6cD9A/PL6+lu8l15i7obq4j4ecuDGNvVu0xTGn2RpU2bPamQ==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEDHDLTP1M7BHpThSQYCelR3KxmPK+qDuQoSIqV4rj2YVs42VpfFEPUb+N/dWci/oMA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "c7b29375-2568-407c-b0c8-cb02a080c50b",
+                            SecurityStamp = "9299021c-d3f3-4189-bd68-8268df4dc0cf",
                             TwoFactorEnabled = false,
                             UserName = "manager"
                         },
@@ -322,16 +391,16 @@ namespace StoreAPI.Migrations
                         {
                             Id = 3,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "0409da33-360b-4c4b-99db-94a1fe4829ae",
-                            DateOfbirth = new DateTime(1995, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            ConcurrencyStamp = "bac48320-5bb6-4b9e-8d0b-5b133ca6ada8",
+                            DateOfBirth = new DateTime(1995, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             EmailConfirmed = false,
                             FirstName = "Stock",
                             LastName = "Test Acc",
                             LockoutEnabled = false,
                             NormalizedUserName = "STOCK",
-                            PasswordHash = "AQAAAAEAACcQAAAAEDi6h7GDeTUPYTqAHARqRC/1Th1CyMnpciWo4/VNGFGemrqgM3k/SghzUMMTTWWlJg==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEFmy698chQ2E4E7dIygdZ5mz+xkHIk0GQcBnSP25gjgyoG2hn0InaDV+hWIAWzS9MA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "11efa921-6c79-4811-85fc-5c4df83335a7",
+                            SecurityStamp = "ee61aa36-8f02-4395-9a60-d6b01f58fb36",
                             TwoFactorEnabled = false,
                             UserName = "stock"
                         },
@@ -339,16 +408,16 @@ namespace StoreAPI.Migrations
                         {
                             Id = 4,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "015f8936-7e5e-47a1-ab56-a2c975446241",
-                            DateOfbirth = new DateTime(2000, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            ConcurrencyStamp = "40836bd8-ad96-4f5b-8362-6fb59297de37",
+                            DateOfBirth = new DateTime(2000, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             EmailConfirmed = false,
                             FirstName = "Seller",
                             LastName = "Test Acc",
                             LockoutEnabled = false,
                             NormalizedUserName = "SELLER",
-                            PasswordHash = "AQAAAAEAACcQAAAAEEzXWbmAloWBepqbB1keXbir82+MZgl4Rfxmq3nv0s9G/A0oesrCcCyJwg3cYYy+Mw==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEKTGncEPc28K/F20NIZvHo9gdp5CpV52OB4xBaUt0lv0d/+NcXY3zaFa2ybAmrMbmQ==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "aeefa2a4-1e15-4228-bf94-51a8d206a430",
+                            SecurityStamp = "1cc2ce74-88fe-49ba-8d69-81fb168250be",
                             TwoFactorEnabled = false,
                             UserName = "seller"
                         },
@@ -356,16 +425,16 @@ namespace StoreAPI.Migrations
                         {
                             Id = 5,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "00ab7071-3f5c-43cd-9100-3cf308a8ccb4",
-                            DateOfbirth = new DateTime(2002, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            ConcurrencyStamp = "77436546-a249-40fc-8ba8-ba79f14d3386",
+                            DateOfBirth = new DateTime(2002, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             EmailConfirmed = false,
                             FirstName = "Public",
                             LastName = "Test Acc",
                             LockoutEnabled = false,
                             NormalizedUserName = "PUBLIC",
-                            PasswordHash = "AQAAAAEAACcQAAAAED539VxlsUuVlfXn2omj7usojA8TMnhyJYyRuL+UEY3uaCgQB80fd+KaJJvsBm0TsA==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEKh0lrjZ5apxtkiDrKVWb2kS0VhoW4++id79cQPaSgtq+eg8NY+VzXeh+K3Gd4S6hg==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "9c48e42c-afc9-467d-9184-56f4711e384a",
+                            SecurityStamp = "0a9aa26f-cf35-4d3f-a942-8e7f6865e56b",
                             TwoFactorEnabled = false,
                             UserName = "public"
                         });

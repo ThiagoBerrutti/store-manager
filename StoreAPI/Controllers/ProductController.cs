@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using StoreAPI.Dtos;
-using StoreAPI.Extensions;
+using StoreAPI.Infra;
 using StoreAPI.Services;
 using StoreAPI.Swagger;
 using Swashbuckle.AspNetCore.Annotations;
@@ -21,7 +21,6 @@ namespace StoreAPI.Controllers
     [Route("api/v1/products")]
     [Consumes(MediaTypeNames.Application.Json)]
     [Produces(MediaTypeNames.Application.Json)]
-    //[ProducesErrorResponseType(typeof(void))]
     public class ProductController : ControllerBase
     {
         private readonly IProductService _productService;
@@ -46,7 +45,7 @@ namespace StoreAPI.Controllers
             var response = await _productService.GetAllDtoPaginatedAsync(parameters);
             if (!response.Success)
             {
-                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(response.Error);
             }
 
             var page = response.Data;
@@ -72,7 +71,7 @@ namespace StoreAPI.Controllers
             var response = await _productService.GetDtoByIdAsync(id);
             if (!response.Success)
             {
-                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(response.Error);
             }
 
             var result = response.Data;
@@ -97,7 +96,7 @@ namespace StoreAPI.Controllers
             var response = await _productService.CreateAsync(product, quantity);
             if (!response.Success)
             {
-                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(response.Error);
             }
 
             var result = response.Data;
@@ -119,7 +118,7 @@ namespace StoreAPI.Controllers
             var response = await _productService.DeleteAsync(id);
             if (!response.Success)
             {
-                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(response.Error);
             }
 
             return Ok();
@@ -141,7 +140,7 @@ namespace StoreAPI.Controllers
             var response = await _productService.UpdateAsync(id, productUpdate);
             if (!response.Success)
             {
-                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(response.Error);
             }
 
             var result = response.Data;

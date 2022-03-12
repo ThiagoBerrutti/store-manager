@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using StoreAPI.Dtos;
+using StoreAPI.Infra;
 using StoreAPI.Services;
 using StoreAPI.Swagger;
 using Swashbuckle.AspNetCore.Annotations;
@@ -45,7 +46,7 @@ namespace StoreAPI.Controllers
             var response = await _roleService.GetAllDtoPaginatedAsync(parameters);
             if (!response.Success)
             {
-                return new ObjectResult(response.Error);
+                return new ProblemDetailsObjectResult(response.Error);
             }
 
             var page = response.Data;
@@ -71,7 +72,7 @@ namespace StoreAPI.Controllers
             var response = await _roleService.GetDtoByIdAsync(id);
             if (!response.Success)
             {
-                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(response.Error);
             }
 
             var result = response.Data;
@@ -93,7 +94,7 @@ namespace StoreAPI.Controllers
             var response = await _roleService.GetDtoByNameAsync(roleName);
             if (!response.Success)
             {
-                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(response.Error);
             }
 
             var result = response.Data;
@@ -116,7 +117,7 @@ namespace StoreAPI.Controllers
             var response = await _roleService.GetAllUsersOnRolePaginatedAsync(id, parameters);
             if (!response.Success)
             {
-                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(response.Error);
             }
 
             var page = response.Data;
@@ -142,7 +143,7 @@ namespace StoreAPI.Controllers
             var response = await _roleService.CreateAsync(roleDto);
             if (!response.Success)
             {
-                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(response.Error);
             }
 
             var result = response.Data;
@@ -165,7 +166,7 @@ namespace StoreAPI.Controllers
             var response = await _roleService.DeleteAsync(id);
             if (!response.Success)
             {
-                return new ObjectResult(response.Error) { StatusCode = response.Error.Status ?? StatusCodes.Status400BadRequest };
+                return new ProblemDetailsObjectResult(response.Error);
             }
 
             return NoContent();
