@@ -3,30 +3,23 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Logging;
-using Microsoft.OpenApi.Models;
 using StoreAPI.Exceptions;
 using StoreAPI.Extensions;
 using StoreAPI.Identity;
 using StoreAPI.Infra;
 using StoreAPI.Persistence;
-using StoreAPI.Persistence.Data;
 using StoreAPI.Persistence.Repositories;
 using StoreAPI.Services;
 using StoreAPI.Swagger;
-using Swashbuckle.AspNetCore.Filters;
 using System;
-using System.IO;
-using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace StoreAPI
 {
@@ -42,15 +35,18 @@ namespace StoreAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var connectionStringBuilder = new SqlConnectionStringBuilder(Configuration.GetConnectionString("StoreDbSQLServer"))
+            var connectionStringBuilder = new SqlConnectionStringBuilder()//Configuration.GetConnectionString("StoreDbSQLServer"))
             {
-                UserID = Configuration["StoreDbSQLServer:UserId"],
-                Password = Configuration["StoreDbSQLServer:DbPassword"]
+                DataSource = Configuration["StoreDbSQLServerConnectionStringSettings:DataSource"],
+                InitialCatalog = Configuration["StoreDbSQLServerConnectionStringSettings:InitialCatalog"],
+                MultipleActiveResultSets = bool.Parse(Configuration["StoreDbSQLServerConnectionStringSettings:MultipleActiveResultSets"]),
+                UserID = Configuration["StoreDbSQLServerConnectionStringSettings:UserId"],
+                Password = Configuration["StoreDbSQLServerConnectionStringSettings:DbPassword"]
             };
 
             var connectionString = connectionStringBuilder.ConnectionString;
 
-            services.AddDbContext<StoreDbContext>(options =>    
+            services.AddDbContext<StoreDbContext>(options =>
             {
                 options
                     .UseSqlServer(connectionString)
@@ -96,7 +92,7 @@ namespace StoreAPI
                     o.JsonSerializerOptions.Converters.Add(new CustomDateTimeConverter());
                     o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 });
-                
+
 
             //jwt token
             services.AddJwtAuthentication(Configuration);
@@ -127,13 +123,13 @@ namespace StoreAPI
 
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, StoreDbContext db)
         {
             if (env.IsDevelopment())
             {
                 IdentityModelEventSource.ShowPII = true;
             }
-                        
+
             app.UseMiddleware<ExceptionHandlerMiddleware>();
 
             app.UseHsts();

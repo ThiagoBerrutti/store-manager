@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:latest
+    environment: 
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=1q2w3e4r@#$$
+    ports:
+      - 1401:1433
+    # volumes:
+    #   - /var/opt/mssql/data
+    restart: on-failure:2
+  store-api:
+    image: thiagoberrutti/store-api
+    ports: 
+      - 5000:5001
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - PORT=5001
+      # - StoreDbSQLServerConnectionStringSettings__UserId=sa
+      # - StoreDbSQLServerConnectionStringSettings__DbPassword=1q2w3e4r@#$
+      # - StoreDbSQLServerConnectionStringSettings__MultipleActiveResultSets=true
+      # - StoreDbSQLServerConnectionStringSettings__InitialCatalog=StoreApiDb
+      - StoreDbSQLServerConnectionStringSettings__DataSource=sqlserver,1433
+    restart: on-failure:2
+    depends_on:
+      - sqlserver
+# volumes:
+#   sqlserver-data:
+#     driver: local
+
+# NETWORK: docker network create store-network
+# DATABASE: docker run -d -p 1401:1433 --name sqlserver --net store-network -e ACCEPT_EULA=Y -e SA_PASSWORD=1q2w3e4r@#$ mcr.microsoft.com/mssql/server:latest
+# API: docker run -d -p 5000:80 --name store-api --net store-network -e PORT=5001 -e ASPNETCORE_ENVIRONMENT=Development -e StoreDbSQLServerConnectionStringSettings__DataSource=sqlserver,1433 thiagoberrutti/store-api
+
