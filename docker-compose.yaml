@@ -9,20 +9,15 @@ services:
       - 1401:1433
     # volumes:
     #   - /var/opt/mssql/data
-    restart: on-failure:2
+    restart: unless-stopped
   store-api:
     image: thiagoberrutti/store-api
     ports: 
       - 5000:5001
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
       - PORT=5001
-      # - StoreDbSQLServerConnectionStringSettings__UserId=sa
-      # - StoreDbSQLServerConnectionStringSettings__DbPassword=1q2w3e4r@#$
-      # - StoreDbSQLServerConnectionStringSettings__MultipleActiveResultSets=true
-      # - StoreDbSQLServerConnectionStringSettings__InitialCatalog=StoreApiDb
       - StoreDbSQLServerConnectionStringSettings__DataSource=sqlserver,1433
-    restart: on-failure:2
+    restart: unless-stopped
     depends_on:
       - sqlserver
 # volumes:

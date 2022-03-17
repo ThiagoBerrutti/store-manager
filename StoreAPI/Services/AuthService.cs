@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using StoreAPI.Dtos;
-using StoreAPI.Exceptions;
 using StoreAPI.Identity;
 using StoreAPI.Infra;
 using StoreAPI.Services.Communication;
@@ -170,7 +169,7 @@ namespace StoreAPI.Services
             var rolesResponse = await _userService.GetRolesNamesAsync(user.UserName);
             if (!rolesResponse.Success)
             {
-                return new FailedServiceResponse<string>(rolesResponse);                 
+                return new FailedServiceResponse<string>(rolesResponse);
             }
 
             var roles = rolesResponse.Data;

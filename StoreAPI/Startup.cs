@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Logging;
 using StoreAPI.Exceptions;
 using StoreAPI.Extensions;
@@ -25,9 +26,12 @@ namespace StoreAPI
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        private IWebHostEnvironment _env;
+
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             Configuration = configuration;
+            _env = env;
         }
 
         public IConfiguration Configuration { get; }
@@ -35,23 +39,35 @@ namespace StoreAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var connectionStringBuilder = new SqlConnectionStringBuilder()//Configuration.GetConnectionString("StoreDbSQLServer"))
+
+            var section = Configuration.GetSection("StoreDbSQLServerConnectionStringSettings");
+            
+            var connectionStringBuilder = new SqlConnectionStringBuilder()
             {
-                DataSource = Configuration["StoreDbSQLServerConnectionStringSettings:DataSource"],
-                InitialCatalog = Configuration["StoreDbSQLServerConnectionStringSettings:InitialCatalog"],
-                MultipleActiveResultSets = bool.Parse(Configuration["StoreDbSQLServerConnectionStringSettings:MultipleActiveResultSets"]),
-                UserID = Configuration["StoreDbSQLServerConnectionStringSettings:UserId"],
-                Password = Configuration["StoreDbSQLServerConnectionStringSettings:DbPassword"]
+                WorkstationID = section["WorkstationId"],
+                DataSource = section["DataSource"],
+                InitialCatalog = section["InitialCatalog"],
+                MultipleActiveResultSets = bool.Parse(section["MultipleActiveResultSets"]),
+                UserID = section["UserId"],
+                Password = section["DbPassword"]
             };
 
             var connectionString = connectionStringBuilder.ConnectionString;
 
             services.AddDbContext<StoreDbContext>(options =>
             {
-                options
-                    .UseSqlServer(connectionString)
-                    .LogTo(Console.WriteLine)
-                    .EnableSensitiveDataLogging();
+                options.UseSqlServer(connectionString);
+
+                if (_env.IsDevelopment())
+                {
+                    options.EnableSensitiveDataLogging()
+                           .EnableDetailedErrors()
+                           .LogTo(Console.WriteLine);
+                }
+                else
+                {
+                    options.LogTo(Console.WriteLine, LogLevel.Error);
+                }
             });
 
             services.AddIdentityCore<User>(options =>

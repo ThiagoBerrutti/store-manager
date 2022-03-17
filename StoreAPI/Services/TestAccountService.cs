@@ -34,7 +34,7 @@ namespace StoreAPI.Services
 
         public async Task<ServiceResponse<UserRegisterDto>> GetRandomUser()
         {
-            var digits = 3;
+            var digits = 5;
 
             var randomUser = await FetchUser();
             if (randomUser is null)

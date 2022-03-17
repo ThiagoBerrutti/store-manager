@@ -57,7 +57,7 @@ namespace StoreAPI.Dtos
         /// <summary>
         /// Returns only users at most that age
         /// </summary>
-        /// <example>35</example>
+        /// <example>45</example>
         public int? MaxAge { get; set; }
 
         /// <summary>
