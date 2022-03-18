@@ -18,21 +18,20 @@ Essa Ã© uma API REST demonstrativa para gerenciamento de estoque, com autenticaÃ
 
 ## Tecnologias usadas
 - ASP.NET Core 3.1
-- Entity Framework Core 
-> Foi utilizado a abordagem code-first 
+- <details><summary>Entity Framework Core</summary>
+    > Foi utilizado a abordagem code-first</details>
 - SQLServer 2019
 - Identity
-- Docker
-- Swagger
-> Swashbuckle
+- Docker ([see more](#run-locally-with-docker-containers))
+- <details><summary>Swagger</summary>
+> Swashbuckle</details>
 - FluentValidation
 - AutoMapper
 - <details><summary>CLIQUE</summary>
-    - aa  
-    - bb
-    - cc
-    - dd
-    </details>
+- aa  
+- bb
+- cc
+- dd</details>
 - MaisUmaTecnologia
 - MaisUmaOutraTecnologia
 
