@@ -1,7 +1,5 @@
-﻿using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 using System.Net;
 using System.Text.Json;
@@ -28,7 +26,7 @@ namespace StoreAPI.Exceptions
         {
             var statusCode = (int)HttpStatusCode.BadRequest;
             ProblemDetails problemDetails = null;
-                        
+
             if (exception is ExceptionWithProblemDetails exceptionWithProblemDetails)
             {
                 problemDetails = exceptionWithProblemDetails.ProblemDetails;

@@ -6,7 +6,6 @@ using StoreAPI.Enums;
 using StoreAPI.Helpers;
 using StoreAPI.Infra;
 using StoreAPI.Services;
-using StoreAPI.Services.Communication;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Collections.Generic;
 using System.Net.Mime;
@@ -94,7 +93,7 @@ namespace StoreAPI.Controllers
         /// Easy registration for a new test user with roles assigned
         /// </summary>
         /// <remarks>
-        /// Data is randomized.
+        /// Data is generating consuming an external API for random user data. If any error occurs, the random data is generated internally.
         /// Default password: 'test'.
         ///
         /// Example:
@@ -106,7 +105,7 @@ namespace StoreAPI.Controllers
         [SwaggerResponse(StatusCodes.Status201Created, "User successfully registered and authenticated", typeof(AuthResponse))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Error registering user")]
         public async Task<IActionResult> RegisterTestAcc([FromQuery] List<RolesEnum> roleId)
-        {           
+        {
             var authenticateResponse = await _testUserService.RegisterTestAcc(roleId);
             if (!authenticateResponse.Success)
             {
