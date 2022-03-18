@@ -24,14 +24,14 @@ Essa √© uma API REST demonstrativa para gerenciamento de estoque, com autentica√
 - Identity
 - Docker ([see more](#run-locally-with-docker-containers))
 - <details><summary>Swagger</summary>
-> Swashbuckle</details>
+    > Swashbuckle</details>
 - FluentValidation
 - AutoMapper
-- <details><summary>CLIQUE</summary>
-- aa  
-- bb
-- cc
-- dd</details>
+- <details><summary>Teste</summary>
+    - aa  
+    - bb
+    - cc
+    - dd</details>
 - MaisUmaTecnologia
 - MaisUmaOutraTecnologia
 
