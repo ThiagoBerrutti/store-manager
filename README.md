@@ -27,13 +27,12 @@ Essa Ã© uma API REST demonstrativa para gerenciamento de estoque, com autenticaÃ
 > Swashbuckle
 - FluentValidation
 - AutoMapper
-- <details>
-<summary>CLIQUE</summary>
+- <details><summary>CLIQUE</summary>
     - aa  
     - bb
     - cc
     - dd
-</details>
+    </details>
 - MaisUmaTecnologia
 - MaisUmaOutraTecnologia
 
