@@ -4,14 +4,37 @@ A demo API for stock management.
 
 # Sections
 - [About](#about)
-- [Testing this API](#how-to-use-this-api)
-	- [Online demo](#online-demo)
-	- [Using Docker containers](#run-locally-with-docker-containers)
+	- [What it is](#what-it-is)
+	- [Technologies used](#technologies-used)
+	- [Architecture remarks](#architecture-remarks)
+	- [Other remarks](#other-remarks)
+- [Clone this project](#clone-this-project)
+- [How to run this API](#how-to-run-this-api)
+	- [Online demo](#1-online-demo)
+	- [Using Docker containers](#2-run-locally-with-docker-containers)
 		- [Prerequisites](#prerequisites)
-		- [With ready-to-use shell scripts](#running-premade-shell-scripts)
+		- [Setup](#setup)
 		- [With docker compose](#with-docker-compose)
+		- [With ready-to-use shell scripts](#running-premade-shell-scripts)
         - [From the source code](#running-from-source-code)
 - [API](#api)
+	- [What it does](#what-it-does)
+	- [Entities](#entities)
+		- [Product](#product)
+		- [Product stock](#product-stock)
+		- [Role](#role)
+		- [User](#user)
+	- [Test users](#test-users)
+	- [Operations](#operations)
+		- [Authentication and Authorization](#authentication-and-authorization)
+		- [Products](#products)
+		- [Stock](#stock)
+		- [Roles](#roles)
+		- [Users](#users)
+	- [Responses](#responses)
+		- [Pagination](#pagination)
+		- [Error responses](#error-responses)
+
 
 # About
 ## What it is
@@ -26,8 +49,6 @@ This is a demonstration REST API for store management, using JWT authentication 
 - Swagger
 - FluentValidation
 - AutoMapper
-
-
 
 ## Architecture remarks
 - One of the purposes of this project is to demonstrate the implementation of some standards. Some of these are:
@@ -54,27 +75,30 @@ You have two alternatives:
 
 ## 1. Online demo
 You can test a live version of this API on https://store-api-demo.herokuapp.com/swagger/index.html
+> The API and the database are hosted separately, so online testing depends on both hosts availability
 
 
 ## 2. Run locally with Docker containers
 ### Prerequisites
 
-This project was fully developed and runs online using Docker containers. To test it locally, you need to have [Docker installed](https://docs.docker.com/get-docker/).
+This project was fully developed and runs online using Docker containers. To test it on your local machine, make sure to have [Docker installed](https://docs.docker.com/get-docker/).
 
+>Note: for this project, the **SQLServer** container runs on port *1401* and the **API** container on port *5000*. Make sure both ports are not being used before creating the containers.
 ### Setup
 
-There are three ways you can setup it:
+There are three methods to setup it:
 - [using `docker compose` command](#with-docker-compose) 
 - [running ready-to-use premade shell scripts](#running-ready-to-use-shell-scripts)
 - [run it from the source code](#running-from-source-code)
 
->Note: by default, the **SQLServer** container runs on port *1401* and the **API** container on port *5000*. Make sure both ports are not being used before creating the containers.
 
 ### With docker compose
 
 1. on terminal, go to project root folder, where the file **`docker-compose.yaml`** is
-3. enter the command :
-`docker compose up`
+3. enter the command 
+```sh
+ docker compose up
+ ```
 4. wait for the containers to finish loading
 5. go to http://localhost:5000/swagger/index.html, should work
 
@@ -94,11 +118,13 @@ To make easier to run the project, there are some premade shell scripts that pul
 
 1. run the SQLServer container using **one of the following methods**:
 	- from premade shell scripts:
-		1.  from the root folder, enter folder `'./setup'`
-		2. execute the file **`2-docker-sqlserver.sh`**
+		- from the root folder, enter folder `'./setup'`
+		- execute the file **`2-docker-sqlserver.sh`**						
 	-  from terminal command line:
 		1. On the terminal, enter the command: 
-		`docker run -d -p 1401:1433 --name sqlserver -e ACCEPT_EULA=Y -e SA_PASSWORD=1q2w3e4r@#$ mcr.microsoft.com/mssql/server:latest`
+		```sh
+		docker run -d -p 1401:1433 --name sqlserver -e ACCEPT_EULA=Y -e SA_PASSWORD=1q2w3e4r@#$ mcr.microsoft.com/mssql/server:latest
+		```
 2. run the cloned project 
 3. go to http://localhost:5000/swagger, should work
 
@@ -142,7 +168,8 @@ When assigned to roles, an authenticated user also gains authorization to endpoi
 
 
 ## Test users
-To help testing, there are five 'default' or 'root' premade users with roles assigned to them. endpoint.
+To help testing, there are five 'default' or 'root' users with roles assigned to them. 
+
 | Username | Password | Role assigned | User Id |
 |:--- |:--- |:--- |:--- |
 | admin | admin | Administrator | 1 |
@@ -152,6 +179,8 @@ To help testing, there are five 'default' or 'root' premade users with roles ass
 | public | public | *no role* | 5 |
 
 > TIP: make testing quicker by using the auth endpoints for [Quick registering](#authentication-and-authorization) and [Quick authentication](#authentication-and-authorization) to authenticate to the test users.
+
+> All test users and the [default roles](#role) are reset upon authentication to a test user. 
 
 ## Operations
 ### Authentication and Authorization
@@ -168,7 +197,7 @@ To help testing the API, there are endpoints that helps creating and authenticat
 | Quick Registration | Registers a new user with randomly generated data, with the choosen Roles assigned, authenticating afterwards. Consuming an external API to get random data. Resets all default Users and Roles upon usage | /api/v1/auth/register/testAccount | POST |
 | Quick Authentication | Authenticates to the choosen premade user account. Resets all default Users and Roles upon usage | /api/v1/auth/authenticate/testAccount/{user} | POST |
 
-### Product
+### Products
 **Base route: `api/v1/products/`**
 
 CRUD operations with the products registered. 
@@ -181,23 +210,6 @@ When creating a new Product, a Product Stock is created to it. Same goes for del
 | Create a new product | Create a new Product and it's respective stock | /api/v1/products |
 | Update product | Changes a product entry data | /api/v1/products/{id} | PUT |
 | Delete product | Deletes a product and it's product stock data | /api/v1/products/{id} | DELETE |
-
-### Role
-**Base route: `api/v1/roles/`**
-
-Operations about roles. 
-
-| Operation | Description | URI | Method |
-| --- | --- | --- | --- |
-| Get all roles | Finds all roles. You can add parameters on the query string to filter the results:<ul><li>Name : `Name` must contain this string</li><li>UserId : select only roles assigned to this user (can be used multiple times on the same query string)</li></ul>Result is paginated. Accepts [pagination query string parameters](#pagination)| /api/v1/roles | GET |
-| Create a new role | Create a new role that can be assigned. New roles don't give any extra authorizations | /api/v1/roles | POST |
-| Get role by Id | Finds a role by Id | /api/v1/roles/{id} | GET |
-| Get role by Name | Finds a role by its *exact* name (case-insensitive) | /api/v1/roles/{roleName} | GET |
-| Update product | Changes a product entry data | /api/v1/products/{id} | PUT |
-| Delete role | Deletes a role | /api/v1/roles/{id} | DELETE |
-
-To add and remove roles from an user, see [Assign/remove role from user](#user-1)
-
 
 ### Stock
 **Base route: `api/v1/stock/`**
@@ -214,7 +226,23 @@ Stock related operations.
 | Remove quantity to product stock | Use to remove a quantity of a product on stock. | /api/v1/stock/{id}/remove/{quantity} | PUT |
 
 
-### User
+### Roles
+**Base route: `api/v1/roles/`**
+
+Operations about roles. 
+
+| Operation | Description | URI | Method |
+| --- | --- | --- | --- |
+| Get all roles | Finds all roles. You can add parameters on the query string to filter the results:<ul><li>Name : `Name` must contain this string</li><li>UserId : select only roles assigned to this user (can be used multiple times on the same query string)</li></ul>Result is paginated. Accepts [pagination query string parameters](#pagination)| /api/v1/roles | GET |
+| Create a new role | Create a new role that can be assigned. New roles don't give any extra authorizations | /api/v1/roles | POST |
+| Get role by Id | Finds a role by Id | /api/v1/roles/{id} | GET |
+| Get role by Name | Finds a role by its *exact* name (case-insensitive) | /api/v1/roles/{roleName} | GET |
+| Update product | Changes a product entry data | /api/v1/products/{id} | PUT |
+| Delete role | Deletes a role | /api/v1/roles/{id} | DELETE |
+
+To add and remove roles from an user, see [Assign/remove role from user](#user-1)
+
+### Users
 **Base route: `api/v1/users/`**
 
 Operations about users data. For registration and authentication, see [Authentication and Authorization](#authentication-and-authorization).
