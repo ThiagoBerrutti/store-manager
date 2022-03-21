@@ -16,7 +16,6 @@ namespace StoreAPI.Controllers
     /// <summary>
     /// Operations about roles
     /// </summary>
-    [Authorize(Roles = "Administrator,Manager")]
     [ApiController]
     [Route("api/v1/roles")]
     [Consumes(MediaTypeNames.Application.Json)]
@@ -40,6 +39,7 @@ namespace StoreAPI.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(List<RoleReadDto>))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponseHeader(StatusCodes.Status200OK, "X-Pagination", "string", Descriptions.XPaginationDescription)]
+        [Authorize(Roles = "Administrator,Manager")]
         [HttpGet(Name = nameof(GetAllRolesPaginated))]
         public async Task<IActionResult> GetAllRolesPaginated([FromQuery] RoleParametersDto parameters)
         {
@@ -66,6 +66,7 @@ namespace StoreAPI.Controllers
         /// <param name="id">The role's Id</param>
         [SwaggerResponse(StatusCodes.Status200OK, "Role found", typeof(RoleReadDto))]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Role not found")]
+        [Authorize(Roles = "Administrator,Manager")]
         [HttpGet("{id:int}", Name = nameof(GetRoleById))]
         public async Task<IActionResult> GetRoleById(int id)
         {
@@ -88,6 +89,7 @@ namespace StoreAPI.Controllers
         /// <param name="roleName">The role's name</param>
         [SwaggerResponse(StatusCodes.Status200OK, "Role found", typeof(RoleReadDto))]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Role not found")]
+        [Authorize(Roles = "Administrator,Manager")]
         [HttpGet("{roleName}", Name = nameof(GetRoleByName))]
         public async Task<IActionResult> GetRoleByName(string roleName)
         {
@@ -111,6 +113,7 @@ namespace StoreAPI.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(List<RoleReadDto>))]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Role not found")]
         [SwaggerResponseHeader(StatusCodes.Status200OK, "X-Pagination", "string", Descriptions.XPaginationDescription)]
+        [Authorize(Roles = "Administrator,Manager")]
         [HttpGet("{id}/users", Name = nameof(GetUsersOnRole))]
         public async Task<IActionResult> GetUsersOnRole(int id, [FromQuery] QueryStringParameterDto parameters)
         {
@@ -137,6 +140,7 @@ namespace StoreAPI.Controllers
         /// <param name="roleDto">Role object to be created</param>
         [SwaggerResponse(StatusCodes.Status201Created, "Role created", typeof(RoleReadDto))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
+        [Authorize(Roles = "Administrator,Manager")]
         [HttpPost(Name = nameof(CreateRole))]
         public async Task<IActionResult> CreateRole(RoleWriteDto roleDto)
         {

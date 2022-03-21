@@ -137,6 +137,13 @@ namespace StoreAPI.Controllers
         /// <summary>
         /// Updates an existing user
         /// </summary>
+        /// <remarks>
+        /// - First name must have less than or equal to 50 chars
+        /// - Last name must have less than or equal to 50 chars
+        /// - User needs to be 18 or older. 
+        /// - Passwords must have between 4 and 50 chars 
+        /// </remarks>
+        /// <see cref="AppConstants.Validations.User"/>
         /// <param name="id">User ID</param>
         /// <param name="userUpdate">User object with updated data</param>
         [Authorize(Roles = "Administrator,Manager")]
@@ -160,6 +167,13 @@ namespace StoreAPI.Controllers
         /// <summary>
         /// Updates the current user
         /// </summary>
+        /// <remarks>
+        /// - First name must have less than or equal to 50 chars
+        /// - Last name must have less than or equal to 50 chars
+        /// - User needs to be 18 or older. 
+        /// - Passwords must have between 4 and 50 chars 
+        /// </remarks>
+        /// <seealso cref="AppConstants.Validations.User"/>
         /// <param name="userUpdate">User object with updated data</param>
         [SwaggerResponse(StatusCodes.Status200OK, "User updated", typeof(UserReadDto))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
@@ -192,6 +206,9 @@ namespace StoreAPI.Controllers
         /// <summary>
         /// Forcefully change a user password.
         /// </summary>
+        /// <remarks>
+        /// - Passwords must have between 4 and 50 chars.
+        /// </remarks>
         /// <param name="id">User Id</param>
         /// <param name="passwords">Passwords object with old and new values</param>
         [Authorize(Roles = "Administrator")]
@@ -213,9 +230,11 @@ namespace StoreAPI.Controllers
 
 
         /// <summary>
-        /// Change the authenticated user password
+        /// Change the current user password
         /// </summary>
-        /// <remarks>Change your own password</remarks>
+        /// <remarks>
+        ///     <para>Passwords must have between 4 and 50 chars.</para>        
+        /// </remarks>
         /// <param name="passwords">Passwords object with old and new values</param>
         [SwaggerResponse(StatusCodes.Status200OK, "Password changed")]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
@@ -235,7 +254,11 @@ namespace StoreAPI.Controllers
         /// <summary>
         /// Forcefully resets an user password
         /// </summary>
-        /// <remarks>When an user forgot a password and can't recover it, an admin can reset it</remarks>
+        /// <remarks>
+        /// <para>When an user forgot a password and can't recover it, an admin can reset it</para>
+        /// - Passwords must have between 4 and 50 chars 
+        /// </remarks>
+        /// <see cref="AppConstants.Validations.User"/>
         /// <param example="123" name="id">User Id</param>
         /// <param name="newPassword">If included, sets the new user password. If ignored, sets the username as password.
         /// Example:
@@ -282,6 +305,8 @@ namespace StoreAPI.Controllers
         /// <summary>
         /// Assigns a role to an user
         /// </summary>
+        /// <remarks>
+        /// - Only root admin (<i>User Id = 1</i>) can assign Administrator role</remarks>
         /// <param name="id">Id of the role to add</param>
         /// <param name="roleId">User Id</param>
         [Authorize(Roles = "Administrator,Manager")]
@@ -305,6 +330,10 @@ namespace StoreAPI.Controllers
         /// <summary>
         /// Dismiss user from a role
         /// </summary>
+        /// <remarks>
+        /// - Only root admin user (<i>User Id = 1</i>) can remove Administrator roles from users
+        /// - Cannot remove Administrator role from root admin
+        /// </remarks>
         /// <param name="roleId">Id of the role to remove</param>
         /// <param name="id">User Id</param>
         [Authorize(Roles = "Administrator,Manager")]

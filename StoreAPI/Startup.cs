@@ -39,7 +39,6 @@ namespace StoreAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
             var section = Configuration.GetSection("StoreDbSQLServerConnectionStringSettings");
             
             var connectionStringBuilder = new SqlConnectionStringBuilder()
@@ -53,6 +52,7 @@ namespace StoreAPI
             };
 
             var connectionString = connectionStringBuilder.ConnectionString;
+
 
             services.AddDbContext<StoreDbContext>(options =>
             {
@@ -109,6 +109,12 @@ namespace StoreAPI
                     o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 });
 
+            services.AddCors();
+            //services.AddCors(o =>
+            //{
+            //    o.AddPolicy("AllowOrigin", p => p.AllowAnyOrigin());
+            //});
+
 
             //jwt token
             services.AddJwtAuthentication(Configuration);
@@ -139,7 +145,7 @@ namespace StoreAPI
 
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, StoreDbContext db)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -148,7 +154,11 @@ namespace StoreAPI
 
             app.UseMiddleware<ExceptionHandlerMiddleware>();
 
-            app.UseHsts();
+            app.UseCors(p => p
+                .AllowAnyHeader()
+                .SetIsOriginAllowed(origin => true)
+                .AllowCredentials()
+            );
 
             app.UseAuthentication();
 
@@ -160,7 +170,6 @@ namespace StoreAPI
                 opt.ShowCommonExtensions();
                 opt.ShowExtensions();
                 opt.EnableDeepLinking();
-                //opt.DisplayRequestDuration();
                 opt.SwaggerEndpoint("/swagger/v1/swagger.json", "Store API");
             });
 

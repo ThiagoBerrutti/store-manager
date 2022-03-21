@@ -42,7 +42,14 @@ namespace StoreAPI.Controllers
         /// <summary>
         /// Registers new user
         /// </summary>
-        /// <remarks>Registers a new user and authenticates it, generating a valid JWT</remarks>
+        /// <remarks>
+        /// <para>Registers a new user and authenticates it, generating a valid JWT</para>
+        /// - First name must have less than or equal to 50 chars
+        /// - Last name must have less than or equal to 50 chars
+        /// - User needs to be 18 or older. 
+        /// - Passwords must have between 4 and 50 chars 
+        /// </remarks>
+        /// <seealso cref="AppConstants.Validations.User"/>
         /// <param name="userDto">New user's data</param>
         [HttpPost("register", Name = nameof(Register))]
         [SwaggerResponse(StatusCodes.Status201Created, "User successfully registered and authenticated", typeof(AuthResponse))]
@@ -90,7 +97,7 @@ namespace StoreAPI.Controllers
         }
 
         /// <summary>
-        /// Easy registration for a new test user with roles assigned
+        /// Quick registration for a new test user with roles assigned
         /// </summary>
         /// <remarks>
         /// Data is generating consuming an external API for random user data. If any error occurs, the random data is generated internally.
@@ -120,7 +127,7 @@ namespace StoreAPI.Controllers
 
 
         /// <summary>
-        /// Easy authentication with a default test acc
+        /// Quick authentication with a default test acc
         /// </summary>
         /// <param name="user">Test user to authenticate</param>
         [HttpPost("authenticate/testAccount/{user}", Name = nameof(AuthenticateTestUser))]

@@ -15,7 +15,6 @@ namespace StoreAPI.Controllers
     /// <summary>
     /// Product stocks operations
     /// </summary>
-    [Authorize(Roles = "Administrator,Manager,Stock,Seller")]
     [ApiController]
     [Route("api/v1/stock")]
     [Consumes(MediaTypeNames.Application.Json)]
@@ -39,6 +38,7 @@ namespace StoreAPI.Controllers
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(ProductStockReadDto))]
         [SwaggerResponseHeader(StatusCodes.Status200OK, "X-Pagination", "string", Descriptions.XPaginationDescription)]
+        [Authorize(Roles = "Administrator,Manager,Stock,Seller")]
         [HttpGet(Name = nameof(GetAllStocksPaginated))]
         public async Task<IActionResult> GetAllStocksPaginated([FromQuery] StockParametersDto parameters)
         {
@@ -66,6 +66,7 @@ namespace StoreAPI.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, "Product stock found", typeof(ProductStockReadDto))]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Product stock not found")]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
+        [Authorize(Roles = "Administrator,Manager,Stock,Seller")]
         [HttpGet("product/{productId}", Name = nameof(GetStockByProductId))]
         public async Task<IActionResult> GetStockByProductId(int productId)
         {
@@ -89,6 +90,7 @@ namespace StoreAPI.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, "Product stock found", typeof(ProductStockReadDto))]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Product stock not found")]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
+        [Authorize(Roles = "Administrator,Manager,Stock,Seller")]
         [HttpGet("{id}", Name = nameof(GetStockById))]
         public async Task<IActionResult> GetStockById(int id)
         {
@@ -165,6 +167,7 @@ namespace StoreAPI.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, "Removed product quantity", typeof(ProductStockReadDto))]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Product stock not found")]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
+        [Authorize(Roles = "Administrator,Manager,Stock,Seller")]
         [HttpPut("{id}/remove/{quantity}", Name = nameof(RemoveQuantityFromStock))]
         public async Task<IActionResult> RemoveQuantityFromStock(int id, int quantity)
         {
