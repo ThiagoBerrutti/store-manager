@@ -138,7 +138,7 @@ Upon registration, an user has no roles assigned. To have roles assigned to it, 
 
 
 ## Entities
-The entities are *purposely short and have very few fields*. This can lead to features sometimes look as overkill (i.e. `Stock` being a whole separate entity only to store the `Quantity` field?) or sometimes missing (i.e. no Role update operation? The reason is that Roles only have the `Name` field, which acts as an identifier and can't be modified). As soon as the project expands, these inconsistences will no longer be.
+The entities are *purposely short and have very few fields*. This can lead to features sometimes look as overkill. As soon as the project expands, these inconsistences will no longer be.
 
 ### Product
 Represents a product the store works with. Contains information about this product such as name, price and description. For simplicity, the products are not treated individually, that said, multiple of the same product have exactly the same data and are only represented by it's *Quantity* on stock.

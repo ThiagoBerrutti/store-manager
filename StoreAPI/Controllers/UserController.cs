@@ -150,7 +150,7 @@ namespace StoreAPI.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, "User updated", typeof(UserReadDto))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status404NotFound, "User not found")]
-        [HttpPut(Name = nameof(UpdateUser))]
+        [HttpPut("{id}", Name = nameof(UpdateUser))]
         public async Task<IActionResult> UpdateUser(int id, UserUpdateDto userUpdate)
         {
             var response = await _userService.UpdateUserAsync(id, userUpdate);
@@ -350,7 +350,7 @@ namespace StoreAPI.Controllers
             }
 
             var result = response.Data;
-
+            
             return Ok(result);
         }
     }

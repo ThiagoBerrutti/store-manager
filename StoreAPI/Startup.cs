@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -19,14 +20,15 @@ using StoreAPI.Persistence.Repositories;
 using StoreAPI.Services;
 using StoreAPI.Swagger;
 using System;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace StoreAPI
 {
-    public class Startup
+    public class Startup 
     {
-        private IWebHostEnvironment _env;
+        private readonly IWebHostEnvironment _env;
 
         public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
@@ -37,7 +39,7 @@ namespace StoreAPI
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
+        public virtual void ConfigureServices(IServiceCollection services)
         {
             var section = Configuration.GetSection("StoreDbSQLServerConnectionStringSettings");
             
@@ -85,7 +87,7 @@ namespace StoreAPI
                 .AddRoleValidator<RoleValidator<Role>>()
                 .AddRoleManager<RoleManager<Role>>()
                 .AddSignInManager<SignInManager<User>>();
-
+            
 
             services.AddMvc(options =>
             {
@@ -145,8 +147,10 @@ namespace StoreAPI
 
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public virtual void Configure(IApplicationBuilder app, IWebHostEnvironment env, IActionDescriptorCollectionProvider actionProvider, ILogger<Startup> logger)
         {
+            logger.Log(LogLevel.Information, "Configuring application ...");
+
             if (env.IsDevelopment())
             {
                 IdentityModelEventSource.ShowPII = true;
@@ -156,6 +160,7 @@ namespace StoreAPI
 
             app.UseCors(p => p
                 .AllowAnyHeader()
+                .AllowAnyMethod()
                 .SetIsOriginAllowed(origin => true)
                 .AllowCredentials()
             );
@@ -184,6 +189,15 @@ namespace StoreAPI
             {
                 endpoints.MapControllers();
             });
+
+            logger.LogInformation("Available routes:");
+            var routes = actionProvider.ActionDescriptors.Items.Where(x => x.AttributeRouteInfo != null);
+            foreach (var route in routes)
+            {
+                logger.LogInformation($"{route.AttributeRouteInfo.Template}");
+            }
+
+            logger.LogInformation("... finished configuring application");
         }
     }
 }

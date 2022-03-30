@@ -140,9 +140,9 @@ namespace StoreAPI.Controllers
                 return new ProblemDetailsObjectResult(resetResult.Error);
             }
 
-            var testAdminLogin = TestAccountUsersLoginFactory.Generate(user);
+            var testUserLogin = TestAccountUsersLoginFactory.Generate(user);
 
-            var authResponse = await _authService.AuthenticateAsync(testAdminLogin);
+            var authResponse = await _authService.AuthenticateAsync(testUserLogin);
             if (!authResponse.Success)
             {
                 return new ProblemDetailsObjectResult(authResponse.Error);

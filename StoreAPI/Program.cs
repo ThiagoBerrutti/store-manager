@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using StoreAPI.Persistence;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace StoreAPI
 {
@@ -18,7 +19,7 @@ namespace StoreAPI
             {
                 var env = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
                 if (!env.IsProduction())
-                {
+                {                    
                     var db = scope.ServiceProvider.GetRequiredService<StoreDbContext>();
                     db.Database.Migrate();
                 }
@@ -32,6 +33,12 @@ namespace StoreAPI
                 {
                     config.AddEnvironmentVariables();
                 })
+            .ConfigureLogging(logging =>
+            {
+                logging.ClearProviders();
+                logging.AddConsole();
+                logging.AddDebug();                
+            })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();

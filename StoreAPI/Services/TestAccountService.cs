@@ -2,6 +2,7 @@
 using StoreAPI.Dtos;
 using StoreAPI.Enums;
 using StoreAPI.Helpers;
+using StoreAPI.Infra;
 using StoreAPI.Persistence.Repositories;
 using StoreAPI.Services.Communication;
 using StoreAPI.TestUser;
@@ -44,8 +45,8 @@ namespace StoreAPI.Services
             }
 
             var userRegisterDto = _mapper.Map<UserRegisterDto>(randomUser);
-            userRegisterDto.UserName = StringFormatter.RemoveAccents(userRegisterDto.FirstName) + TestAccountUserRegisterFactory.RandomUserNameNumber(digits);
-            userRegisterDto.Password = "test";
+            userRegisterDto.UserName = StringFormatter.RemoveAccents(userRegisterDto.FirstName).ToLower() + TestAccountUserRegisterFactory.RandomUserNameNumber(digits);
+            userRegisterDto.Password = AppConstants.TestUser.Password;
 
             var result = new ServiceResponse<UserRegisterDto>(userRegisterDto);
 
@@ -53,11 +54,12 @@ namespace StoreAPI.Services
         }
 
 
-        private async Task<RandomedUser> FetchUser()
+        public async Task<RandomedUser> FetchUser()
         {
             var randomuserApiUrl = "https://randomuser.me/api/?nat=br&inc=name,dob";
             var client = new HttpClient();
 
+            
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 

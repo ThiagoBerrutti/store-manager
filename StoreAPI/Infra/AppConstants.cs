@@ -1,41 +1,47 @@
-﻿    namespace StoreAPI.Infra
+﻿using StoreAPI.Domain;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+
+namespace StoreAPI.Infra
 {
-    public class AppConstants
+    public static class AppConstants
     {
-        public struct Roles
+        public static class Roles
         {
-            public struct Admin
+            public static class Admin
             {
                 public const int Id = 1;
                 public const string Name = "Administrator";
                 public const string NormalizedName = "ADMINISTRATOR";
             };
 
-            public struct Manager
+            public static class Manager
             {
                 public const int Id = 2;
                 public const string Name = "Manager";
                 public const string NormalizedName = "MANAGER";
             };
 
-            public struct Stock
+            public static class Stock
             {
                 public const int Id = 3;
                 public const string Name = "Stock";
                 public const string NormalizedName = "STOCK";
             };
 
-            public struct Seller
+            public static class Seller
             {
                 public const int Id = 4;
                 public const string Name = "Seller";
                 public const string NormalizedName = "SELLER";
             };
+
+            public const int Count = 4;
         }
 
-        public struct Users
+        public static class Users
         {
-            public struct Admin
+            public static class Admin
             {
                 public const int Id = 1;
                 public const string UserName = "admin";
@@ -46,7 +52,7 @@
                 public const string DateOfBirth = "1980-1-1";
             };
 
-            public struct Manager
+            public static class Manager
             {
                 public const int Id = 2;
                 public const string UserName = "manager";
@@ -57,7 +63,7 @@
                 public const string DateOfBirth = "1990-1-1";
             };
 
-            public struct Stock
+            public static class Stock
             {
                 public const int Id = 3;
                 public const string UserName = "stock";
@@ -68,7 +74,7 @@
                 public const string DateOfBirth = "1995-1-1";
             };
 
-            public struct Seller
+            public static class Seller
             {
                 public const int Id = 4;
                 public const string UserName = "seller";
@@ -79,7 +85,7 @@
                 public const string DateOfBirth = "2000-1-1";
             };
 
-            public struct Public
+            public static class Public
             {
                 public const int Id = 5;
                 public const string UserName = "public";
@@ -89,9 +95,17 @@
                 public const string Password = "public";
                 public const string DateOfBirth = "2002-1-1";
             };
+
+
+            public const int Count = 5;
         }
 
-        public struct Pagination
+        public static class TestUser
+        {
+            public const string Password = "test";
+        }
+
+        public static class Pagination
         {
             public const int MaxPageSize = 50;
             public const int DefaultPageSize = 10;
@@ -110,9 +124,9 @@
                 "- HasNext: true if it has another page after that, false if it don't\n";
         }
 
-        public struct Validations
+        public static class Validations
         {
-            public struct User
+            public static class User
             {
                 public const int UsernameMaxLength = 50;
                 public const int UsernameMinLength = 4;
@@ -123,7 +137,7 @@
                 public const int MinimumAge = 18;
             }
 
-            public struct Product
+            public static class Product
             {
                 public const int NameMaxLength = 50;
                 public const double PriceMinValue = 0;
@@ -131,12 +145,12 @@
                 public const int DescriptionMaxLength = 200;
             }
 
-            public struct Role
+            public static class Role
             {
                 public const int NameMaxLength = 50;
             }
 
-            public struct Stock
+            public static class Stock
             {
                 public const int QuantityMinValue = 0;
                 public const int QuantityMaxValue = int.MaxValue;
