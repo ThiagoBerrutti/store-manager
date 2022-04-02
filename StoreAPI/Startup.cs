@@ -87,23 +87,24 @@ namespace StoreAPI
                 .AddRoleValidator<RoleValidator<Role>>()
                 .AddRoleManager<RoleManager<Role>>()
                 .AddSignInManager<SignInManager<User>>();
-            
 
-            services.AddMvc(options =>
-            {
-                var policy = new AuthorizationPolicyBuilder()
-                    .RequireAuthenticatedUser()
-                    .Build();
 
-                options.Filters.Add(new AuthorizeFilter(policy));
-                options.ModelMetadataDetailsProviders.Add(new CustomMetadataProvider());
-            })
-                .ConfigureApiBehaviorOptions(o =>
-                {
-                    o.InvalidModelStateResponseFactory = m => throw new ModelValidationException(m.ModelState);
-                    o.SuppressMapClientErrors = true;
-                })
-                .AddJsonOptions(o =>
+            var x = services.AddMvc(options =>
+             {
+                 var policy = new AuthorizationPolicyBuilder()
+                     .RequireAuthenticatedUser()
+                     .Build();
+
+                 options.Filters.Add(new AuthorizeFilter(policy));
+                 options.ModelMetadataDetailsProviders.Add(new CustomMetadataProvider());
+             })
+
+            .ConfigureApiBehaviorOptions(o =>
+             {
+                 o.InvalidModelStateResponseFactory = m => throw new ModelValidationException(m.ModelState);
+                 o.SuppressMapClientErrors = true;
+             });
+                x = x.AddJsonOptions(o =>
                 {
                     o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
                     o.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
@@ -112,11 +113,6 @@ namespace StoreAPI
                 });
 
             services.AddCors();
-            //services.AddCors(o =>
-            //{
-            //    o.AddPolicy("AllowOrigin", p => p.AllowAnyOrigin());
-            //});
-
 
             //jwt token
             services.AddJwtAuthentication(Configuration);
@@ -190,14 +186,14 @@ namespace StoreAPI
                 endpoints.MapControllers();
             });
 
-            logger.LogInformation("Available routes:");
-            var routes = actionProvider.ActionDescriptors.Items.Where(x => x.AttributeRouteInfo != null);
-            foreach (var route in routes)
-            {
-                logger.LogInformation($"{route.AttributeRouteInfo.Template}");
-            }
+            //logger.LogInformation("Available routes:");
+            //var routes = actionProvider.ActionDescriptors.Items.Where(x => x.AttributeRouteInfo != null);
+            //foreach (var route in routes)
+            //{
+            //    logger.LogInformation($"{route.AttributeRouteInfo.Template}");
+            //}
 
-            logger.LogInformation("... finished configuring application");
+            //logger.LogInformation("... finished configuring application");
         }
     }
 }

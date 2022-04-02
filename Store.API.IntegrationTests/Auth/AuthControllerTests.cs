@@ -12,11 +12,10 @@ using Xunit;
 
 namespace Store.API.IntegrationTests.Auth
 {
-    public class AuthControllerTests : TestBase, IDisposable
+    public class AuthControllerTests : TestBase, IAsyncLifetime//IDisposable
     {
         public AuthControllerTests(TestWebApplicationFactory<Startup> factory) : base(factory)
         {
-            //Factory = factory;
         }
 
         [Fact]
@@ -58,7 +57,7 @@ namespace Store.API.IntegrationTests.Auth
             var response = await Client.PostAsJsonAsync(uri, testUser);
             var registerResponse = await response.Content.ReadAsAsync<AuthResponse>();
 
-            var userOnDb = await Context.Users.FirstOrDefaultAsync(u => u.UserName == testUser.UserName);
+            var userOnDb = await Context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserName == testUser.UserName);
 
             // Assert
 
@@ -104,7 +103,7 @@ namespace Store.API.IntegrationTests.Auth
             var authResponse = await response.Content.ReadAsAsync<AuthResponse>();
             var responseUser = authResponse.User;
 
-            var userOnDb = await Context.Users.FirstOrDefaultAsync(u => u.UserName == responseUser.UserName);
+            var userOnDb = await Context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserName == responseUser.UserName);
 
             // Assert
             Assert.True(response.IsSuccessStatusCode);
@@ -149,14 +148,19 @@ namespace Store.API.IntegrationTests.Auth
             // Assert
             Assert.True(response.IsSuccessStatusCode);
 
-            var userOnDb = await Context.Users.FirstOrDefaultAsync(u => u.UserName == responseUser.UserName);
+            var userOnDb = await Context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserName == responseUser.UserName);
             Assert.NotNull(userOnDb);
             Assert.Contains(responseUser.UserName, userOnDb.UserName);
         }
 
-        public new void Dispose()
+        public async Task InitializeAsync()
         {
-            Factory.Cleanup();
+            await Context.Database.EnsureCreatedAsync();
+        }
+
+        public async Task DisposeAsync()
+        {
+            await Context.Database.EnsureDeletedAsync();
         }
     }
 }

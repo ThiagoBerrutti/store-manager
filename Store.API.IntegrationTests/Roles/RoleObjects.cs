@@ -1,4 +1,5 @@
 ﻿using StoreAPI.Dtos;
+using StoreAPI.Identity;
 using System;
 
 namespace Store.API.IntegrationTests.Roles
@@ -16,6 +17,20 @@ namespace Store.API.IntegrationTests.Roles
                 {
                     Name = "TestRole" + random
                 };
+
+                return result;
+            }
+
+
+            public static Role GenerateRole()
+            {
+                var random = new Random().Next(1000, 9999);
+                var result = new Role
+                {
+                    Name = "TestRole" + random
+                };
+
+                result.NormalizedName = result.Name.ToUpper();
 
                 return result;
             }

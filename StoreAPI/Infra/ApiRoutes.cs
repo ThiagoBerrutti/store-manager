@@ -31,7 +31,7 @@ namespace StoreAPI.Infra
         public static class Stock
         {
             public const string GetAllStocksPaginated = Base + "/stock";
-            public const string GetStockByProductId = Base + "/product/{productId}";
+            public const string GetStockByProductId = Base + "/stock/product/{productId}";
             public const string GetStockById = Base + "/stock/{id}";
             public const string UpdateStock = Base + "/stock/{id}";
             public const string AddQuantityToStock = Base + "/stock/{id}/add/{quantity}";

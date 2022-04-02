@@ -1,4 +1,5 @@
-﻿using StoreAPI.Dtos;
+﻿using StoreAPI.Domain;
+using StoreAPI.Dtos;
 using System;
 
 namespace Store.API.IntegrationTests.Products
@@ -29,6 +30,22 @@ namespace Store.API.IntegrationTests.Products
 
                 return result;
             }
+
+            public static Product GenerateProduct()
+            {
+                var random = new Random().Next(1000, 9999);
+                var result = new Product
+                {                    
+                    Name = "TestProduct" + Random,
+                    Description = "TestDescription" + Random,
+                    Price = random * 1.0 / 100
+                };
+
+                return result;
+            }
+
+
+
         }
     }
 }

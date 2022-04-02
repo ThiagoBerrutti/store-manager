@@ -91,6 +91,7 @@ namespace StoreAPI.Persistence.Data
                     Quantity = 200
                 }
             });
+        
 
         public static readonly ReadOnlyCollection<Role> Roles = new ReadOnlyCollection<Role>
             (new List<Role>{

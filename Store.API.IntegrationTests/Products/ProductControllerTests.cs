@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using StoreAPI;
 using StoreAPI.Dtos;
 using StoreAPI.Infra;
@@ -14,11 +13,10 @@ using Xunit;
 
 namespace Store.API.IntegrationTests.Products
 {
-    public class ProductControllerTests : TestBase, IDisposable
+    public class ProductControllerTests : TestBase, IAsyncLifetime
     {
         public ProductControllerTests(TestWebApplicationFactory<Startup> factory) : base(factory)
         {
-            //Factory = factory;
         }
 
         private async Task RemoveAllProductsAsync()
@@ -29,39 +27,18 @@ namespace Store.API.IntegrationTests.Products
             }
 
             await Context.SaveChangesAsync();
-        }
-
-        private async Task<List<ProductReadWithStockDto>> CreateNewProduct(int quantity = 1)
-        {
-            var uri = ApiRoutes.Products.CreateProduct;
-            await AuthenticateAsAdminAsync();
-
-            var result = new List<ProductReadWithStockDto>();
-
-            for (int i = 0; i < quantity; i++)
-            {
-                var productToCreate = ProductObjects.Factory.GenerateProductWriteDto();
-                var response = await Client.PostAsJsonAsync(uri, productToCreate);
-                var product = await response.Content.ReadAsAsync<ProductReadWithStockDto>();
-                result.Add(product);
-            }
-
-            LogoutUser();
-
-            return result;
-        }
-
+        }        
 
 
         [Fact]
-        public async Task GetAllProductsPaginated_ReturnsAllThreeResults()
+        public async Task GetAllProductsPaginated_ReturnsAllProducts()
         {
             // Arrange
             const int PRODUCT_COUNT = 5;
             await RemoveAllProductsAsync();
-            var productsList = await CreateNewProduct(PRODUCT_COUNT);
+            var productsList = await Helpers.Product.CreateNewProductsAsync(PRODUCT_COUNT);
 
-            await AuthenticateAsAdminAsync();
+            await Helpers.AuthenticateAsAdminAsync();
 
             var uri = ApiRoutes.Products.GetAllProductsPaginated;
 
@@ -73,7 +50,7 @@ namespace Store.API.IntegrationTests.Products
             var productsCreatedContainedOnResult = result
                 .Where(p => productsListNames.Contains(p.Name))
                 .ToList();
-            
+
             // Assert
             Assert.True(response.IsSuccessStatusCode);
             Assert.Equal(PRODUCT_COUNT, result.Count);
@@ -85,9 +62,10 @@ namespace Store.API.IntegrationTests.Products
         public async Task GetAllProducts_ReturnEmptyList_WhenNoProducts()
         {
             // Arrange
-            await AuthenticateAsAdminAsync();
-            await RemoveAllProductsAsync();
+            await Helpers.AuthenticateAsAdminAsync();
             var uri = ApiRoutes.Products.GetAllProductsPaginated;
+
+            await RemoveAllProductsAsync();
 
             // Act
             var response = await Client.GetAsync(uri);
@@ -104,13 +82,11 @@ namespace Store.API.IntegrationTests.Products
         public async Task GetProductById_Returns_Product()
         {
             // Arrange
-
-            var products = await CreateNewProduct();
-            var productCreated = products.Single();
+            var productCreated = await Helpers.Product.CreateNewProductAsync();
             var productId = productCreated.Id;
             var uri = ApiRoutes.Products.GetProductById.Replace("{id}", productId.ToString());
 
-            await AuthenticateAsAdminAsync();
+            await Helpers.AuthenticateAsAdminAsync();
 
             // Act
             var response = await Client.GetAsync(uri);
@@ -130,9 +106,10 @@ namespace Store.API.IntegrationTests.Products
         public async Task CreateProduct_ReturnsProductCreated()
         {
             // Arrange
-            await AuthenticateAsAdminAsync();
             var product = ProductObjects.Factory.GenerateProductWriteDto();
             var uri = ApiRoutes.Products.CreateProduct;
+
+            await Helpers.AuthenticateAsAdminAsync();
 
             // Act
             var response = await Client.PostAsJsonAsync(uri, product);
@@ -154,15 +131,15 @@ namespace Store.API.IntegrationTests.Products
             var uri = ApiRoutes.Products.CreateProduct;
             var productToCreate = ProductObjects.Factory.GenerateProductWriteDto();
 
-            await AuthenticateAsAdminAsync();
+            await Helpers.AuthenticateAsAdminAsync();
 
             // Act
             var response = await Client.PostAsJsonAsync(uri, productToCreate);
             var result = await response.Content.ReadAsAsync<ProductReadWithStockDto>();
 
-            var productStock = await Context.ProductStocks.FirstOrDefaultAsync(ps => ps.Product.Id == result.Id);
+            var productStock = await Context.ProductStocks.AsNoTracking().FirstOrDefaultAsync(ps => ps.Product.Id == result.Id);
 
-            // Assert 
+            // Assert
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
             Assert.NotNull(response);
             Assert.NotNull(productStock);
@@ -172,16 +149,16 @@ namespace Store.API.IntegrationTests.Products
         public async Task DeleteProduct_SuccessfullyRemovesProduct()
         {
             // Arrange
-            var product = (await CreateNewProduct()).FirstOrDefault();
-
+            var product = await Helpers.Product.CreateNewProductAsync();
             var productWasCreated = product != null;
+
             var uri = ApiRoutes.Products.DeleteProduct.Replace("{id}", product.Id.ToString());
 
-            await AuthenticateAsAdminAsync();
+            await Helpers.AuthenticateAsAdminAsync();
 
             // Act
             var response = await Client.DeleteAsync(uri);
-            var productOnDb = await Context.Products.FirstOrDefaultAsync(p => p.Id == product.Id);
+            var productOnDb = await Context.Products.AsNoTracking().FirstOrDefaultAsync(p => p.Id == product.Id);
 
             // Assert
             Assert.True(productWasCreated);
@@ -193,8 +170,9 @@ namespace Store.API.IntegrationTests.Products
         public async Task DeleteProduct_Returns404_WhenProductDoesntExist()
         {
             // Arrange
-            await AuthenticateAsAdminAsync();
             var uri = ApiRoutes.Products.DeleteProduct.Replace("{id}", "9999999");
+
+            await Helpers.AuthenticateAsAdminAsync();
 
             // Act
             var response = await Client.DeleteAsync(uri);
@@ -203,12 +181,13 @@ namespace Store.API.IntegrationTests.Products
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
+
         [Fact]
         public async Task UpdateProduct_SuccessfullyUpdates()
         {
             // Arrange
-            var productList = await CreateNewProduct();
-            var productCreated = productList.Single();
+            var productCreated = await Helpers.Product.CreateNewProductAsync();
+
             var id = productCreated.Id;
 
             var uri = ApiRoutes.Products.UpdateProduct.Replace("{id}", id.ToString());
@@ -220,13 +199,13 @@ namespace Store.API.IntegrationTests.Products
                 Price = 123.45
             };
 
-            await AuthenticateAsAdminAsync();
+            await Helpers.AuthenticateAsAdminAsync();
 
             // Act
             var response = await Client.PutAsJsonAsync(uri, productUpdate);
             var updateResponse = await response.Content.ReadAsAsync<ProductReadDto>();
 
-            var productOnDb = await Context.Products.FirstOrDefaultAsync(p => p.Id == id);
+            var productOnDb = await Helpers.Product.GetProductAsync(p => p.Id == id); //Context.Products.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
 
             // Assert
             Assert.True(response.IsSuccessStatusCode);
@@ -243,9 +222,14 @@ namespace Store.API.IntegrationTests.Products
             Assert.NotEqual(productCreated.Price, productOnDb.Price);
         }
 
-        public new void Dispose()
+        public async Task InitializeAsync()
         {
-            Factory.Cleanup();
+            await Context.Database.EnsureCreatedAsync();
+        }
+
+        public async Task DisposeAsync()
+        {
+            await Context.Database.EnsureDeletedAsync();
         }
     }
 }

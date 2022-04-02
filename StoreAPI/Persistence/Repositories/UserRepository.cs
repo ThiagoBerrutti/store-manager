@@ -59,17 +59,17 @@ namespace StoreAPI.Persistence.Repositories
         }
 
 
-        public async Task<IEnumerable<User>> SearchAsync(string search)
-        {
-            var result = await _context.Users
-                                            .Where(u =>
-                                                u.FirstName.ToLower().Contains(search.ToLower()) ||
-                                                u.UserName.ToLower().Contains(search.ToLower()) ||
-                                                u.LastName.ToLower().Contains(search.ToLower()))
-                                            .ToListAsync();
+        //public async Task<IEnumerable<User>> SearchAsync(string search)
+        //{
+        //    var result = await _context.Users
+        //                                    .Where(u =>
+        //                                        u.FirstName.ToLower().Contains(search.ToLower()) ||
+        //                                        u.UserName.ToLower().Contains(search.ToLower()) ||
+        //                                        u.LastName.ToLower().Contains(search.ToLower()))
+        //                                    .ToListAsync();
 
-            return result;
-        }
+        //    return result;
+        //}
 
 
         public async Task<User> GetCurrentUserAsync()

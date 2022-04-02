@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StoreAPI;
-using StoreAPI.Domain;
 using StoreAPI.Dtos;
 using StoreAPI.Identity;
 using StoreAPI.Infra;
@@ -15,73 +14,64 @@ using Xunit;
 
 namespace Store.API.IntegrationTests.Roles
 {
-    public class RoleControllerTests : TestBase, IDisposable
+    public class RoleControllerTests : TestBase, IAsyncLifetime
     {
         public RoleControllerTests(TestWebApplicationFactory<Startup> factory) : base(factory)
         {
-            //Factory = factory;
         }
 
-        //private async Task ResetRoles()
+        //private async Task<List<RoleReadDto>> CreateNewRoleAsync(int quantity = 1)
         //{
-        //    var roles = Context.Roles.Where(r => r.Id > 4).ToList();
-        //    Context.Roles.RemoveRange(roles);
+        //    var uri = ApiRoutes.Roles.CreateRole;
+        //    await AuthenticateAsAdminAsync();
 
-        //    await Context.SaveChangesAsync();
+        //    var result = new List<RoleReadDto>();
+
+        //    for (int i = 0; i < quantity; i++)
+        //    {
+        //        var roleToCreate = RoleObjects.Factory.GenerateRoleWriteDto();
+
+        //        var response = await Client.PostAsJsonAsync(uri, roleToCreate);
+        //        var roleCreated = await response.Content.ReadAsAsync<RoleReadDto>();
+
+        //        result.Add(roleCreated);
+        //    }
+
+        //    LogoutUser();
+
+        //    return result;
         //}
 
-        private async Task<List<RoleReadDto>> CreateNewRole(int quantity = 1)
-        {
-            var uri = ApiRoutes.Roles.CreateRole;
-            await AuthenticateAsAdminAsync();
+        //private async Task AddUsersToRole(int roleId, IEnumerable<int> userIds)
+        //{
+        //    var users = Context.Users.Where(u => userIds.Contains(u.Id));
 
-            var result = new List<RoleReadDto>();
+        //    foreach (var u in users)
+        //    {
+        //        if (!Context.UserRoles.Any(ur => ur.RoleId == roleId && ur.UserId == u.Id))
+        //        {
+        //            var userRole = new UserRole { UserId = u.Id, RoleId = roleId };
+        //            Context.UserRoles.Add(userRole);
+        //        }
+        //    }
 
-            for (int i = 0; i < quantity; i++)
-            {
-                var roleToCreate = RoleObjects.Factory.GenerateRoleWriteDto();
-                                
-                var response = await Client.PostAsJsonAsync(uri, roleToCreate);
-                var roleCreated = await response.Content.ReadAsAsync<RoleReadDto>();
+        //    await Context.SaveChangesAsync();
 
-                result.Add(roleCreated);
-            }
+        //    LogoutUser();
+        //}
 
-            LogoutUser();
+        //private async Task<RoleReadDto> CreateNewRole(RoleWriteDto role)
+        //{
+        //    var uri = ApiRoutes.Roles.CreateRole;
+        //    await AuthenticateAsAdminAsync();
 
-            return result;
-        }
+        //    var response = await Client.PostAsJsonAsync(uri, role);
+        //    var result = await response.Content.ReadAsAsync<RoleReadDto>();
 
-        private async Task AddUsersToRole(int roleId, IEnumerable<int> userIds)
-        {            
-            var users = Context.Users.Where(u => userIds.Contains(u.Id));
+        //    LogoutUser();
 
-            foreach (var u in users)
-            {
-                if (!Context.UserRoles.Any(ur => ur.RoleId == roleId && ur.UserId == u.Id))
-                {
-                    var userRole = new UserRole { UserId = u.Id, RoleId = roleId };
-                    Context.UserRoles.Add(userRole);
-                }
-            }
-
-            await Context.SaveChangesAsync();
-
-            LogoutUser();
-        }
-
-        private async Task<RoleReadDto> CreateNewRole(RoleWriteDto role)
-        {
-            var uri = ApiRoutes.Roles.CreateRole;
-            await AuthenticateAsAdminAsync();
-
-            var response = await Client.PostAsJsonAsync(uri, role);
-            var result = await response.Content.ReadAsAsync<RoleReadDto>();
-
-            LogoutUser();
-
-            return result;
-        }
+        //    return result;
+        //}
 
 
         [Fact]
@@ -89,7 +79,7 @@ namespace Store.API.IntegrationTests.Roles
         {
             // Arrange
             var uri = ApiRoutes.Roles.GetAllRolesPaginated;
-            await AuthenticateAsAdminAsync();
+            await Helpers.AuthenticateAsAdminAsync();
 
             // Act
             var response = await Client.GetAsync(uri);
@@ -118,10 +108,12 @@ namespace Store.API.IntegrationTests.Roles
         public async Task GetRoleById_Returns_Role()
         {
             // Arrange
-            var createdRole = (await CreateNewRole()).Single();
-            await AuthenticateAsAdminAsync();
+            var createdRole = await Helpers.Role.CreateNewRoleAsync();
+
             var roleId = createdRole.Id;
             var uri = ApiRoutes.Roles.GetRoleById.Replace("{id:int}", roleId.ToString());
+
+            await Helpers.AuthenticateAsAdminAsync();
 
             // Act
             var response = await Client.GetAsync(uri);
@@ -142,18 +134,15 @@ namespace Store.API.IntegrationTests.Roles
         public async Task GetRoleByName_SuccessfullyReturnsRole()
         {
             // Arrange
-            const string ROLE_NAME = "TEST_ROLE_NAME";
-
-            var roleToCreate = new RoleWriteDto { Name = ROLE_NAME };
-            var roleCreated = await CreateNewRole(roleToCreate);
+            var roleCreated = await Helpers.Role.CreateNewRoleAsync();
+            var roleName = roleCreated.Name;
 
             var route = ApiRoutes.Roles.GetRoleByName;
-            var uri = route.Replace("{roleName}", ROLE_NAME);
+            var uri = route.Replace("{roleName}", roleName);
 
-            await AuthenticateAsAdminAsync();
+            await Helpers.AuthenticateAsAdminAsync();
 
             // Act
-
             var response = await Client.GetAsync(uri);
             var result = await response.Content.ReadAsAsync<RoleReadDto>();
 
@@ -161,7 +150,7 @@ namespace Store.API.IntegrationTests.Roles
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.NotNull(result);
 
-            Assert.Equal(ROLE_NAME, result.Name);
+            Assert.Equal(roleName, result.Name);
             Assert.Equal(roleCreated.Id, result.Id);
         }
 
@@ -170,8 +159,7 @@ namespace Store.API.IntegrationTests.Roles
         public async Task GetUsersOnRole_SuccessfullyReturnUsers()
         {
             // Arrange
-            var roleToCreate = new RoleWriteDto { Name = "TEST_ROLE" };
-            var roleCreated = await CreateNewRole(roleToCreate);
+            var roleCreated = await Helpers.Role.CreateNewRoleAsync();
 
             var userIds = new List<int>
             {
@@ -180,12 +168,12 @@ namespace Store.API.IntegrationTests.Roles
                 AppConstants.Users.Public.Id
             };
 
-            await AddUsersToRole(roleCreated.Id, userIds);
+            await Helpers.Role.AddUsersToRole(roleCreated.Id, userIds);
 
             var route = ApiRoutes.Roles.GetUsersOnRole;
             var uri = route.Replace("{id}", roleCreated.Id.ToString());
 
-            await AuthenticateAsAdminAsync();
+            await Helpers.AuthenticateAsAdminAsync();
 
             // Act
             var response = await Client.GetAsync(uri);
@@ -193,31 +181,32 @@ namespace Store.API.IntegrationTests.Roles
 
             // Assert
             var userIdsOnResult = result.Select(u => u.Id);
-            var intersect = userIds.Intersect(userIdsOnResult);
+            var intersect = userIds.Intersect(userIdsOnResult); 
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.NotNull(roleCreated);
             Assert.Equal(userIds.Count, intersect.Count());
-            
+
             Assert.Contains(AppConstants.Users.Manager.Id, userIdsOnResult);
             Assert.Contains(AppConstants.Users.Seller.Id, userIdsOnResult);
             Assert.Contains(AppConstants.Users.Public.Id, userIdsOnResult);
         }
+
 
         [Fact]
         public async Task CreateRole_SuccessfullyCreatesRole()
         {
             // Arrange
             var uri = ApiRoutes.Roles.CreateRole;
-            var roleToCreate = RoleObjects.TestRoleWriteDto;
+            var roleToCreate = RoleObjects.Factory.GenerateRoleWriteDto();
 
-            await AuthenticateAsAdminAsync();
+            await Helpers.AuthenticateAsAdminAsync();
 
-            // Act 
+            // Act
             var response = await Client.PostAsJsonAsync(uri, roleToCreate);
             var result = await response.Content.ReadAsAsync<RoleReadDto>();
 
-            var roleOnDb = await Context.Roles.FirstAsync(r => r.Name == roleToCreate.Name);
+            var roleOnDb = await Helpers.Role.GetRoleAsync(r => r.Name == roleToCreate.Name);
 
             // Assert
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -234,30 +223,33 @@ namespace Store.API.IntegrationTests.Roles
         public async Task DeleteRole_SuccessfullyDeleteRole()
         {
             // Arrange
-            var roleCreated = (await CreateNewRole()).Single();
-            var roleOnDbBeforeAct = await Context.Roles.FirstOrDefaultAsync(r => r.Id == roleCreated.Id);
+            var roleCreated = await Helpers.Role.CreateNewRoleAsync();
+            var roleOnDbBeforeAct = await Helpers.Role.GetRoleAsync(r => r.Id == roleCreated.Id);
 
             var route = ApiRoutes.Roles.DeleteRole;
             var uri = route.Replace("{id}", roleCreated.Id.ToString());
 
-            await AuthenticateAsAdminAsync();
+            await Helpers.AuthenticateAsAdminAsync();
 
             // Act
             var response = await Client.DeleteAsync(uri);
 
-            // Assert 
-            var roleOnDb = await Context.Roles.FirstOrDefaultAsync(r => r.Id == roleCreated.Id);
+            // Assert
+            var roleOnDb = await Helpers.Role.GetRoleAsync(r => r.Id == roleCreated.Id);
 
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
             Assert.NotNull(roleOnDbBeforeAct);
             Assert.Null(roleOnDb);
         }
 
-
-
-        public new void Dispose()
+        public async Task InitializeAsync()
         {
-            Factory.Cleanup();
+            await Context.Database.EnsureCreatedAsync();
+        }
+
+        public async Task DisposeAsync()
+        {
+            await Context.Database.EnsureDeletedAsync();
         }
     }
 }

@@ -11,19 +11,23 @@ namespace StoreAPI.Mapper
     {
         public AutoMapperProfile()
         {
+            //Product
             CreateMap<ProductWriteDto, Product>().ReverseMap();
             CreateMap<ProductReadDto, Product>()
                 .ReverseMap();
             CreateMap<Product, ProductReadWithStockDto>().ReverseMap();
 
+            //PaginatedList
             CreateMap<PaginatedList<Product>, PaginatedList<ProductReadDto>>();
             CreateMap<PaginatedList<Role>, PaginatedList<RoleReadDto>>();
             CreateMap<PaginatedList<User>, PaginatedList<UserReadDto>>();
             CreateMap<PaginatedList<ProductStock>, PaginatedList<ProductStockReadDto>>();
 
+            //ProductStock
             CreateMap<ProductStockReadDto, ProductStock>().ReverseMap();
             CreateMap<ProductStockWriteDto, ProductStock>().ReverseMap();
 
+            //User
             CreateMap<User, UserLoginDto>().ReverseMap();
             CreateMap<User, UserUpdateDto>().ReverseMap();
             CreateMap<User, UserAuthDto>().ReverseMap();
@@ -35,9 +39,11 @@ namespace StoreAPI.Mapper
             CreateMap<User, UserDetailedReadDto>()
                 .ForMember(dto => dto.Age, o => o.MapFrom(src => AgeCalculator.Calculate(src.DateOfBirth)));
 
+            //Role
             CreateMap<Role, RoleReadDto>().ReverseMap();
             CreateMap<Role, RoleWriteDto>().ReverseMap();
 
+            //RandomedUser
             CreateMap<RandomedUser, UserRegisterDto>()
                 .ForMember(dest => dest.DateOfBirth, o => o.MapFrom(src => src.Dob.Date))
                 .ForMember(dest => dest.FirstName, o => o.MapFrom(src => src.Name.First))

@@ -18,7 +18,7 @@ namespace StoreAPI.Persistence.Repositories
 
         public Task<User> GetByIdAsync(int id);
 
-        public Task<IEnumerable<User>> SearchAsync(string search);
+        //public Task<IEnumerable<User>> SearchAsync(string search);
 
         public Task<IList<string>> GetRolesNamesAsync(User user);
 
