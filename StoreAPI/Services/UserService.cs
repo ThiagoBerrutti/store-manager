@@ -495,9 +495,9 @@ namespace StoreAPI.Services
         {
             var idValidationResult = new ValidationResult()
                     .ValidateId(id, "User Id");
+
             var passwordValidationResult = new ValidationResult()
                     .ValidatePassword(newPassword, "NewPassword", true);
-
 
             if (!string.IsNullOrEmpty(newPassword) && !passwordValidationResult.IsValid)
             {

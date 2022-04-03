@@ -232,20 +232,20 @@ namespace Store.API.IntegrationTests.Users
             // Arrange
             var userCreated = await Helpers.User.CreateNewUserAsync();
 
-            const string OLD_PASSWORD = UserObjects.Password;
-            const string NEW_PASSWORD = "newPassword123";
+            var oldPassword = UserObjects.Password;
+            var newPassword = "newPassword123";
 
             var changePasswords = new ChangePasswordDto
             {
                 CurrentPassword = UserObjects.Password,
-                NewPassword = NEW_PASSWORD
+                NewPassword = newPassword
             };
 
             var uri = ApiRoutes.Users.ChangeCurrentUserPassword;
 
             var userLogin = new UserLoginDto 
             { 
-                Password = OLD_PASSWORD, 
+                Password = oldPassword, 
                 UserName = userCreated.UserName 
             };
 
@@ -256,8 +256,8 @@ namespace Store.API.IntegrationTests.Users
             var currentUser = await Helpers.User.GetUserAsync(u => u.Id == userCreated.Id);
 
             var hasher = new PasswordHasher<User>();
-            var oldPasswordVerificationResult = hasher.VerifyHashedPassword(currentUser, currentUser.PasswordHash, OLD_PASSWORD);
-            var newPasswordVerificationResult = hasher.VerifyHashedPassword(currentUser, currentUser.PasswordHash, NEW_PASSWORD);
+            var oldPasswordVerificationResult = hasher.VerifyHashedPassword(currentUser, currentUser.PasswordHash, oldPassword);
+            var newPasswordVerificationResult = hasher.VerifyHashedPassword(currentUser, currentUser.PasswordHash, newPassword);
           
             // Assert 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -295,7 +295,49 @@ namespace Store.API.IntegrationTests.Users
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(PasswordVerificationResult.Failed, oldPasswordVerifyResult);
             Assert.Equal(PasswordVerificationResult.Success, newPasswordVerifyResult);
+        }
+
+
+        [Fact]
+        public async Task ChangePassword_SuccessfullyChangesPassword()
+        {
+            // Arrange
+            var userCreated = await Helpers.User.CreateNewUserAsync();
+
+            var oldPassword = UserObjects.Password;
+            var newPassword = userCreated.UserName;
+
+            var id = userCreated.Id;
+
+            var changePasswords = new ChangePasswordDto
+            {
+                CurrentPassword = UserObjects.Password,
+                NewPassword = newPassword
+            };
+
+            var route = ApiRoutes.Users.ChangePassword;
+            var uri = route.Replace("{id}", id.ToString());
+
+            var hasher = new PasswordHasher<User>();
+
+            var userBeforeAct = await Helpers.User.GetUserAsync(u => u.Id == id);
+
+            await Helpers.AuthenticateAsAdminAsync();            
+
+            // Act
+            var oldPasswordVerifyResultBeforeAct = hasher.VerifyHashedPassword(userBeforeAct, userBeforeAct.PasswordHash, oldPassword);
             
+            var response = await Client.PutAsJsonAsync(uri, changePasswords);
+            var user = await Helpers.User.GetUserAsync(u => u.Id == id);
+
+            var oldPasswordVerifyResult = hasher.VerifyHashedPassword(user, user.PasswordHash, oldPassword);
+            var newPasswordVerifyResult = hasher.VerifyHashedPassword(user, user.PasswordHash, newPassword);
+
+            // Assert 
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(PasswordVerificationResult.Success, oldPasswordVerifyResultBeforeAct);
+            Assert.Equal(PasswordVerificationResult.Failed, oldPasswordVerifyResult);
+            Assert.Equal(PasswordVerificationResult.Success, newPasswordVerifyResult);
         }
 
 
@@ -303,10 +345,35 @@ namespace Store.API.IntegrationTests.Users
         public async Task AddUserToRole_SuccessfullyAddsRole()
         {
             // Arrange
+            var userCreated = await Helpers.User.CreateNewUserAsync();
+            var roleCreated = await Helpers.Role.CreateNewRoleAsync();
+
+            var id = userCreated.Id;
+            var roleId = roleCreated.Id;
+
+            var route = ApiRoutes.Users.AddUserToRole;
+            var uri = route
+                        .Replace("{id}", id.ToString())
+                        .Replace("{roleId}", roleId.ToString());
+
+            await Helpers.AuthenticateAsAdminAsync();
 
             // Act
+            var response = await Client.PutAsync(uri, null);
+            var result = await response.Content.ReadAsAsync<UserReadDto>();
+
+            var userOnDb = await Helpers.User.GetUserAsync(u => u.Id == id, true);
+
+            var resultRoleId = result.Roles.Select(r => r.Id).SingleOrDefault();
+            var userOnDbRoleId = userOnDb.Roles.Select(r => r.Id).SingleOrDefault();
+
 
             // Assert 
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Empty(userCreated.Roles);
+            Assert.Equal(roleId, resultRoleId);
+            Assert.Equal(roleId, userOnDbRoleId);
+
         }
 
 
@@ -314,10 +381,38 @@ namespace Store.API.IntegrationTests.Users
         public async Task RemoveFromRole_SuccessfullyRemovesRole()
         {
             // Arrange
+            var userCreated = await Helpers.User.CreateNewUserAsync();
+            var roleCreated = await Helpers.Role.CreateNewRoleAsync();
+
+            var id = userCreated.Id;
+            var roleId = roleCreated.Id;
+
+            var roleIdList = new List<int> { roleId };
+
+            await Helpers.User.AddRolesToUser(id, roleIdList);
+            var userCreatedRolesIds = userCreated.Roles.Select(r => r.Id);
+
+            var route = ApiRoutes.Users.RemoveFromRole;
+            var uri = route
+                        .Replace("{id}", id.ToString())
+                        .Replace("{roleId}", roleId.ToString());
+
+            //var userBeforeAct = await Helpers.User.GetUserAsync(u => u.Id == id, true);
+            
+            await Helpers.AuthenticateAsAdminAsync();
 
             // Act
+            var response = await Client.PutAsync(uri, null);
+            var result = await response.Content.ReadAsAsync<UserReadDto>();
+
+            var userOnDb = await Helpers.User.GetUserAsync(u => u.Id == id, true);
 
             // Assert 
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(userCreatedRolesIds, roleIdList);
+
+            Assert.Empty(result.Roles);
+            Assert.Empty(userOnDb.Roles);            
         }
 
 

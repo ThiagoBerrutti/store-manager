@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Store.API.IntegrationTests.Auth;
-using StoreAPI.Dtos;
 using StoreAPI.Identity;
 using StoreAPI.Persistence;
 using System;
@@ -35,10 +33,16 @@ namespace Store.API.IntegrationTests.Users
                 .AsNoTracking()
                 .ToListAsync();
 
-        public async Task<User> GetUserAsync(Expression<Func<User, bool>> expression)
-            => await Context.Users
-                .AsNoTracking()
-                .FirstOrDefaultAsync(expression);
+        public async Task<User> GetUserAsync(Expression<Func<User, bool>> expression, bool withRoles = false)
+        {
+            var query = Context.Users.AsNoTracking();
+            if (withRoles)
+            {
+                query = query.Include(u => u.Roles);
+            }
+
+            return await query.FirstOrDefaultAsync(expression);
+        }
 
 
         public async Task<List<User>> CreateNewUsersAsync(int count = 1)
@@ -61,6 +65,7 @@ namespace Store.API.IntegrationTests.Users
         {
             var user = UserObjects.Factory.GenerateUser();
             Context.Users.Add(user);
+
             await Context.SaveChangesAsync();
 
             return user;
@@ -85,13 +90,13 @@ namespace Store.API.IntegrationTests.Users
         }
 
 
-        
+
 
 
         public static string CreateFullName(string firstName, string lastName) => firstName + " " + lastName;
 
         public static string NumbersInString(string name) => Regex.Replace(name, @"[\D]", "");
-        //public static string SelectNumbersFromUserName(string name) => Regex.Replace(name, @"^\d$", "");
 
+        //public static string SelectNumbersFromUserName(string name) => Regex.Replace(name, @"^\d$", "");
     }
 }

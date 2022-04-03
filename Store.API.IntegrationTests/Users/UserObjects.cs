@@ -35,20 +35,6 @@ namespace Store.API.IntegrationTests.Users
 
                 return user;
             }
-
-            //public static string SelectNumbersFromUserName(string name) => Regex.Replace(name, @"^\d$", "");
-
-            //public static UserUpdateDto GenerateUserUpdateDto(string userName = "")
-            //{
-            //    var numbers = UserTestHelpers.NumbersInString(userName);
-
-            //    return new UserUpdateDto
-            //    {
-            //        FirstName = UpdatedName + numbers,
-            //        LastName = UpdatedName,
-            //        DateOfBirth = RandomDateOfBirth(50)
-            //    };
-            //}
         }
 
 
