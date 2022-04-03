@@ -282,6 +282,8 @@ namespace Store.API.IntegrationTests.Users
 
             var hasher = new PasswordHasher<User>();
 
+            await Helpers.AuthenticateAsAdminAsync();
+
             // Act
             var response = await Client.PutAsJsonAsync(uri, "");
 
