@@ -58,7 +58,7 @@ namespace StoreAPI.Infra
             public const string UpdateCurrentUser = Base + "/users/current";
             public const string ChangePassword = Base + "/users/{id}/password";
             public const string ChangeCurrentUserPassword = Base + "/users/current/password";
-            public const string ResetPassword = Base + "/users/{id}/password";
+            public const string ResetPassword = Base + "/users/{id}/password/reset";
             public const string AddUserToRole = Base + "/users/{id}/roles/add/{roleId}";
             public const string RemoveFromRole = Base + "/users/{id}/roles/remove/{roleId}";
         }

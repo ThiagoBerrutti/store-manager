@@ -493,15 +493,18 @@ namespace StoreAPI.Services
 
         public async Task<ServiceResponse> ResetPasswordAsync(int id, string newPassword)
         {
-            var validationResult = new ValidationResult()
-                    .ValidateId(id, "User Id")
+            var idValidationResult = new ValidationResult()
+                    .ValidateId(id, "User Id");
+            var passwordValidationResult = new ValidationResult()
                     .ValidatePassword(newPassword, "NewPassword", true);
 
-            if (!validationResult.IsValid)
+
+            if (!string.IsNullOrEmpty(newPassword) && !passwordValidationResult.IsValid)
             {
-                if (!validationResult.IsValid)
+                if (!idValidationResult.IsValid)
                 {
-                    return new FailedServiceResponse(validationResult);
+                    idValidationResult.AddFailuresFrom(passwordValidationResult);
+                    return new FailedServiceResponse(idValidationResult);
                 }
             }
 
@@ -513,7 +516,7 @@ namespace StoreAPI.Services
 
             var user = userResponse.Data;
 
-            if (newPassword == "")
+            if (string.IsNullOrEmpty(newPassword))
             {
                 newPassword = user.UserName; // for simplicity
             }

@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Store.API.IntegrationTests.Roles;
 using StoreAPI;
 using StoreAPI.Dtos;
 using StoreAPI.Helpers;
+using StoreAPI.Identity;
 using StoreAPI.Infra;
 using System;
 using System.Collections.Generic;
@@ -240,7 +242,6 @@ namespace Store.API.IntegrationTests.Users
             };
 
             var uri = ApiRoutes.Users.ChangeCurrentUserPassword;
-            var authenticateUri = ApiRoutes.Auth.Authenticate;
 
             var userLogin = new UserLoginDto 
             { 
@@ -248,37 +249,51 @@ namespace Store.API.IntegrationTests.Users
                 UserName = userCreated.UserName 
             };
 
-
             await Helpers.AuthenticateAsync(userLogin);
 
-            // Act
-            //var authResponseOldPassword = await Client.PostAsJsonAsync(authenticateUri, userLogin);
+            // Act            
             var response = await Client.PutAsJsonAsync(uri, changePasswords);
+            var currentUser = await Helpers.User.GetUserAsync(u => u.Id == userCreated.Id);
 
-            var authResponseOldPassword = await Client.PostAsJsonAsync(authenticateUri, userLogin);
-            var problem = await authResponseOldPassword.Content.ReadAsAsync<ProblemDetails>();
-
-            userLogin.Password = NEW_PASSWORD;
-            var authResponseNewPassword = await Client.PostAsJsonAsync(authenticateUri, userLogin);
-
+            var hasher = new PasswordHasher<User>();
+            var oldPasswordVerificationResult = hasher.VerifyHashedPassword(currentUser, currentUser.PasswordHash, OLD_PASSWORD);
+            var newPasswordVerificationResult = hasher.VerifyHashedPassword(currentUser, currentUser.PasswordHash, NEW_PASSWORD);
+          
             // Assert 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal(HttpStatusCode.OK, authResponseNewPassword.StatusCode);
-            Assert.Equal(HttpStatusCode.BadRequest, authResponseOldPassword.StatusCode);
-            Assert.Equal("Incorrect user/password", problem.Title);
-
-
+            Assert.Equal(PasswordVerificationResult.Failed, oldPasswordVerificationResult);
+            Assert.Equal(PasswordVerificationResult.Success, newPasswordVerificationResult);
         }
 
 
         [Fact]
-        public async Task ResetPassword_ResetsPasswordToItsUsername()
+        public async Task ResetPassword_WithEmptyPasswordParameter_ResetsPasswordToItsUsername()
         {
             // Arrange
+            var userCreated = await Helpers.User.CreateNewUserAsync();
+
+            var id = userCreated.Id;
+
+            var route = ApiRoutes.Users.ResetPassword;
+            var uri = route.Replace("{id}", id.ToString());
+
+            var oldPassword = UserObjects.Password;
+            var newPassword = userCreated.UserName;
+
+            var hasher = new PasswordHasher<User>();
 
             // Act
+            var response = await Client.PutAsJsonAsync(uri, "");
 
+            var user = await Helpers.User.GetUserAsync(u => u.Id == id);
+            var oldPasswordVerifyResult = hasher.VerifyHashedPassword(user, user.PasswordHash, oldPassword);
+            var newPasswordVerifyResult = hasher.VerifyHashedPassword(user, user.PasswordHash, newPassword);
+            
             // Assert 
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(PasswordVerificationResult.Failed, oldPasswordVerifyResult);
+            Assert.Equal(PasswordVerificationResult.Success, newPasswordVerifyResult);
+            
         }
 
 

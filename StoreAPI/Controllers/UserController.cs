@@ -289,7 +289,7 @@ namespace StoreAPI.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, "Password reset")]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status404NotFound, "User not found")]
-        [HttpDelete("{id}/password", Name = nameof(ResetPassword))]
+        [HttpPut("{id}/password/reset", Name = nameof(ResetPassword))]
         public async Task<IActionResult> ResetPassword(int id, [FromBody] string newPassword = "")
         {
             var resetResponse = await _userService.ResetPasswordAsync(id, newPassword);
