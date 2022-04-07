@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
-using Store.API.IntegrationTests.Roles;
+﻿using Microsoft.AspNetCore.Identity;
 using StoreAPI;
 using StoreAPI.Dtos;
 using StoreAPI.Helpers;
@@ -13,7 +9,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -46,10 +41,10 @@ namespace Store.API.IntegrationTests.Users
             var responseUsers = await response.Content.ReadAsAsync<List<UserReadDto>>();
 
             var result = responseUsers.All(u =>
-                    usersBeforeActIds.Contains(u.Id) && 
+                    usersBeforeActIds.Contains(u.Id) &&
                     usersBeforeActUsernames.Contains(u.UserName));
 
-            // Assert 
+            // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(allUsersBeforeAct.Count, responseUsers.Count);
             Assert.True(result);
@@ -72,7 +67,7 @@ namespace Store.API.IntegrationTests.Users
             var response = await Client.GetAsync(uri);
             var result = await response.Content.ReadAsAsync<UserDetailedReadDto>();
 
-            // Assert 
+            // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.NotNull(result);
             Assert.Equal(userCreated.UserName, result.UserName);
@@ -84,7 +79,7 @@ namespace Store.API.IntegrationTests.Users
         {
             // Arrange
             var userCreated = await Helpers.User.CreateNewUserAsync();
-            
+
             var uri = ApiRoutes.Users.GetCurrentUser;
 
             await Helpers.AuthenticateAsync(userCreated.UserName, UserObjects.Password);
@@ -93,7 +88,7 @@ namespace Store.API.IntegrationTests.Users
             var response = await Client.GetAsync(uri);
             var currentUser = await response.Content.ReadAsAsync<UserDetailedReadDto>();
 
-            // Assert 
+            // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(currentUser.UserName, userCreated.UserName);
             Assert.Equal(currentUser.Id, userCreated.Id);
@@ -121,7 +116,7 @@ namespace Store.API.IntegrationTests.Users
 
             var resultIds = result.Select(r => r.Id);
 
-            // Assert 
+            // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(resultIds, roleIds);
         }
@@ -141,7 +136,7 @@ namespace Store.API.IntegrationTests.Users
                 FirstName = "Updated" + UserTestHelpers.NumbersInString(userCreated.UserName),
                 LastName = "Updated"
             };
-              
+
             var route = ApiRoutes.Users.UpdateUser;
             var uri = route.Replace("{id}", userId.ToString());
 
@@ -151,7 +146,7 @@ namespace Store.API.IntegrationTests.Users
             var response = await Client.PutAsJsonAsync(uri, userUpdate);
             var result = await response.Content.ReadAsAsync<UserReadDto>();
 
-            // Assert 
+            // Assert
             var userUpdateFullName = UserTestHelpers.CreateFullName(userUpdate.FirstName, userUpdate.LastName);
             var userCreatedFullName = UserTestHelpers.CreateFullName(userCreated.FirstName, userCreated.LastName);
 
@@ -163,18 +158,17 @@ namespace Store.API.IntegrationTests.Users
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(userCreated.Id, result.Id);
 
-                // asserts data was updated
+            // asserts data was updated
             Assert.NotEqual(userOnDbAfterActFullName, userCreatedFullName);
             Assert.NotEqual(userCreated.DateOfBirth, userOnDbAfterAct.DateOfBirth);
 
-                // asserts data on db is the same as update
+            // asserts data on db is the same as update
             Assert.Equal(userOnDbAfterActFullName, userUpdateFullName);
             Assert.Equal(userOnDbAfterAct.DateOfBirth, userUpdate.DateOfBirth);
 
-                // asserts data result is the same as update
+            // asserts data result is the same as update
             Assert.Equal(result.FullName, userUpdateFullName);
             Assert.Equal(result.Age, userUpdateAge);
-
         }
 
         [Fact]
@@ -200,7 +194,7 @@ namespace Store.API.IntegrationTests.Users
             var response = await Client.PutAsJsonAsync(uri, userUpdate);
             var result = await response.Content.ReadAsAsync<UserReadDto>();
 
-            // Assert 
+            // Assert
             var userUpdateFullName = UserTestHelpers.CreateFullName(userUpdate.FirstName, userUpdate.LastName);
             var userCreatedFullName = UserTestHelpers.CreateFullName(userCreated.FirstName, userCreated.LastName);
 
@@ -243,23 +237,23 @@ namespace Store.API.IntegrationTests.Users
 
             var uri = ApiRoutes.Users.ChangeCurrentUserPassword;
 
-            var userLogin = new UserLoginDto 
-            { 
-                Password = oldPassword, 
-                UserName = userCreated.UserName 
+            var userLogin = new UserLoginDto
+            {
+                Password = oldPassword,
+                UserName = userCreated.UserName
             };
 
             await Helpers.AuthenticateAsync(userLogin);
 
-            // Act            
+            // Act
             var response = await Client.PutAsJsonAsync(uri, changePasswords);
             var currentUser = await Helpers.User.GetUserAsync(u => u.Id == userCreated.Id);
 
             var hasher = new PasswordHasher<User>();
             var oldPasswordVerificationResult = hasher.VerifyHashedPassword(currentUser, currentUser.PasswordHash, oldPassword);
             var newPasswordVerificationResult = hasher.VerifyHashedPassword(currentUser, currentUser.PasswordHash, newPassword);
-          
-            // Assert 
+
+            // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(PasswordVerificationResult.Failed, oldPasswordVerificationResult);
             Assert.Equal(PasswordVerificationResult.Success, newPasswordVerificationResult);
@@ -290,8 +284,8 @@ namespace Store.API.IntegrationTests.Users
             var user = await Helpers.User.GetUserAsync(u => u.Id == id);
             var oldPasswordVerifyResult = hasher.VerifyHashedPassword(user, user.PasswordHash, oldPassword);
             var newPasswordVerifyResult = hasher.VerifyHashedPassword(user, user.PasswordHash, newPassword);
-            
-            // Assert 
+
+            // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(PasswordVerificationResult.Failed, oldPasswordVerifyResult);
             Assert.Equal(PasswordVerificationResult.Success, newPasswordVerifyResult);
@@ -322,18 +316,18 @@ namespace Store.API.IntegrationTests.Users
 
             var userBeforeAct = await Helpers.User.GetUserAsync(u => u.Id == id);
 
-            await Helpers.AuthenticateAsAdminAsync();            
+            await Helpers.AuthenticateAsAdminAsync();
 
             // Act
             var oldPasswordVerifyResultBeforeAct = hasher.VerifyHashedPassword(userBeforeAct, userBeforeAct.PasswordHash, oldPassword);
-            
+
             var response = await Client.PutAsJsonAsync(uri, changePasswords);
             var user = await Helpers.User.GetUserAsync(u => u.Id == id);
 
             var oldPasswordVerifyResult = hasher.VerifyHashedPassword(user, user.PasswordHash, oldPassword);
             var newPasswordVerifyResult = hasher.VerifyHashedPassword(user, user.PasswordHash, newPassword);
 
-            // Assert 
+            // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(PasswordVerificationResult.Success, oldPasswordVerifyResultBeforeAct);
             Assert.Equal(PasswordVerificationResult.Failed, oldPasswordVerifyResult);
@@ -368,12 +362,11 @@ namespace Store.API.IntegrationTests.Users
             var userOnDbRoleId = userOnDb.Roles.Select(r => r.Id).SingleOrDefault();
 
 
-            // Assert 
+            // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Empty(userCreated.Roles);
             Assert.Equal(roleId, resultRoleId);
             Assert.Equal(roleId, userOnDbRoleId);
-
         }
 
 
@@ -398,7 +391,7 @@ namespace Store.API.IntegrationTests.Users
                         .Replace("{roleId}", roleId.ToString());
 
             //var userBeforeAct = await Helpers.User.GetUserAsync(u => u.Id == id, true);
-            
+
             await Helpers.AuthenticateAsAdminAsync();
 
             // Act
@@ -407,12 +400,12 @@ namespace Store.API.IntegrationTests.Users
 
             var userOnDb = await Helpers.User.GetUserAsync(u => u.Id == id, true);
 
-            // Assert 
+            // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(userCreatedRolesIds, roleIdList);
 
             Assert.Empty(result.Roles);
-            Assert.Empty(userOnDb.Roles);            
+            Assert.Empty(userOnDb.Roles);
         }
 
 

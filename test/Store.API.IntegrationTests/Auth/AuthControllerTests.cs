@@ -4,7 +4,6 @@ using StoreAPI;
 using StoreAPI.Dtos;
 using StoreAPI.Enums;
 using StoreAPI.Infra;
-using System;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -12,7 +11,7 @@ using Xunit;
 
 namespace Store.API.IntegrationTests.Auth
 {
-    public class AuthControllerTests : TestBase, IAsyncLifetime//IDisposable
+    public class AuthControllerTests : TestBase, IAsyncLifetime
     {
         public AuthControllerTests(TestWebApplicationFactory<Startup> factory) : base(factory)
         {

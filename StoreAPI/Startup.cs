@@ -20,13 +20,12 @@ using StoreAPI.Persistence.Repositories;
 using StoreAPI.Services;
 using StoreAPI.Swagger;
 using System;
-using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace StoreAPI
 {
-    public class Startup 
+    public class Startup
     {
         private readonly IWebHostEnvironment _env;
 
@@ -42,7 +41,7 @@ namespace StoreAPI
         public virtual void ConfigureServices(IServiceCollection services)
         {
             var section = Configuration.GetSection("StoreDbSQLServerConnectionStringSettings");
-            
+
             var connectionStringBuilder = new SqlConnectionStringBuilder()
             {
                 WorkstationID = section["WorkstationId"],
@@ -104,13 +103,13 @@ namespace StoreAPI
                  o.InvalidModelStateResponseFactory = m => throw new ModelValidationException(m.ModelState);
                  o.SuppressMapClientErrors = true;
              });
-                x = x.AddJsonOptions(o =>
-                {
-                    o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-                    o.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
-                    o.JsonSerializerOptions.Converters.Add(new CustomDateTimeConverter());
-                    o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-                });
+            x = x.AddJsonOptions(o =>
+            {
+                o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                o.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+                o.JsonSerializerOptions.Converters.Add(new CustomDateTimeConverter());
+                o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
 
             services.AddCors();
 
@@ -185,15 +184,6 @@ namespace StoreAPI
             {
                 endpoints.MapControllers();
             });
-
-            //logger.LogInformation("Available routes:");
-            //var routes = actionProvider.ActionDescriptors.Items.Where(x => x.AttributeRouteInfo != null);
-            //foreach (var route in routes)
-            //{
-            //    logger.LogInformation($"{route.AttributeRouteInfo.Template}");
-            //}
-
-            //logger.LogInformation("... finished configuring application");
         }
     }
 }

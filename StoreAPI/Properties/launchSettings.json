@@ -28,7 +28,9 @@
     "Production": {
       "commandName": "Project",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Production"
+        "StoreDbSQLServerConnectionStringSettings__DbPassword": "1kog222mn2!@#$",
+        "ASPNETCORE_ENVIRONMENT": "Production",
+        "Chave": "Valor"
       },
       "applicationUrl": ""
     }

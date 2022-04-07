@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using StoreAPI.Dtos;
 using StoreAPI.Identity;
 using StoreAPI.Infra;
 using System;
-using System.Text.RegularExpressions;
 
 namespace Store.API.IntegrationTests.Users
 {

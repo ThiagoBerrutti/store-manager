@@ -1,9 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using StoreAPI;
+﻿using StoreAPI;
 using StoreAPI.Dtos;
-using StoreAPI.Identity;
 using StoreAPI.Infra;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -20,60 +17,7 @@ namespace Store.API.IntegrationTests.Roles
         {
         }
 
-        //private async Task<List<RoleReadDto>> CreateNewRoleAsync(int quantity = 1)
-        //{
-        //    var uri = ApiRoutes.Roles.CreateRole;
-        //    await AuthenticateAsAdminAsync();
-
-        //    var result = new List<RoleReadDto>();
-
-        //    for (int i = 0; i < quantity; i++)
-        //    {
-        //        var roleToCreate = RoleObjects.Factory.GenerateRoleWriteDto();
-
-        //        var response = await Client.PostAsJsonAsync(uri, roleToCreate);
-        //        var roleCreated = await response.Content.ReadAsAsync<RoleReadDto>();
-
-        //        result.Add(roleCreated);
-        //    }
-
-        //    LogoutUser();
-
-        //    return result;
-        //}
-
-        //private async Task AddUsersToRole(int roleId, IEnumerable<int> userIds)
-        //{
-        //    var users = Context.Users.Where(u => userIds.Contains(u.Id));
-
-        //    foreach (var u in users)
-        //    {
-        //        if (!Context.UserRoles.Any(ur => ur.RoleId == roleId && ur.UserId == u.Id))
-        //        {
-        //            var userRole = new UserRole { UserId = u.Id, RoleId = roleId };
-        //            Context.UserRoles.Add(userRole);
-        //        }
-        //    }
-
-        //    await Context.SaveChangesAsync();
-
-        //    LogoutUser();
-        //}
-
-        //private async Task<RoleReadDto> CreateNewRole(RoleWriteDto role)
-        //{
-        //    var uri = ApiRoutes.Roles.CreateRole;
-        //    await AuthenticateAsAdminAsync();
-
-        //    var response = await Client.PostAsJsonAsync(uri, role);
-        //    var result = await response.Content.ReadAsAsync<RoleReadDto>();
-
-        //    LogoutUser();
-
-        //    return result;
-        //}
-
-
+        
         [Fact]
         public async Task GetAllRolesPaginated_ReturnsAllFourResults_WhenDatabaseIsReseted()
         {
@@ -181,7 +125,7 @@ namespace Store.API.IntegrationTests.Roles
 
             // Assert
             var userIdsOnResult = result.Select(u => u.Id);
-            var intersect = userIds.Intersect(userIdsOnResult); 
+            var intersect = userIds.Intersect(userIdsOnResult);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.NotNull(roleCreated);

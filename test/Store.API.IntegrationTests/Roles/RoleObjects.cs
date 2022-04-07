@@ -6,8 +6,6 @@ namespace Store.API.IntegrationTests.Roles
 {
     public class RoleObjects
     {
-        public static RoleWriteDto TestRoleWriteDto = new RoleWriteDto { Name = "TEST_ROLE" };
-
         public static class Factory
         {
             public static RoleWriteDto GenerateRoleWriteDto()

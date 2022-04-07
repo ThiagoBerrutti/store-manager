@@ -30,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\StoreAPI\StoreAPI.csproj" />
+    <ProjectReference Include="..\..\StoreAPI\StoreAPI.csproj" />
   </ItemGroup>
 
 </Project>

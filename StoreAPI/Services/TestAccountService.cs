@@ -20,7 +20,10 @@ namespace StoreAPI.Services
         private readonly IUserService _userService;
         private readonly IRoleService _roleService;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
+        protected readonly IMapper _mapper;
+
+        public TestAccountService()
+        { }
 
         public TestAccountService(IAuthService authService, IUserService userService, IRoleService roleService, IUnitOfWork unitOfWork, IMapper mapper)
         {
@@ -37,12 +40,14 @@ namespace StoreAPI.Services
         {
             var digits = 5;
 
-            var randomUser = await FetchUser();
-            if (randomUser is null)
+            var fetchResponse = await FetchUser();
+            if (fetchResponse is FailedServiceResponse<RandomedUser>)
             {
                 var producedUser = TestAccountUserRegisterFactory.Produce(digits); // fallback data
                 return new ServiceResponse<UserRegisterDto>(producedUser);
             }
+
+            var randomUser = fetchResponse.Data;
 
             var userRegisterDto = _mapper.Map<UserRegisterDto>(randomUser);
             userRegisterDto.UserName = StringFormatter.RemoveAccents(userRegisterDto.FirstName).ToLower() + TestAccountUserRegisterFactory.RandomUserNameNumber(digits);
@@ -54,18 +59,24 @@ namespace StoreAPI.Services
         }
 
 
-        public async Task<RandomedUser> FetchUser()
+        public virtual async Task<ServiceResponse<RandomedUser>> FetchUser()
         {
             var randomuserApiUrl = "https://randomuser.me/api/?nat=br&inc=name,dob";
             var client = new HttpClient();
 
-            
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             HttpResponseMessage httpResponse = await client.GetAsync(randomuserApiUrl);
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                return new FailedServiceResponse<RandomedUser>()
+                    .SetTitle("Error fetching random user data")
+                    .SetErrorData(httpResponse)
+                    .SetDetail($"A failed status code response ({httpResponse.StatusCode}) was received when trying to fetch random user data. Reason phrase: {httpResponse.ReasonPhrase}");
+            }
 
-            var formatters = new List<MediaTypeFormatter>()
+            var formatters = new List<MediaTypeFormatter>
             {
                 new JsonMediaTypeFormatter()
             };
@@ -73,7 +84,17 @@ namespace StoreAPI.Services
             var response = await httpResponse.Content.ReadAsAsync<Response>(formatters);
             var user = response.Results[0];
 
-            return user;
+            if (user is null)
+            {
+                return new FailedServiceResponse<RandomedUser>()
+                    .SetTitle("Error fetching random user data")
+                    .SetErrorData(httpResponse)
+                    .SetDetail($"Successfully fetched user data but no user data was received.");
+            }
+
+            var result = new ServiceResponse<RandomedUser>(user);
+
+            return result;
         }
 
         public async Task<ServiceResponse<AuthResponse>> RegisterTestAcc(List<RolesEnum> roleId)

@@ -8,6 +8,8 @@ namespace StoreAPI.Services.Communication
 {
     public class FailedServiceResponse : ServiceResponse
     {
+        public object ErrorData { get; set; }
+
         public FailedServiceResponse()
         {
             Success = false;
@@ -104,6 +106,15 @@ namespace StoreAPI.Services.Communication
         }
 
 
+        public FailedServiceResponse SetErrorData(object errorData)
+        {
+            ErrorData = errorData;
+            Success = false;
+
+            return this;
+        }
+
+
         private void HandleErrorParameter(IdentityResult error)
         {
             if (!error.Succeeded)
@@ -111,6 +122,7 @@ namespace StoreAPI.Services.Communication
                 AddToExtensionsErrors(error.Errors.Select(e => e.Description));
             }
         }
+
 
         private void HandleErrorParameter(ValidationResult error)
         {

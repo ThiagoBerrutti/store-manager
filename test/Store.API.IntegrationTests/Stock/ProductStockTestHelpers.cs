@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Store.API.IntegrationTests.Stock
@@ -33,14 +32,14 @@ namespace Store.API.IntegrationTests.Stock
         }
 
 
-        public async Task<List<ProductStock>> GetProductStocksAsync(Expression<Func<ProductStock, bool>> expression) 
+        public async Task<List<ProductStock>> GetProductStocksAsync(Expression<Func<ProductStock, bool>> expression)
             => await Context.ProductStocks
                         .AsNoTracking()
                         .Where(expression)
                         .ToListAsync();
 
 
-        public async Task<List<ProductStock>> GetProductStocksAsync() 
+        public async Task<List<ProductStock>> GetProductStocksAsync()
              => await Context.ProductStocks
                         .AsNoTracking()
                         .ToListAsync();
@@ -50,7 +49,5 @@ namespace Store.API.IntegrationTests.Stock
              => await Context.ProductStocks
                         .AsNoTracking()
                         .FirstOrDefaultAsync(expression);
-        
-
     }
 }

@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using StoreAPI.Domain;
 using StoreAPI.Dtos;
-using StoreAPI.Exceptions;
 using StoreAPI.Infra;
 using StoreAPI.Persistence.Repositories;
 using StoreAPI.Services.Communication;

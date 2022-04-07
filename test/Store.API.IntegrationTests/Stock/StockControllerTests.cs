@@ -102,7 +102,7 @@ namespace Store.API.IntegrationTests.Stock
         {
             // Arrange
             var productCreated = await Helpers.Product.CreateNewProductAsync();
-            
+
             var id = productCreated.Id;
             var productStockOriginal = await Context.ProductStocks
                     .AsNoTracking()
@@ -155,7 +155,7 @@ namespace Store.API.IntegrationTests.Stock
 
             var productStockOnDb = await Helpers.Stock.GetProductStockAsync(ps => ps.Id == id);
 
-            // Assert 
+            // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.NotNull(result);
             Assert.NotNull(productStockOnDb);
@@ -185,7 +185,7 @@ namespace Store.API.IntegrationTests.Stock
 
             var productStockOnDb = await Helpers.Stock.GetProductStockAsync(ps => ps.Id == id);
 
-            // Assert 
+            // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.NotNull(result);
             Assert.NotNull(productStockOnDb);

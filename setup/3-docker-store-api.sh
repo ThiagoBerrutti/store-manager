@@ -1,6 +1,6 @@
 docker stop store-api
 docker rm store-api
-docker run -d -p 5000:80 \
+docker run -d -p 5000:5000 \
 --name store-api \
 --net store-network \
 --restart unless-stopped  \
