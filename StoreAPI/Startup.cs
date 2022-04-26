@@ -20,6 +20,7 @@ using StoreAPI.Persistence.Repositories;
 using StoreAPI.Services;
 using StoreAPI.Swagger;
 using System;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -144,6 +145,9 @@ namespace StoreAPI
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public virtual void Configure(IApplicationBuilder app, IWebHostEnvironment env, IActionDescriptorCollectionProvider actionProvider, ILogger<Startup> logger)
         {
+            //CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+            //CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+
             logger.Log(LogLevel.Information, "Configuring application ...");
 
             if (env.IsDevelopment())

@@ -28,8 +28,7 @@
     "Production": {
       "commandName": "Project",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Production",
-        "Chave": "Valor"
+        "ASPNETCORE_ENVIRONMENT": "Production"
       },
       "applicationUrl": ""
     }
